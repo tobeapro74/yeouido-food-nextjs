@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: "여의도 맛집",
   description: "여의도 지역 맛집 정보 앱 - 서여의도, 동여의도 맛집 가이드",
   manifest: "/manifest.json",
+  icons: {
+    icon: [
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
