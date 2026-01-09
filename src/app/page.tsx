@@ -14,13 +14,15 @@ import {
   Restaurant,
   categories,
   regions,
+  buildings,
   getRestaurantsByCategory,
   getRestaurantsByRegion,
+  getRestaurantsByBuilding,
   getPopularRestaurants,
 } from "@/data/yeouido-food";
 
 type View = "home" | "list" | "detail";
-type TabType = "home" | "category" | "region" | "cafe";
+type TabType = "home" | "category" | "region" | "building";
 
 interface UserInfo {
   id: number;
@@ -39,6 +41,7 @@ export default function Home() {
   // 시트 상태
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
   const [regionSheetOpen, setRegionSheetOpen] = useState(false);
+  const [buildingSheetOpen, setBuildingSheetOpen] = useState(false);
 
   // 홈 화면 지역 필터
   const [selectedRegion, setSelectedRegion] = useState("전체");
@@ -92,12 +95,8 @@ export default function Home() {
       setCategorySheetOpen(true);
     } else if (tab === "region") {
       setRegionSheetOpen(true);
-    } else if (tab === "cafe") {
-      // 양식 카테고리로 대체
-      setListTitle("양식 맛집");
-      setListItems(getRestaurantsByCategory("양식"));
-      setCurrentView("list");
-      setActiveTab("cafe");
+    } else if (tab === "building") {
+      setBuildingSheetOpen(true);
     }
   };
 
@@ -117,6 +116,15 @@ export default function Home() {
     setListItems(getRestaurantsByRegion(regionId));
     setCurrentView("list");
     setActiveTab("region");
+  };
+
+  // 빌딩 선택
+  const handleBuildingSelect = (buildingId: string) => {
+    const building = buildings.find((b) => b.id === buildingId);
+    setListTitle(buildingId === "전체" ? "전체 빌딩" : `${building?.name || buildingId} 맛집`);
+    setListItems(getRestaurantsByBuilding(buildingId));
+    setCurrentView("list");
+    setActiveTab("building");
   };
 
   // 맛집 선택
@@ -175,6 +183,13 @@ export default function Home() {
           title="지역 선택"
           options={regions}
           onSelect={handleRegionSelect}
+        />
+        <CategorySheet
+          open={buildingSheetOpen}
+          onOpenChange={setBuildingSheetOpen}
+          title="빌딩 선택"
+          options={buildings}
+          onSelect={handleBuildingSelect}
         />
       </>
     );
@@ -315,6 +330,13 @@ export default function Home() {
         title="지역 선택"
         options={regions}
         onSelect={handleRegionSelect}
+      />
+      <CategorySheet
+        open={buildingSheetOpen}
+        onOpenChange={setBuildingSheetOpen}
+        title="빌딩 선택"
+        options={buildings}
+        onSelect={handleBuildingSelect}
       />
 
       {/* 로그인/회원가입 모달 */}

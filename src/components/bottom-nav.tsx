@@ -1,8 +1,8 @@
 "use client";
 
-import { Home, Grid3X3, MapPin, Coffee } from "lucide-react";
+import { Home, Grid3X3, MapPin, Building2 } from "lucide-react";
 
-type TabType = "home" | "category" | "region" | "cafe";
+type TabType = "home" | "category" | "region" | "building";
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -13,7 +13,7 @@ const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
   { id: "home", label: "홈", icon: Home },
   { id: "category", label: "카테고리", icon: Grid3X3 },
   { id: "region", label: "지역", icon: MapPin },
-  { id: "cafe", label: "카페", icon: Coffee },
+  { id: "building", label: "빌딩", icon: Building2 },
 ];
 
 export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
