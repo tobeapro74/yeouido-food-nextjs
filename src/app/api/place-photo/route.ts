@@ -50,10 +50,11 @@ export async function GET(request: NextRequest) {
     }
 
     // 3. Google Places API로 사진 검색 (여의도 Seoul Korea 추가)
+    // business_status 필드 추가: OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY
     const searchQuery = `${query} 여의도 Seoul Korea`;
     const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(
       searchQuery
-    )}&inputtype=textquery&fields=place_id,photos&key=${GOOGLE_API_KEY}`;
+    )}&inputtype=textquery&fields=place_id,photos,business_status&key=${GOOGLE_API_KEY}`;
 
     const searchRes = await fetch(searchUrl);
     const searchData = await searchRes.json();
@@ -63,6 +64,18 @@ export async function GET(request: NextRequest) {
     }
 
     const candidate = searchData.candidates[0];
+
+    // 휴업/폐업 상태 확인
+    const businessStatus = candidate.business_status;
+    // CLOSED_TEMPORARILY: 임시 휴업, CLOSED_PERMANENTLY: 폐업
+    if (businessStatus === "CLOSED_TEMPORARILY" || businessStatus === "CLOSED_PERMANENTLY") {
+      return NextResponse.json({
+        photoUrl: null,
+        businessStatus,
+        isClosed: true,
+        message: businessStatus === "CLOSED_PERMANENTLY" ? "폐업" : "임시휴업"
+      });
+    }
 
     // 4. 사진 참조 가져오기
     let photoRef: string | null = null;

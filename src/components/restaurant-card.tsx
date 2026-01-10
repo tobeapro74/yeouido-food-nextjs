@@ -14,6 +14,7 @@ function formatReviewCount(count: number): string {
 }
 
 const imageCache: Record<string, string> = {};
+const closedCache: Record<string, boolean> = {};
 
 const categoryIcons: Record<string, string> = {
   한식: "🍚",
@@ -39,9 +40,17 @@ export function RestaurantCard({
   const fallbackUrl = getPlaceholderImage(restaurant.이름);
   const [imageUrl, setImageUrl] = useState<string>(fallbackUrl);
   const [isLoading, setIsLoading] = useState(true);
+  const [isClosed, setIsClosed] = useState(false);
 
   useEffect(() => {
     const cacheKey = restaurant.이름;
+
+    // 이미 폐업/휴업으로 확인된 경우
+    if (closedCache[cacheKey]) {
+      setIsClosed(true);
+      setIsLoading(false);
+      return;
+    }
 
     if (imageCache[cacheKey]) {
       setImageUrl(imageCache[cacheKey]);
@@ -54,6 +63,13 @@ export function RestaurantCard({
         const query = `${restaurant.이름} ${restaurant.주소 || ""}`.trim();
         const res = await fetch(`/api/place-photo?query=${encodeURIComponent(query)}`);
         const data = await res.json();
+
+        // 휴업/폐업 체크
+        if (data.isClosed) {
+          closedCache[cacheKey] = true;
+          setIsClosed(true);
+          return;
+        }
 
         if (data.photoUrl) {
           imageCache[cacheKey] = data.photoUrl;
@@ -70,6 +86,11 @@ export function RestaurantCard({
 
     fetchImage();
   }, [restaurant.이름, restaurant.주소, fallbackUrl]);
+
+  // 휴업/폐업 식당은 렌더링하지 않음
+  if (isClosed) {
+    return null;
+  }
 
   if (variant === "horizontal") {
     return (
