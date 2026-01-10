@@ -140,6 +140,66 @@ git push origin main
 
 ---
 
+### 6. 룰렛 돌리기 카테고리와 추천 결과 불일치
+
+**문제**
+- 룰렛에서 "동남아"가 포인터 아래에 멈췄는데 "일식 카테고리에서 추천!"이 표시됨
+- 시각적으로 보이는 섹션과 실제 결과가 일치하지 않음
+
+**원인**
+- 섹션 레이아웃이 `origin-bottom-right` + `w-1/2 h-1/2`로 구현되어 일반적인 각도 계산과 다름
+- 섹션 0이 12시가 아닌 9시~11시 영역에서 시작
+- 결과를 미리 선택하고 회전시키는 방식에서 각도 계산 오류 발생
+
+**해결**
+휠이 멈춘 후 **실제 포인터 위치에서 섹션을 역산**하는 방식으로 변경:
+
+```typescript
+// 회전 완료 후, 포인터(12시)가 어느 섹션 안에 있는지 확인
+setTimeout(() => {
+  const normalizedRotation = finalRotationRef.current % 360;
+
+  // 포인터는 화면 상단(12시 방향)에 고정
+  // CSS 좌표계에서 12시 = -90도 = 270도
+  const pointerPosition = 270;
+
+  // 각 섹션을 순회하며 포인터가 해당 섹션 범위 안에 있는지 확인
+  for (let i = 0; i < items.length; i++) {
+    const sectionStart = i * sectionAngle;
+    const sectionEnd = (i + 1) * sectionAngle;
+
+    // 휠 회전 후 섹션의 현재 위치
+    const currentStart = (sectionStart + normalizedRotation) % 360;
+    const currentEnd = (sectionEnd + normalizedRotation) % 360;
+
+    // 포인터(270도)가 이 섹션 범위 안에 있는지 확인
+    let isInRange = false;
+    if (currentStart < currentEnd) {
+      isInRange = pointerPosition >= currentStart && pointerPosition < currentEnd;
+    } else {
+      // 360도 경계를 넘는 경우 (예: 330~30)
+      isInRange = pointerPosition >= currentStart || pointerPosition < currentEnd;
+    }
+
+    if (isInRange) {
+      resultIndex = i;
+      break;
+    }
+  }
+
+  onResult(items[resultIndex].id);
+}, 4000);
+```
+
+**핵심 포인트**
+- 결과를 미리 선택하지 않고 **랜덤 회전 후** 결과 계산
+- CSS 좌표계에서 12시 방향 = 270도
+- 섹션이 360도 경계를 넘는 경우도 처리 (예: 330°~30°)
+
+**파일**: `src/components/roulette-wheel.tsx`
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버
