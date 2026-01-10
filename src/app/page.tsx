@@ -145,6 +145,9 @@ export default function Home() {
       if (previousView === "home") {
         setCurrentView("home");
         setActiveTab("home");
+      } else if (previousView === "recommend") {
+        setCurrentView("recommend");
+        setActiveTab("recommend");
       } else {
         setCurrentView("list");
       }
