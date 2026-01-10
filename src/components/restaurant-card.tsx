@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star } from "lucide-react";
+import { MapPin, Star, Building2 } from "lucide-react";
 import { Restaurant, getPlaceholderImage } from "@/data/yeouido-food";
 import Image from "next/image";
 
@@ -135,6 +135,12 @@ export function RestaurantCard({
             <MapPin className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{restaurant.지역} · {restaurant.주소.split(' ').slice(-1)[0]}</span>
           </p>
+          {restaurant.빌딩 && (
+            <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+              <Building2 className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{restaurant.빌딩}</span>
+            </p>
+          )}
         </CardContent>
       </Card>
     );
@@ -181,10 +187,16 @@ export function RestaurantCard({
                 {restaurant.특징}
               </p>
             )}
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 flex-wrap">
               <Badge variant="secondary" className="text-xs bg-accent/20 text-accent-foreground">
                 {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
               </Badge>
+              {restaurant.빌딩 && (
+                <Badge variant="outline" className="text-xs text-blue-600 border-blue-200 bg-blue-50">
+                  <Building2 className="h-3 w-3 mr-1" />
+                  {restaurant.빌딩}
+                </Badge>
+              )}
               {restaurant.리뷰수 && (
                 <span className="text-xs text-muted-foreground">
                   리뷰 {formatReviewCount(restaurant.리뷰수)}

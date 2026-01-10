@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote } from "lucide-react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -86,11 +86,17 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-bold">{restaurant.이름}</h1>
-              <div className="flex items-center gap-2 mt-2">
+              <div className="flex items-center gap-2 mt-2 flex-wrap">
                 <Badge variant="secondary">
                   {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
                 </Badge>
                 <Badge variant="outline">{restaurant.지역}</Badge>
+                {restaurant.빌딩 && (
+                  <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
+                    <Building2 className="h-3 w-3 mr-1" />
+                    {restaurant.빌딩}
+                  </Badge>
+                )}
               </div>
             </div>
             {restaurant.평점 && (
