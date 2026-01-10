@@ -33,30 +33,23 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
       // 최종 회전 각도를 0-360으로 정규화
       const normalizedRotation = finalRotationRef.current % 360;
 
-      // 포인터는 12시 방향(상단)에 고정
-      // 휠이 시계방향으로 normalizedRotation 만큼 회전했음
+      // 실제 섹션 레이아웃 (origin-bottom-right, w-1/2 h-1/2):
+      // 섹션들이 좌상단 1/4 영역에서 시작하여 시계방향으로 배치됨
+      // - 섹션 0: 9시~11시 (좌측 상단)
+      // - 섹션 1: 11시~1시 (상단 중앙) ← 초기 상태에서 포인터(12시)가 여기
+      // - 섹션 2: 1시~3시
+      // - 섹션 3: 3시~5시
+      // - 섹션 4: 5시~7시
+      // - 섹션 5: 7시~9시
       //
-      // 섹션 레이아웃 (origin-bottom-right, w-1/2 h-1/2):
-      // - 초기(rotation=0)에서 섹션들의 위치:
-      //   섹션 0: rotate(0deg) → 약 11시~1시 영역 (상단)
-      //   섹션 1: rotate(60deg) → 약 1시~3시 영역
-      //   섹션 2: rotate(120deg) → 약 3시~5시 영역
-      //   섹션 3: rotate(180deg) → 약 5시~7시 영역
-      //   섹션 4: rotate(240deg) → 약 7시~9시 영역
-      //   섹션 5: rotate(300deg) → 약 9시~11시 영역
+      // 즉, 섹션 레이아웃이 시계 기준으로 -60도(반시계 1칸) 밀려있음
+      // 포인터(12시)가 초기에 섹션 1을 가리킴
       //
-      // 휠이 X도 회전하면, 원래 (360-X)도 위치에 있던 섹션이 상단(12시)으로 옴
-      //
-      // 예: 휠이 90도 회전 → 원래 270도(9시) 위치에 있던 섹션이 12시로 옴
-      //     270도 위치의 섹션 = 섹션 4 (240~300도)의 중간쯤
-      //
-      // 포인터가 가리키는 각도 = (360 - normalizedRotation) % 360
-      // 해당 각도가 어느 섹션에 속하는지 계산
+      // 휠이 X도 회전하면, 포인터가 가리키는 섹션 각도 = (360 - X + 60) % 360
+      // +60은 초기 오프셋 보정 (섹션 1이 12시에 있으므로)
 
-      const pointerAngle = (360 - normalizedRotation + 360) % 360;
+      const pointerAngle = (360 - normalizedRotation + 60 + 360) % 360;
 
-      // 섹션 n은 (n * sectionAngle) ~ ((n+1) * sectionAngle) 범위를 차지
-      // pointerAngle이 어느 섹션 범위에 있는지 확인
       let resultIndex = Math.floor(pointerAngle / sectionAngle);
       if (resultIndex >= items.length) resultIndex = 0;
 
