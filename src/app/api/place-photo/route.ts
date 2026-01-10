@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { getDb } from "@/lib/mongodb";
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+
+// MongoDB에서 건물 정보 조회
+async function getBuildingFromDB(restaurantName: string): Promise<string | null> {
+  try {
+    const db = await getDb();
+    const collection = db.collection("restaurant_buildings");
+    const result = await collection.findOne({ restaurantName });
+    return result?.buildingName || null;
+  } catch {
+    return null;
+  }
+}
 
 // Cloudinary 설정
 cloudinary.config({
@@ -18,12 +31,16 @@ function toPublicId(name: string): string {
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const query = searchParams.get("query");
+  const restaurantName = searchParams.get("name"); // 식당 이름 (건물 정보 조회용)
 
   if (!query) {
     return NextResponse.json({ error: "Query required" }, { status: 400 });
   }
 
   const publicId = toPublicId(query);
+
+  // MongoDB에서 건물 정보 조회 (병렬로 실행)
+  const buildingPromise = restaurantName ? getBuildingFromDB(restaurantName) : Promise.resolve(null);
 
   try {
     // 1. Cloudinary에서 캐시된 이미지 확인
@@ -38,7 +55,8 @@ export async function GET(request: NextRequest) {
           height: 300,
           crop: "fill",
         });
-        return NextResponse.json({ photoUrl: optimizedUrl, cached: true });
+        const buildingName = await buildingPromise;
+        return NextResponse.json({ photoUrl: optimizedUrl, cached: true, buildingName });
       }
     } catch {
       // 이미지가 없으면 계속 진행
@@ -60,7 +78,8 @@ export async function GET(request: NextRequest) {
     const searchData = await searchRes.json();
 
     if (!searchData.candidates || searchData.candidates.length === 0) {
-      return NextResponse.json({ photoUrl: null });
+      const buildingName = await buildingPromise;
+      return NextResponse.json({ photoUrl: null, buildingName });
     }
 
     const candidate = searchData.candidates[0];
@@ -94,7 +113,8 @@ export async function GET(request: NextRequest) {
     }
 
     if (!photoRef) {
-      return NextResponse.json({ photoUrl: null });
+      const buildingName = await buildingPromise;
+      return NextResponse.json({ photoUrl: null, buildingName });
     }
 
     // 5. Google 사진 URL 생성
@@ -118,11 +138,13 @@ export async function GET(request: NextRequest) {
         crop: "fill",
       });
 
-      return NextResponse.json({ photoUrl: optimizedUrl, cached: false, uploaded: true });
+      const buildingName = await buildingPromise;
+      return NextResponse.json({ photoUrl: optimizedUrl, cached: false, uploaded: true, buildingName });
     } catch (uploadError) {
       console.error("Cloudinary upload error:", uploadError);
       // 업로드 실패해도 Google 원본 URL 반환
-      return NextResponse.json({ photoUrl: googlePhotoUrl, cached: false });
+      const buildingName = await buildingPromise;
+      return NextResponse.json({ photoUrl: googlePhotoUrl, cached: false, buildingName });
     }
   } catch (error) {
     console.error("Google Places API error:", error);

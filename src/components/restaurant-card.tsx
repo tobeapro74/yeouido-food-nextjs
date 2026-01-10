@@ -15,6 +15,7 @@ function formatReviewCount(count: number): string {
 
 const imageCache: Record<string, string> = {};
 const closedCache: Record<string, boolean> = {};
+const buildingCache: Record<string, string | null> = {};
 
 const categoryIcons: Record<string, string> = {
   한식: "🍚",
@@ -42,6 +43,10 @@ export function RestaurantCard({
   const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
   const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
   const [isClosed, setIsClosed] = useState(closedCache[cacheKey] || false);
+  // 건물 정보: 정적 데이터 우선, 없으면 DB에서 가져온 정보 사용
+  const [buildingName, setBuildingName] = useState<string | null>(
+    restaurant.빌딩 || buildingCache[cacheKey] || null
+  );
 
   useEffect(() => {
     // 이미 폐업/휴업으로 확인된 경우
@@ -54,6 +59,10 @@ export function RestaurantCard({
     // 이미 캐시된 경우
     if (imageCache[cacheKey]) {
       setImageUrl(imageCache[cacheKey]);
+      // 건물 정보도 캐시에서 가져오기 (정적 데이터가 없는 경우)
+      if (!restaurant.빌딩 && buildingCache[cacheKey]) {
+        setBuildingName(buildingCache[cacheKey]);
+      }
       setIsLoading(false);
       return;
     }
@@ -61,7 +70,7 @@ export function RestaurantCard({
     const fetchImage = async () => {
       try {
         const query = `${restaurant.이름} ${restaurant.주소 || ""}`.trim();
-        const res = await fetch(`/api/place-photo?query=${encodeURIComponent(query)}`);
+        const res = await fetch(`/api/place-photo?query=${encodeURIComponent(query)}&name=${encodeURIComponent(restaurant.이름)}`);
         const data = await res.json();
 
         // 휴업/폐업 체크
@@ -87,6 +96,12 @@ export function RestaurantCard({
           imageCache[cacheKey] = placeholder;
           setImageUrl(placeholder);
         }
+
+        // 건물 정보 캐시 및 상태 업데이트 (정적 데이터가 없는 경우)
+        if (!restaurant.빌딩 && data.buildingName) {
+          buildingCache[cacheKey] = data.buildingName;
+          setBuildingName(data.buildingName);
+        }
       } catch {
         // 에러 시에도 카테고리 기반 placeholder 사용
         const placeholder = "/images/placeholder-food.svg";
@@ -98,7 +113,7 @@ export function RestaurantCard({
     };
 
     fetchImage();
-  }, [restaurant.이름, restaurant.주소, restaurant.카테고리, cacheKey]);
+  }, [restaurant.이름, restaurant.주소, restaurant.카테고리, restaurant.빌딩, cacheKey]);
 
   // 휴업/폐업 식당은 렌더링하지 않음
   if (isClosed) {
@@ -148,10 +163,10 @@ export function RestaurantCard({
             <MapPin className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">{restaurant.지역} · {restaurant.주소.split(' ').slice(-1)[0]}</span>
           </p>
-          {restaurant.빌딩 && (
+          {buildingName && (
             <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
               <Building2 className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">{restaurant.빌딩}</span>
+              <span className="truncate">{buildingName}</span>
             </p>
           )}
         </CardContent>
@@ -204,10 +219,10 @@ export function RestaurantCard({
               <Badge variant="secondary" className="text-xs bg-accent/20 text-accent-foreground">
                 {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
               </Badge>
-              {restaurant.빌딩 && (
+              {buildingName && (
                 <Badge variant="outline" className="text-xs text-blue-600 border-blue-200 bg-blue-50">
                   <Building2 className="h-3 w-3 mr-1" />
-                  {restaurant.빌딩}
+                  {buildingName}
                 </Badge>
               )}
               {restaurant.리뷰수 && (
