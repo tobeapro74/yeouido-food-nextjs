@@ -51,8 +51,10 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
       // n*60 ≈ 270 + 90 - normalizedRotation = 360 - normalizedRotation
       // n = (360 - normalizedRotation) / 60
       //
-      // 추가 오프셋 +60도 필요 (CSS 렌더링 특성상)
-      const resultIndex = Math.floor((360 - normalizedRotation + 60 + 360) % 360 / sectionAngle) % items.length;
+      // 실험 데이터: 동남아(index 4, rotate 150deg)가 12시에 있을 때 normalizedRotation=219
+      // index 4가 나오려면: (360 - 219 + X) / 60 >= 4 → X >= 99
+      // +100도 오프셋 사용
+      const resultIndex = Math.floor((360 - normalizedRotation + 100 + 360) % 360 / sectionAngle) % items.length;
 
       console.log("=== 룰렛 디버그 ===");
       console.log("normalizedRotation:", normalizedRotation);
