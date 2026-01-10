@@ -23,21 +23,12 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     const resultIndex = Math.floor(Math.random() * items.length);
     resultRef.current = items[resultIndex].id;
 
-    // 목표: resultIndex 섹션의 중앙이 포인터(상단, 12시) 아래에 오도록 회전
-    //
-    // 휠의 현재 상태에서 섹션 n이 가리키는 CSS transform은 rotate(n * 60deg)
-    // 예: 동남아(index 4) = rotate(240deg)
-    //
-    // 포인터는 상단(12시)에 고정되어 있고, 휠이 회전함
-    // 휠이 X도 회전하면, 원래 0도에 있던 것이 X도 위치로 이동
-    // 즉, 상단(0도)에는 원래 (360-X)도에 있던 섹션이 옴
-    //
-    // 섹션 n의 중앙 각도 = n * sectionAngle + sectionAngle/2
-    // 이 섹션이 상단에 오려면, 휠을 (섹션 중앙 각도)만큼 회전시키면 됨
-    // 왜냐하면 rotate(X)는 시계방향 회전이고,
-    // X만큼 회전하면 원래 X 위치에 있던 것이 상단(0도)으로 옴
+    // 실제 테스트 결과, 포인터가 가리키는 섹션과 계산된 인덱스가 1칸 차이남
+    // 중식(index 2, 120도)이 포인터에 있을 때 양식(index 1)이 출력됨
+    // 따라서 실제 회전 시 +1 오프셋 적용 (다음 섹션이 포인터에 오도록)
+    const adjustedIndex = (resultIndex + 1) % items.length;
 
-    const sectionCenter = resultIndex * sectionAngle + sectionAngle / 2;
+    const sectionCenter = adjustedIndex * sectionAngle + sectionAngle / 2;
     const targetRotation = sectionCenter;
 
     // 최소 5바퀴 + 목표 위치
