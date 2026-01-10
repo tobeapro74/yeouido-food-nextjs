@@ -43,16 +43,17 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
       // 섹션 n은 n*60 ~ (n+1)*60 범위를 차지
       // (360 - normalizedRotation)이 어느 섹션 범위에 있는지 확인
 
-      // CSS origin-bottom-right로 인해 섹션이 3시 방향(90도)에서 시작
-      // 포인터는 12시 방향(0도)에 있으므로 -90도 오프셋 필요
+      // 섹션 렌더링: index * 60도로 회전, origin-bottom-right 사용
+      // 섹션 0의 중심은 약 30도(12시~2시 사이)에 위치
+      // 포인터(12시=0도)가 가리키는 섹션을 찾으려면 +30도 오프셋 필요
       const pointerAngle = (360 - normalizedRotation + 360) % 360;
-      const adjustedAngle = (pointerAngle - 90 + 360) % 360;
+      const adjustedAngle = (pointerAngle + 30) % 360;
       const resultIndex = Math.floor(adjustedAngle / sectionAngle) % items.length;
 
       console.log("=== 룰렛 디버그 ===");
       console.log("normalizedRotation:", normalizedRotation);
       console.log("pointerAngle:", pointerAngle);
-      console.log("adjustedAngle (with -90° offset):", adjustedAngle);
+      console.log("adjustedAngle (with +30° offset):", adjustedAngle);
       console.log("resultIndex:", resultIndex);
       console.log("result:", items[resultIndex].id);
 
