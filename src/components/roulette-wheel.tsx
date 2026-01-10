@@ -43,28 +43,17 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
       // 섹션 n은 n*60 ~ (n+1)*60 범위를 차지
       // (360 - normalizedRotation)이 어느 섹션 범위에 있는지 확인
 
-      // 섹션 렌더링 분석:
-      // - 섹션은 w-1/2 h-1/2 (왼쪽 상단 1/4)에 origin-bottom-right로 회전
-      // - rotate(0deg) 섹션은 10시~12시 방향 (12시 기준 -30도 ~ +30도가 아님)
-      // - 포인터는 12시 방향
+      // 12시 포인터가 가리키는 섹션 계산:
+      // - 섹션 n의 원래 CSS rotate = n * 60도
+      // - 휠이 normalizedRotation 회전 후, 섹션 n의 최종 위치 = n*60 + normalizedRotation
+      // - 12시 = CSS 360도 (또는 0도) 위치
+      // - 12시에 있는 섹션: n*60 + normalizedRotation ≈ 360 (mod 360)
+      // - 따라서: n*60 ≈ 360 - normalizedRotation (mod 360)
+      // - n = (360 - normalizedRotation) / 60
       //
-      // 휠이 시계방향으로 회전하면:
-      // - normalizedRotation도 만큼 회전 후
-      // - 원래 (360 - normalizedRotation)도 위치에 있던 섹션이 12시로 옴
-      //
-      // 하지만 섹션 0은 rotate(0)으로 10시~12시에 있고,
-      // 섹션의 "중심"은 rotate값 + 30도 위치
-      // 따라서 12시 포인터가 가리키는 섹션을 찾으려면:
-      // - 12시 = CSS 좌표로 -60도 (또는 300도) 정도에 해당
-
-      // 실험적으로 도출: 12시에 있는 섹션 찾기
-      // 동남아(index 4)가 rotate(240)일 때 12시에 있음
-      // 240 + 60 = 300, 300/60 = 5... 아니면
-      // (360 - 240 + 330) % 360 = 90, 90/60 = 1.5 → 아님
-      //
-      // 단순하게: 화면에 보이는 섹션의 rotate 값을 직접 사용
-      // 12시에 있는 섹션 = (360 - normalizedRotation + 300) % 360 / 60
-      const pointerAngle = (360 - normalizedRotation + 300 + 360) % 360;
+      // 하지만 CSS origin-bottom-right 때문에 섹션이 약간 시계방향으로 치우침
+      // 실험 결과: +14도 오프셋 필요 (섹션이 12시 기준 왼쪽으로 약간 치우쳐 있음)
+      const pointerAngle = (360 - normalizedRotation + 14 + 360) % 360;
       const resultIndex = Math.floor(pointerAngle / sectionAngle) % items.length;
 
       console.log("=== 룰렛 디버그 ===");
