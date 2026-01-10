@@ -1,0 +1,113 @@
+---
+description: 여의도 한끼 - 여의도 직장인 맛집 추천 앱 프로젝트 분석
+globs:
+  - "src/**/*.tsx"
+  - "src/**/*.ts"
+  - "src/data/*.ts"
+alwaysApply: true
+---
+
+# 여의도 한끼 프로젝트 개요
+
+## 프로젝트 정보
+
+- **이름**: 여의도 한끼
+- **URL**: https://yeouido-food.vercel.app
+- **GitHub**: https://github.com/tobeapro74/yeouido-food-nextjs
+- **기술 스택**: Next.js 16, React 19, TypeScript, Tailwind CSS, Turso, Cloudinary
+
+## 핵심 파일 구조
+
+### 메인 페이지
+- `src/app/page.tsx` - 메인 SPA 페이지 (홈, 리스트, 상세, 추천 뷰 관리)
+
+### 데이터
+- `src/data/yeouido-food.ts` - 180+ 식당 정적 데이터
+  - 카테고리: 한식, 양식, 중식, 일식, 동남아식
+  - 지역: 서여의도, 동여의도
+  - 빌딩: IFC, 더현대, 미원빌딩, 홍우빌딩 등 20+ 곳
+
+### 주요 컴포넌트
+- `src/components/restaurant-card.tsx` - 맛집 카드 (Google Places API 연동)
+- `src/components/restaurant-detail.tsx` - 맛집 상세 페이지
+- `src/components/recommendation-view.tsx` - 한끼추천 (룰렛, 취향설정)
+- `src/components/review-modal.tsx` - 리뷰 작성 (이미지 리사이즈)
+- `src/components/building-sheet.tsx` - 빌딩 선택 (지역별 탭)
+
+### API 라우트
+- `src/app/api/auth/*` - 인증 (로그인, 회원가입, 세션)
+- `src/app/api/reviews/*` - 리뷰 CRUD
+- `src/app/api/place-photo/` - Google Places 사진/영업상태
+- `src/app/api/upload/` - Cloudinary 이미지 업로드
+
+### 데이터베이스
+- `src/lib/db.ts` - Turso (libSQL) 연결
+
+## 주요 함수
+
+### 데이터 조회
+```typescript
+getPopularRestaurants()      // 카테고리별 인기 맛집 (5개)
+getRestaurantsByCategory()   // 카테고리별 필터
+getRestaurantsByRegion()     // 지역별 필터
+getRestaurantsByBuilding()   // 빌딩별 필터
+getAllRestaurants()          // 전체 식당
+```
+
+### 이미지 처리
+```typescript
+resizeImage(file, maxSize, quality)  // iOS Safari 호환 리사이즈
+```
+
+## 해결된 주요 이슈
+
+1. **iOS Safari 이미지 업로드** - URL.createObjectURL 사용
+2. **인기 맛집 중식 미표시** - 폐업 식당 데이터 정리
+3. **빌딩 시트 스크롤** - 높이 계산 및 패딩 조정
+
+## 코딩 가이드라인
+
+### 식당 추가
+```typescript
+{
+  이름: "식당명",
+  주소: "서울 영등포구 ...",
+  특징: "특징 설명",
+  지역: "동여의도" | "서여의도",
+  카테고리: "한식" | "양식" | "중식" | "일식" | "동남아식",
+  빌딩: "빌딩명",  // 선택
+  평점: 4.0,
+  리뷰수: 500,
+  영업시간: "11:00-21:00",
+  가격대: "10,000-20,000원"
+}
+```
+
+### 빌딩 추가
+```typescript
+{ id: "빌딩명", name: "빌딩명", icon: "🏢", 지역: "동여의도" | "서여의도" }
+```
+
+### 배포
+```bash
+git add -A && git commit -m "feat: 내용" && git push origin main
+npx vercel --prod --force  # 강제 재배포
+```
+
+## 환경 변수
+
+```
+TURSO_DATABASE_URL
+TURSO_AUTH_TOKEN
+CLOUDINARY_CLOUD_NAME
+CLOUDINARY_API_KEY
+CLOUDINARY_API_SECRET
+GOOGLE_PLACES_API_KEY
+```
+
+## 참고 문서
+
+- [아키텍처](../docs/architecture.md)
+- [트러블슈팅](../docs/troubleshooting.md)
+- [PRD](./prd-instruction.md)
+- [실행 계획](./prd-execution.md)
