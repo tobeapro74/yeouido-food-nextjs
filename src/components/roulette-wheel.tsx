@@ -17,39 +17,47 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
 
     setIsSpinning(true);
 
-    // 각 섹션의 각도
-    const sectionAngle = 360 / items.length;
+    const sectionAngle = 360 / items.length; // 60도
 
     // 먼저 결과를 랜덤으로 선택
     const resultIndex = Math.floor(Math.random() * items.length);
     resultRef.current = items[resultIndex].id;
 
-    // 해당 섹션이 포인터(상단) 아래에 오도록 회전 각도 계산
-    // 섹션은 origin-bottom-right로 배치되어 있음
-    // 섹션 0은 0도에서 시작, 시계방향으로 진행
-    // 포인터는 상단(270도 위치, 12시 방향)에 있음
-    // 섹션 중앙이 포인터 아래에 오려면:
-    // - 섹션 n의 중앙 각도 = n * sectionAngle + sectionAngle/2
-    // - 이 중앙이 270도(상단)에 오도록 회전
-    const sectionCenter = resultIndex * sectionAngle + sectionAngle / 2;
-    // 섹션 중앙이 270도 위치에 오도록 하려면, (270 - sectionCenter) 만큼 회전된 상태여야 함
-    // 하지만 CSS에서 rotate는 시계방향이 양수이므로,
-    // 최종 위치 = 270 - sectionCenter (이 값이 양수가 되도록 360 더함)
-    const targetPosition = (270 - sectionCenter + 360) % 360;
+    // 섹션 레이아웃 분석:
+    // - 각 섹션은 w-1/2 h-1/2 (좌상단 1/4 영역)
+    // - origin-bottom-right (휠 중심 기준 회전)
+    // - rotate(0)일 때 섹션 0은 12시~2시 방향 차지 (좌상단 → 우상단으로)
+    // - 섹션 중앙은 약 1시 방향 (30도 위치, 12시 기준으로 시계방향)
+    //
+    // rotation=0일 때:
+    // - 섹션 0(한식): 12시~2시 (중앙: 1시 = 30도)
+    // - 섹션 1(양식): 2시~4시 (중앙: 3시 = 90도)
+    // - 섹션 2(중식): 4시~6시 (중앙: 5시 = 150도)
+    // - 섹션 3(일식): 6시~8시 (중앙: 7시 = 210도)
+    // - 섹션 4(동남아): 8시~10시 (중앙: 9시 = 270도)
+    // - 섹션 5(랜덤): 10시~12시 (중앙: 11시 = 330도)
+    //
+    // 포인터는 12시(0도) 방향에 있음
+    // 섹션 n의 중앙을 12시(0도)로 가져오려면:
+    // - 섹션 n의 초기 중앙 위치 = n * 60 + 30
+    // - 이를 0도로 이동시키려면 -(n * 60 + 30) 만큼 회전 필요
+    // - CSS rotate는 시계방향이 양수이므로, 360 - (n * 60 + 30)
 
-    // 최소 5바퀴 + 목표 위치로 회전
+    const sectionCenterInitial = resultIndex * sectionAngle + sectionAngle / 2;
+    const targetRotation = (360 - sectionCenterInitial + 360) % 360;
+
+    // 최소 5바퀴 + 목표 위치
     const spins = 5;
     const currentNormalized = rotation % 360;
-    // 현재 위치에서 목표 위치까지 추가로 회전해야 할 각도
-    let additionalRotation = targetPosition - currentNormalized;
-    if (additionalRotation < 0) additionalRotation += 360;
+
+    let additionalRotation = targetRotation - currentNormalized;
+    if (additionalRotation <= 0) additionalRotation += 360;
 
     const totalRotation = 360 * spins + additionalRotation;
     const newRotation = rotation + totalRotation;
 
     setRotation(newRotation);
 
-    // 회전 완료 후 미리 선택한 결과 전달
     setTimeout(() => {
       setIsSpinning(false);
       if (resultRef.current) {
