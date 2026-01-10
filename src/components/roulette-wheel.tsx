@@ -23,13 +23,23 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     const resultIndex = Math.floor(Math.random() * items.length);
     resultRef.current = items[resultIndex].id;
 
-    // 실제 테스트 결과, 포인터가 가리키는 섹션과 계산된 인덱스가 1칸 차이남
-    // 중식(index 2, 120도)이 포인터에 있을 때 양식(index 1)이 출력됨
-    // 따라서 실제 회전 시 +1 오프셋 적용 (다음 섹션이 포인터에 오도록)
-    const adjustedIndex = (resultIndex + 1) % items.length;
+    // 휠은 시계방향으로 회전 (CSS rotate 양수 = 시계방향)
+    // 시계방향 회전 시, 포인터(상단 고정)에는 반시계방향의 섹션이 옴
+    //
+    // 섹션 n을 포인터에 가져오려면:
+    // - 섹션 n의 시작 각도 = n * sectionAngle
+    // - 섹션 n의 중앙 = n * sectionAngle + sectionAngle/2
+    // - 휠을 -(섹션 중앙)만큼 회전 = 360 - 섹션 중앙
+    //
+    // 하지만 origin-bottom-right 배치로 인해 섹션 0이 12시~2시에 있음
+    // 포인터가 정확히 12시에 있으므로, 섹션 중앙(1시 = 30도)을 12시로 가져와야 함
+    // 즉, -30도 회전 필요 (또는 330도)
+    //
+    // 따라서 섹션 n 중앙을 12시로 가져오려면:
+    // targetRotation = -(n * 60 + 30) = 360 - (n * 60 + 30) = 330 - n * 60
 
-    const sectionCenter = adjustedIndex * sectionAngle + sectionAngle / 2;
-    const targetRotation = sectionCenter;
+    const sectionCenter = resultIndex * sectionAngle + sectionAngle / 2;
+    const targetRotation = (360 - sectionCenter + 360) % 360;
 
     // 최소 5바퀴 + 목표 위치
     const spins = 5;
