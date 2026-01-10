@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+// Places API (New) 전용 키 - 테스트용
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_NEW_KEY || process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
 // Places API (New) - Text Search 테스트
 export async function GET(request: NextRequest) {
