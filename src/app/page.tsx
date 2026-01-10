@@ -280,14 +280,13 @@ export default function Home() {
               </button>
             )}
           </div>
-          {/* 검색 바 */}
-          <div className="px-4 pb-3">
-            <SearchBar onSelect={handleRestaurantSelect} />
-          </div>
         </header>
 
         {/* 메인 콘텐츠 */}
         <div className="p-4 space-y-4">
+          {/* 검색 바 */}
+          <SearchBar onSelect={handleRestaurantSelect} />
+
           {/* 퀵 카테고리 */}
           <section className="bg-card rounded-xl p-4 shadow-sm">
             <h2 className="text-base font-semibold mb-3 text-foreground">카테고리</h2>
