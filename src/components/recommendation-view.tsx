@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Shuffle, MapPin, Star, Clock, ChevronRight } from "lucide-react";
+import { Shuffle, MapPin, Star, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Restaurant, getAllRestaurants } from "@/data/yeouido-food";
+import { RouletteWheel } from "@/components/roulette-wheel";
 
 interface RecommendationViewProps {
   onSelectRestaurant: (restaurant: Restaurant) => void;
@@ -41,20 +42,6 @@ function getTimeBasedTags(): { tags: string[]; message: string } {
   }
 }
 
-// 요일별 추가 가중치
-function getDayBasedBonus(): string[] {
-  const day = new Date().getDay();
-
-  if (day === 5) { // 금요일
-    return ["회식", "술안주", "고기"];
-  } else if (day === 0 || day === 6) { // 주말
-    return ["브런치", "특별한", "데이트"];
-  } else if (day === 1) { // 월요일
-    return ["든든한", "국물", "힘나는"];
-  }
-  return [];
-}
-
 // 기분 옵션
 const moodOptions = [
   { id: "tired", emoji: "😫", label: "피곤해", tags: ["국밥", "설렁탕", "삼계탕", "곰탕"], categories: ["한식"] },
@@ -65,27 +52,45 @@ const moodOptions = [
   { id: "meat", emoji: "🥩", label: "고기고기", tags: ["삼겹살", "갈비", "한우", "불고기"], categories: ["한식"] },
 ];
 
+// 룰렛 아이템 (카테고리 기반)
+const rouletteItems = [
+  { id: "한식", label: "🍚 한식", color: "#ef4444" },
+  { id: "양식", label: "🍝 양식", color: "#f97316" },
+  { id: "중식", label: "🥟 중식", color: "#eab308" },
+  { id: "일식", label: "🍣 일식", color: "#22c55e" },
+  { id: "동남아식", label: "🍜 동남아", color: "#3b82f6" },
+  { id: "random", label: "🎲 랜덤", color: "#8b5cf6" },
+];
+
+type TabMode = "mood" | "roulette";
+
 export function RecommendationView({ onSelectRestaurant }: RecommendationViewProps) {
+  const [tabMode, setTabMode] = useState<TabMode>("mood");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [recommendedRestaurant, setRecommendedRestaurant] = useState<Restaurant | null>(null);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showResult, setShowResult] = useState(false);
+  const [rouletteResult, setRouletteResult] = useState<string | null>(null);
 
   const allRestaurants = useMemo(() => getAllRestaurants(), []);
   const timeContext = useMemo(() => getTimeBasedTags(), []);
 
   // 추천 로직
-  const getRecommendation = (mood?: string) => {
+  const getRecommendation = (mood?: string, category?: string) => {
     let candidates = [...allRestaurants];
 
     // 평점 3.5 이상 필터
     candidates = candidates.filter(r => (r.평점 || 0) >= 3.5);
 
+    // 카테고리 필터 (룰렛 결과)
+    if (category && category !== "random") {
+      candidates = candidates.filter(r => r.카테고리 === category);
+    }
+
     // 기분 기반 필터링
     if (mood) {
       const moodData = moodOptions.find(m => m.id === mood);
       if (moodData) {
-        // 카테고리 필터
         const categoryFiltered = candidates.filter(r =>
           moodData.categories.includes(r.카테고리)
         );
@@ -93,7 +98,6 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
           candidates = categoryFiltered;
         }
 
-        // 특징에 태그 포함된 것 우선
         const tagFiltered = candidates.filter(r =>
           moodData.tags.some(tag => r.특징.includes(tag) || r.이름.includes(tag))
         );
@@ -109,19 +113,17 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
       return candidates[randomIndex];
     }
 
-    // 후보가 없으면 전체에서 랜덤
     const randomIndex = Math.floor(Math.random() * allRestaurants.length);
     return allRestaurants[randomIndex];
   };
 
   // 추천 실행
-  const handleRecommend = (mood?: string) => {
+  const handleRecommend = (mood?: string, category?: string) => {
     setIsSpinning(true);
     setShowResult(false);
 
-    // 애니메이션 효과
     setTimeout(() => {
-      const restaurant = getRecommendation(mood);
+      const restaurant = getRecommendation(mood, category);
       setRecommendedRestaurant(restaurant);
       setIsSpinning(false);
       setShowResult(true);
@@ -136,7 +138,17 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
 
   // 다시 추천
   const handleReshuffle = () => {
-    handleRecommend(selectedMood || undefined);
+    if (tabMode === "roulette" && rouletteResult) {
+      handleRecommend(undefined, rouletteResult);
+    } else {
+      handleRecommend(selectedMood || undefined);
+    }
+  };
+
+  // 룰렛 결과 처리
+  const handleRouletteResult = (categoryId: string) => {
+    setRouletteResult(categoryId);
+    handleRecommend(undefined, categoryId);
   };
 
   // 초기 추천
@@ -153,26 +165,59 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
       </div>
 
       <div className="px-4 py-4 space-y-4">
-        {/* 기분 선택 */}
-        <div className="bg-white rounded-xl p-4 shadow-sm">
-          <h3 className="text-sm font-semibold text-gray-600 mb-3">오늘 기분은?</h3>
-          <div className="grid grid-cols-3 gap-2">
-            {moodOptions.map((mood) => (
-              <button
-                key={mood.id}
-                onClick={() => handleMoodSelect(mood.id)}
-                className={`flex flex-col items-center p-3 rounded-xl transition-all ${
-                  selectedMood === mood.id
-                    ? "bg-orange-100 border-2 border-orange-400 scale-105"
-                    : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
-                }`}
-              >
-                <span className="text-2xl mb-1">{mood.emoji}</span>
-                <span className="text-xs font-medium text-gray-700">{mood.label}</span>
-              </button>
-            ))}
-          </div>
+        {/* 탭 선택 */}
+        <div className="flex gap-2 p-1 bg-white rounded-xl shadow-sm">
+          <button
+            onClick={() => setTabMode("mood")}
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+              tabMode === "mood"
+                ? "bg-orange-500 text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            😊 기분별 추천
+          </button>
+          <button
+            onClick={() => setTabMode("roulette")}
+            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-medium transition-all ${
+              tabMode === "roulette"
+                ? "bg-orange-500 text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            🎡 룰렛 돌리기
+          </button>
         </div>
+
+        {/* 기분별 추천 */}
+        {tabMode === "mood" && (
+          <div className="bg-white rounded-xl p-4 shadow-sm">
+            <h3 className="text-sm font-semibold text-gray-600 mb-3">오늘 기분은?</h3>
+            <div className="grid grid-cols-3 gap-2">
+              {moodOptions.map((mood) => (
+                <button
+                  key={mood.id}
+                  onClick={() => handleMoodSelect(mood.id)}
+                  className={`flex flex-col items-center p-3 rounded-xl transition-all ${
+                    selectedMood === mood.id
+                      ? "bg-orange-100 border-2 border-orange-400 scale-105"
+                      : "bg-gray-50 border-2 border-transparent hover:bg-gray-100"
+                  }`}
+                >
+                  <span className="text-2xl mb-1">{mood.emoji}</span>
+                  <span className="text-xs font-medium text-gray-700">{mood.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 룰렛 */}
+        {tabMode === "roulette" && (
+          <div className="bg-white rounded-xl p-6 shadow-sm">
+            <RouletteWheel items={rouletteItems} onResult={handleRouletteResult} />
+          </div>
+        )}
 
         {/* 추천 결과 카드 */}
         <div className="bg-white rounded-xl shadow-sm overflow-hidden">
@@ -186,7 +231,9 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
               {/* 추천 이유 */}
               <div className="bg-orange-50 px-4 py-2 text-center">
                 <span className="text-xs text-orange-600 font-medium">
-                  {selectedMood
+                  {tabMode === "roulette" && rouletteResult
+                    ? `🎡 ${rouletteResult === "random" ? "랜덤" : rouletteResult} 카테고리에서 추천!`
+                    : selectedMood
                     ? `${moodOptions.find(m => m.id === selectedMood)?.emoji} ${moodOptions.find(m => m.id === selectedMood)?.label} 기분에 딱!`
                     : "🎯 오늘의 추천"}
                 </span>
@@ -239,28 +286,30 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
         </div>
 
         {/* 액션 버튼 */}
-        <div className="flex gap-3">
-          <Button
-            onClick={handleReshuffle}
-            variant="outline"
-            className="flex-1 h-12 text-base border-orange-200 text-orange-600 hover:bg-orange-50"
-            disabled={isSpinning}
-          >
-            <Shuffle className="w-5 h-5 mr-2" />
-            다시 추천
-          </Button>
-          <Button
-            onClick={() => recommendedRestaurant && onSelectRestaurant(recommendedRestaurant)}
-            className="flex-1 h-12 text-base bg-orange-500 hover:bg-orange-600"
-            disabled={!recommendedRestaurant || isSpinning}
-          >
-            여기로 갈래! 🍽️
-          </Button>
-        </div>
+        {showResult && (
+          <div className="flex gap-3">
+            <Button
+              onClick={handleReshuffle}
+              variant="outline"
+              className="flex-1 h-12 text-base border-orange-200 text-orange-600 hover:bg-orange-50"
+              disabled={isSpinning}
+            >
+              <Shuffle className="w-5 h-5 mr-2" />
+              다시 추천
+            </Button>
+            <Button
+              onClick={() => recommendedRestaurant && onSelectRestaurant(recommendedRestaurant)}
+              className="flex-1 h-12 text-base bg-orange-500 hover:bg-orange-600"
+              disabled={!recommendedRestaurant || isSpinning}
+            >
+              여기로 갈래! 🍽️
+            </Button>
+          </div>
+        )}
 
         {/* 팁 */}
         <div className="text-center text-xs text-gray-400 mt-4">
-          💡 선택이 어려우면 다시 추천을 눌러보세요!
+          💡 선택이 어려우면 {tabMode === "roulette" ? "룰렛을 다시 돌려보세요!" : "다시 추천을 눌러보세요!"}
         </div>
       </div>
     </div>
