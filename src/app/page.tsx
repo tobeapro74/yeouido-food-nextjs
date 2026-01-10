@@ -156,6 +156,27 @@ export default function Home() {
       <>
         <RestaurantDetail restaurant={selectedRestaurant} onBack={handleBack} />
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        <CategorySheet
+          open={categorySheetOpen}
+          onOpenChange={setCategorySheetOpen}
+          title="카테고리 선택"
+          options={categories}
+          onSelect={handleCategorySelect}
+        />
+        <CategorySheet
+          open={regionSheetOpen}
+          onOpenChange={setRegionSheetOpen}
+          title="지역 선택"
+          options={regions}
+          onSelect={handleRegionSelect}
+        />
+        <CategorySheet
+          open={buildingSheetOpen}
+          onOpenChange={setBuildingSheetOpen}
+          title="빌딩 선택"
+          options={buildings}
+          onSelect={handleBuildingSelect}
+        />
       </>
     );
   }
