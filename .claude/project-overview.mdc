@@ -28,6 +28,7 @@ alwaysApply: true
   - 빌딩: IFC, 더현대, 미원빌딩, 홍우빌딩 등 20+ 곳
 
 ### 주요 컴포넌트
+- `src/components/search-bar.tsx` - 통합 검색 (식당, 빌딩, 음식, 도로명)
 - `src/components/restaurant-card.tsx` - 맛집 카드 (Google Places API 연동)
 - `src/components/restaurant-detail.tsx` - 맛집 상세 페이지
 - `src/components/recommendation-view.tsx` - 한끼추천 (룰렛, 취향설정)
@@ -52,6 +53,7 @@ getRestaurantsByCategory()   // 카테고리별 필터
 getRestaurantsByRegion()     // 지역별 필터
 getRestaurantsByBuilding()   // 빌딩별 필터
 getAllRestaurants()          // 전체 식당
+searchRestaurants(query)     // 통합 검색 (이름, 빌딩, 음식, 주소)
 ```
 
 ### 이미지 처리
