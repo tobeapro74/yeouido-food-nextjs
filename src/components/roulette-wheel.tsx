@@ -32,38 +32,29 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     setTimeout(() => {
       const normalizedRotation = finalRotationRef.current % 360;
 
-      // 포인터는 화면 상단(12시 방향)에 고정
-      // CSS 좌표계에서 12시 = -90도 = 270도
-      const pointerPosition = 270;
+      // 포인터는 상단(12시)에 고정
+      // 휠이 시계방향으로 회전하면, 포인터 관점에서는 반시계방향으로 섹션이 지나감
+      //
+      // 휠이 normalizedRotation 만큼 회전한 상태에서
+      // 포인터(상단)가 가리키는 섹션을 찾으려면:
+      // - 원래 상단에 있던 각도 0의 위치가 이제 normalizedRotation 위치로 이동
+      // - 따라서 상단(0도 위치)에는 원래 (360 - normalizedRotation)도에 있던 부분이 옴
+      //
+      // 섹션 n은 n*60 ~ (n+1)*60 범위를 차지
+      // (360 - normalizedRotation)이 어느 섹션 범위에 있는지 확인
 
-      // 각 섹션을 순회하며 포인터가 해당 섹션 범위 안에 있는지 확인
-      let resultIndex = 0;
+      // CSS origin-bottom-right로 인해 섹션이 3시 방향(90도)에서 시작
+      // 포인터는 12시 방향(0도)에 있으므로 -90도 오프셋 필요
+      const pointerAngle = (360 - normalizedRotation + 360) % 360;
+      const adjustedAngle = (pointerAngle - 90 + 360) % 360;
+      const resultIndex = Math.floor(adjustedAngle / sectionAngle) % items.length;
 
-      for (let i = 0; i < items.length; i++) {
-        // 섹션 i의 원래 시작 각도와 끝 각도
-        const sectionStart = i * sectionAngle;
-        const sectionEnd = (i + 1) * sectionAngle;
-
-        // 휠 회전 후 섹션의 현재 위치
-        const currentStart = (sectionStart + normalizedRotation) % 360;
-        const currentEnd = (sectionEnd + normalizedRotation) % 360;
-
-        // 포인터(270도)가 이 섹션 범위 안에 있는지 확인
-        let isInRange = false;
-
-        if (currentStart < currentEnd) {
-          // 일반적인 경우
-          isInRange = pointerPosition >= currentStart && pointerPosition < currentEnd;
-        } else {
-          // 360도를 넘어가는 경우 (예: 330~30)
-          isInRange = pointerPosition >= currentStart || pointerPosition < currentEnd;
-        }
-
-        if (isInRange) {
-          resultIndex = i;
-          break;
-        }
-      }
+      console.log("=== 룰렛 디버그 ===");
+      console.log("normalizedRotation:", normalizedRotation);
+      console.log("pointerAngle:", pointerAngle);
+      console.log("adjustedAngle (with -90° offset):", adjustedAngle);
+      console.log("resultIndex:", resultIndex);
+      console.log("result:", items[resultIndex].id);
 
       setIsSpinning(false);
       onResult(items[resultIndex].id);
