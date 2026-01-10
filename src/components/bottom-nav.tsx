@@ -1,8 +1,8 @@
 "use client";
 
-import { Home, Grid3X3, MapPin, Building2 } from "lucide-react";
+import { Home, Grid3X3, Building2, Dice5 } from "lucide-react";
 
-type TabType = "home" | "category" | "region" | "building";
+type TabType = "home" | "recommend" | "category" | "region" | "building";
 
 interface BottomNavProps {
   activeTab: TabType;
@@ -11,8 +11,8 @@ interface BottomNavProps {
 
 const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
   { id: "home", label: "홈", icon: Home },
+  { id: "recommend", label: "한끼추천", icon: Dice5 },
   { id: "category", label: "카테고리", icon: Grid3X3 },
-  { id: "region", label: "지역", icon: MapPin },
   { id: "building", label: "빌딩", icon: Building2 },
 ];
 
@@ -23,13 +23,14 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
+          const isRecommend = tab.id === "recommend";
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
                 isActive
-                  ? "text-primary"
+                  ? isRecommend ? "text-orange-500" : "text-primary"
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >

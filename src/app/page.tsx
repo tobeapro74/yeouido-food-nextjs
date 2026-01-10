@@ -11,6 +11,7 @@ import { RestaurantDetail } from "@/components/restaurant-detail";
 import { CategorySheet } from "@/components/category-sheet";
 import { BuildingSheet } from "@/components/building-sheet";
 import { AuthModal } from "@/components/auth-modal";
+import { RecommendationView } from "@/components/recommendation-view";
 import {
   Restaurant,
   categories,
@@ -22,8 +23,8 @@ import {
   getPopularRestaurants,
 } from "@/data/yeouido-food";
 
-type View = "home" | "list" | "detail";
-type TabType = "home" | "category" | "region" | "building";
+type View = "home" | "list" | "detail" | "recommend";
+type TabType = "home" | "recommend" | "category" | "region" | "building";
 
 interface UserInfo {
   id: number;
@@ -92,6 +93,9 @@ export default function Home() {
     if (tab === "home") {
       setCurrentView("home");
       setActiveTab("home");
+    } else if (tab === "recommend") {
+      setCurrentView("recommend");
+      setActiveTab("recommend");
     } else if (tab === "category") {
       setCategorySheetOpen(true);
     } else if (tab === "region") {
@@ -156,6 +160,35 @@ export default function Home() {
     return (
       <>
         <RestaurantDetail restaurant={selectedRestaurant} onBack={handleBack} />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        <CategorySheet
+          open={categorySheetOpen}
+          onOpenChange={setCategorySheetOpen}
+          title="카테고리 선택"
+          options={categories}
+          onSelect={handleCategorySelect}
+        />
+        <CategorySheet
+          open={regionSheetOpen}
+          onOpenChange={setRegionSheetOpen}
+          title="지역 선택"
+          options={regions}
+          onSelect={handleRegionSelect}
+        />
+        <BuildingSheet
+          open={buildingSheetOpen}
+          onOpenChange={setBuildingSheetOpen}
+          options={buildings}
+          onSelect={handleBuildingSelect}
+        />
+      </>
+    );
+  }
+
+  if (currentView === "recommend") {
+    return (
+      <>
+        <RecommendationView onSelectRestaurant={handleRestaurantSelect} />
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         <CategorySheet
           open={categorySheetOpen}
