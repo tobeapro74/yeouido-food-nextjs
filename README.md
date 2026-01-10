@@ -1,36 +1,61 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 여의도한끼
 
-## Getting Started
+여의도 직장인을 위한 맛집 추천 웹 애플리케이션
 
-First, run the development server:
+## 주요 기능
+
+- **맛집 검색** - 식당명, 빌딩, 음식, 도로명 통합 검색
+- **카테고리 필터** - 한식, 양식, 중식, 일식, 동남아식
+- **지역 필터** - 서여의도 / 동여의도
+- **빌딩별 맛집** - IFC, 더현대, 미원빌딩 등
+- **한끼추천** - 룰렛 돌리기, 취향 기반 추천
+- **리뷰 시스템** - 별점, 사진 첨부, 식사 유형 선택
+
+## 기술 스택
+
+- **Frontend**: Next.js 16, React 19, TypeScript, Tailwind CSS
+- **Backend**: Next.js API Routes, Turso (SQLite)
+- **External**: Google Places API, Cloudinary
+- **Deploy**: Vercel
+
+## 시작하기
 
 ```bash
+# 의존성 설치
+npm install
+
+# 개발 서버 실행
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[http://localhost:3000](http://localhost:3000)에서 확인
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 환경 변수
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```env
+TURSO_DATABASE_URL=
+TURSO_AUTH_TOKEN=
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+GOOGLE_PLACES_API_KEY=
+```
 
-## Learn More
+## 배포
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+# Vercel 배포
+npx vercel --prod
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# 캐시 무시 강제 배포
+npx vercel --prod --force
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 문서
 
-## Deploy on Vercel
+- [아키텍처](docs/architecture.md) - 프로젝트 구조 및 기술 스택
+- [트러블슈팅](docs/troubleshooting.md) - 문제 해결 가이드
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 라이선스
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

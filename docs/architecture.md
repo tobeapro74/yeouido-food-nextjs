@@ -25,6 +25,36 @@
 ### Deployment
 - **Vercel** - 호스팅 및 CI/CD
 
+## 앱 아이콘
+
+### 디자인 컨셉
+- **여의도 금융가 스카이라인** - 63빌딩, IFC 트윈타워 등 랜드마크 실루엣
+- **저녁 노을 그라데이션 배경** - 파란색 → 빨간색 그라데이션
+- **밥그릇과 젓가락** - 맛집 앱 아이덴티티
+- **"여의도한끼" 텍스트** - 앱 이름 표시
+
+### 아이콘 파일
+```
+public/
+├── icons/
+│   ├── icon.svg          # 원본 SVG (512x512)
+│   ├── icon-512.png      # PWA 아이콘 (512x512)
+│   └── icon-192.png      # PWA 아이콘 (192x192)
+├── apple-touch-icon.png  # iOS 홈화면 (180x180)
+└── favicon-32x32.png     # 브라우저 탭 (32x32)
+src/app/
+└── favicon.ico           # 레거시 브라우저용 (32x32)
+```
+
+### 아이콘 생성 방법
+```bash
+# SVG → PNG 변환 (rsvg-convert 필요)
+rsvg-convert -w 512 -h 512 icon.svg -o icon-512.png
+rsvg-convert -w 192 -h 192 icon.svg -o icon-192.png
+rsvg-convert -w 180 -h 180 icon.svg -o apple-touch-icon.png
+rsvg-convert -w 32 -h 32 icon.svg -o favicon-32x32.png
+```
+
 ## 디렉토리 구조
 
 ```
