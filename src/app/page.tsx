@@ -351,10 +351,9 @@ export default function Home() {
         options={regions}
         onSelect={handleRegionSelect}
       />
-      <CategorySheet
+      <BuildingSheet
         open={buildingSheetOpen}
         onOpenChange={setBuildingSheetOpen}
-        title="빌딩 선택"
         options={buildings}
         onSelect={handleBuildingSelect}
       />
