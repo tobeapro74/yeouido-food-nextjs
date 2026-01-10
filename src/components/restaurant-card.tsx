@@ -132,8 +132,8 @@ export function RestaurantCard({
             </p>
           )}
           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-            <MapPin className="h-3 w-3" />
-            <span className="truncate">{restaurant.지역}</span>
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{restaurant.지역} · {restaurant.주소.split(' ').slice(-1)[0]}</span>
           </p>
         </CardContent>
       </Card>
@@ -174,7 +174,7 @@ export function RestaurantCard({
             </div>
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
               <MapPin className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">{restaurant.지역}</span>
+              <span className="truncate">{restaurant.지역} · {restaurant.주소.split(' ').slice(-1)[0]}</span>
             </p>
             {restaurant.특징 && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
