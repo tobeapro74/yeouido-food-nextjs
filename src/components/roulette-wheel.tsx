@@ -44,16 +44,14 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
       // (360 - normalizedRotation)이 어느 섹션 범위에 있는지 확인
 
       // 섹션 렌더링: index * 60도로 회전, origin-bottom-right 사용
-      // 섹션 0의 중심은 약 30도(12시~2시 사이)에 위치
-      // 포인터(12시=0도)가 가리키는 섹션을 찾으려면 +30도 오프셋 필요
-      const pointerAngle = (360 - normalizedRotation + 360) % 360;
-      const adjustedAngle = (pointerAngle + 30) % 360;
-      const resultIndex = Math.floor(adjustedAngle / sectionAngle) % items.length;
+      // 섹션 0(한식)은 rotate(0deg)로 12시~2시 방향 차지
+      // 섹션의 CSS 시작각이 0도이므로, 포인터(12시)에서 섹션 시작점까지 오프셋 불필요
+      // normalizedRotation만으로 직접 계산
+      const resultIndex = Math.floor(normalizedRotation / sectionAngle) % items.length;
 
       console.log("=== 룰렛 디버그 ===");
       console.log("normalizedRotation:", normalizedRotation);
-      console.log("pointerAngle:", pointerAngle);
-      console.log("adjustedAngle (with +30° offset):", adjustedAngle);
+      console.log("sectionAngle:", sectionAngle);
       console.log("resultIndex:", resultIndex);
       console.log("result:", items[resultIndex].id);
 
