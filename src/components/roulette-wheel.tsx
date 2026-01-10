@@ -32,29 +32,38 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     setTimeout(() => {
       const normalizedRotation = finalRotationRef.current % 360;
 
-      // 섹션 렌더링: index n의 원래 각도 = n * 60 - 90
-      // 휠 회전 후 섹션의 최종 각도 = (n * 60 - 90 + normalizedRotation) % 360
+      // 각 섹션을 순회하며 12시 포인터 위치에 있는 섹션 찾기
+      // 섹션 n의 원래 시작각 = n * 60 - 90
+      // 휠 회전 후 섹션 n의 시작각 = (n * 60 - 90 + normalizedRotation) % 360
+      // 섹션 n의 범위 = 시작각 ~ 시작각 + 60
       //
-      // 12시 포인터가 가리키는 섹션을 찾으려면:
-      // 포인터는 CSS에서 상단(-90도 또는 270도)에 위치
-      // 하지만 origin-bottom-right로 인해 섹션은 왼쪽 상단에서 시작
-      //
-      // 실험적 접근: 화면에 보이는 섹션의 transform에서 역산
-      // 중식(index 2)이 rotate(30deg)로 12시에 보일 때:
-      // 원래 각도 = 2*60 - 90 = 30
-      // 휠 회전 = 0 (처음이라면)
-      // 하지만 30도는 12시(270도)가 아님
-      //
-      // CSS origin-bottom-right + w-1/2 h-1/2:
-      // 섹션이 실제로 12시에 있으려면 섹션의 rotate가 약 270도여야 함
-      // 섹션 n이 12시에 있으려면: (n*60 - 90 + normalizedRotation) % 360 ≈ 270
-      // n*60 ≈ 270 + 90 - normalizedRotation = 360 - normalizedRotation
-      // n = (360 - normalizedRotation) / 60
-      //
-      // 실험 데이터: 동남아(index 4, rotate 150deg)가 12시에 있을 때 normalizedRotation=219
-      // index 4가 나오려면: (360 - 219 + X) / 60 >= 4 → X >= 99
-      // +100도 오프셋 사용
-      const resultIndex = Math.floor((360 - normalizedRotation + 100 + 360) % 360 / sectionAngle) % items.length;
+      // CSS origin-bottom-right 특성상 12시 포인터가 가리키는 위치는
+      // 섹션의 시작각이 약 270도(또는 -90도) 근처일 때
+      // 실험 데이터: 동남아(index 4)가 12시일 때 normalizedRotation=219
+      // 동남아 시작각 = (4*60 - 90 + 219) % 360 = 9도
+      // 동남아 끝각 = 69도
+      // 따라서 포인터는 약 30도 위치 (섹션 중앙)
+      const pointerPosition = 30;
+
+      let resultIndex = 0;
+      for (let i = 0; i < items.length; i++) {
+        const startAngle = (i * sectionAngle - 90 + normalizedRotation + 360) % 360;
+        const endAngle = (startAngle + sectionAngle) % 360;
+
+        // 포인터가 이 섹션 범위 안에 있는지 확인
+        if (startAngle < endAngle) {
+          if (pointerPosition >= startAngle && pointerPosition < endAngle) {
+            resultIndex = i;
+            break;
+          }
+        } else {
+          // 360도를 넘어가는 경우 (예: 330~30)
+          if (pointerPosition >= startAngle || pointerPosition < endAngle) {
+            resultIndex = i;
+            break;
+          }
+        }
+      }
 
       console.log("=== 룰렛 디버그 ===");
       console.log("normalizedRotation:", normalizedRotation);
