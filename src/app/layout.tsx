@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "여의도 맛집",
-  description: "여의도 지역 맛집 정보 앱 - 서여의도, 동여의도 맛집 가이드",
+  title: "여의도 한끼",
+  description: "여의도 직장인 점심 가이드 - 서여의도, 동여의도 맛집 추천",
   manifest: "/manifest.json",
   icons: {
     icon: [
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "여의도 맛집",
+    title: "여의도 한끼",
   },
 };
 

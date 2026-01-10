@@ -1,7 +1,7 @@
 {
-  "name": "여의도 맛집",
-  "short_name": "여의도맛집",
-  "description": "여의도 지역 맛집 정보 앱",
+  "name": "여의도 한끼",
+  "short_name": "여의도한끼",
+  "description": "여의도 직장인 점심 가이드",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

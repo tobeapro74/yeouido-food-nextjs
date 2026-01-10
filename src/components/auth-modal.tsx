@@ -130,7 +130,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle className="text-center text-xl">여의도 맛집</DialogTitle>
+          <DialogTitle className="text-center text-xl">여의도 한끼</DialogTitle>
         </DialogHeader>
 
         <Tabs value={tab} onValueChange={(v) => { setTab(v as "login" | "register"); setError(""); }}>

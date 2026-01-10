@@ -223,7 +223,7 @@ export default function Home() {
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="w-10" />
             <h1 className="text-xl font-bold text-white text-center">
-              여의도 맛집
+              여의도 한끼
             </h1>
             {user ? (
               <button
