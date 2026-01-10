@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, DollarSign } from "lucide-react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -138,7 +138,7 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
           {/* 가격대 */}
           {restaurant.가격대 && (
             <div className="flex items-center gap-3">
-              <DollarSign className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <Banknote className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <span className="text-sm">{restaurant.가격대}</span>
             </div>
           )}
@@ -146,22 +146,28 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
 
         {/* 외부 링크 */}
         <div className="flex gap-3">
-          <Button
-            variant="outline"
+          <a
+            href={mapsLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex-1"
-            onClick={() => window.open(mapsLink, "_blank")}
           >
-            <MapPin className="w-4 h-4 mr-2" />
-            지도 보기
-          </Button>
-          <Button
-            variant="outline"
+            <Button variant="outline" className="w-full">
+              <MapPin className="w-4 h-4 mr-2" />
+              지도 보기
+            </Button>
+          </a>
+          <a
+            href={searchLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className="flex-1"
-            onClick={() => window.open(searchLink, "_blank")}
           >
-            <ExternalLink className="w-4 h-4 mr-2" />
-            검색하기
-          </Button>
+            <Button variant="outline" className="w-full">
+              <ExternalLink className="w-4 h-4 mr-2" />
+              검색하기
+            </Button>
+          </a>
         </div>
 
         <Separator />
