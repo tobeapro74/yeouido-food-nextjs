@@ -80,23 +80,55 @@ export function ReviewModal({
     setIsUploading(false);
   };
 
-  const resizeImage = (file: File, maxWidth: number, quality: number): Promise<string> => {
-    return new Promise((resolve) => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const img = document.createElement("img");
-        img.onload = () => {
+  const resizeImage = (file: File, maxSize: number, quality: number): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      // URL.createObjectURL 사용 (iOS Safari 호환)
+      const objectUrl = URL.createObjectURL(file);
+      const img = document.createElement("img");
+
+      img.onload = () => {
+        try {
           const canvas = document.createElement("canvas");
-          const ratio = Math.min(maxWidth / img.width, 1);
-          canvas.width = img.width * ratio;
-          canvas.height = img.height * ratio;
-          const ctx = canvas.getContext("2d")!;
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          resolve(canvas.toDataURL("image/jpeg", quality));
-        };
-        img.src = e.target?.result as string;
+          let { width, height } = img;
+
+          // 비율 유지하면서 리사이즈
+          if (width > maxSize || height > maxSize) {
+            if (width > height) {
+              height = Math.round((height / width) * maxSize);
+              width = maxSize;
+            } else {
+              width = Math.round((width / height) * maxSize);
+              height = maxSize;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error("Canvas context not available"));
+            return;
+          }
+
+          ctx.drawImage(img, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL("image/jpeg", quality);
+          URL.revokeObjectURL(objectUrl);
+          resolve(dataUrl);
+        } catch (error) {
+          URL.revokeObjectURL(objectUrl);
+          reject(error);
+        }
       };
-      reader.readAsDataURL(file);
+
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(new Error("Image load failed"));
+      };
+
+      // iOS Safari에서는 blob URL에 crossOrigin 설정하면 안됨
+      img.src = objectUrl;
     });
   };
 
