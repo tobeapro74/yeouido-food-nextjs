@@ -31,7 +31,7 @@
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API 라우트
-│   │   ├── auth/          # 인증 API (login, logout, register, me)
+│   │   ├── auth/          # 인증 API (login, logout, register, me, change-password)
 │   │   ├── reviews/       # 리뷰 CRUD API
 │   │   ├── place-photo/   # Google Places 사진 API
 │   │   └── upload/        # Cloudinary 이미지 업로드
@@ -41,6 +41,7 @@ src/
 ├── components/            # React 컴포넌트
 │   ├── ui/               # shadcn/ui 기본 컴포넌트
 │   ├── auth-modal.tsx    # 로그인/회원가입 모달
+│   ├── change-password-modal.tsx # 비밀번호 변경 모달
 │   ├── bottom-nav.tsx    # 하단 네비게이션
 │   ├── building-sheet.tsx # 빌딩 선택 시트
 │   ├── category-sheet.tsx # 카테고리 선택 시트
@@ -49,7 +50,9 @@ src/
 │   ├── restaurant-card.tsx # 맛집 카드
 │   ├── restaurant-detail.tsx # 맛집 상세
 │   ├── restaurant-list.tsx # 맛집 리스트
-│   └── review-modal.tsx  # 리뷰 작성 모달
+│   ├── review-modal.tsx  # 리뷰 작성 모달
+│   ├── roulette-wheel.tsx # 룰렛 휠 컴포넌트
+│   └── search-bar.tsx    # 통합 검색 바
 ├── data/
 │   └── yeouido-food.ts   # 맛집 정적 데이터 (180+ 식당)
 └── lib/
@@ -85,15 +88,29 @@ RestaurantDetail (리뷰 표시)
 ```
 AuthModal (로그인/회원가입)
     ↓
-/api/auth/* (세션 쿠키 기반)
+/api/auth/* (JWT 쿠키 기반)
     ↓
 /api/auth/me (인증 상태 확인)
+```
+
+### 비밀번호 변경 흐름
+```
+사용자 메뉴 (헤더 프로필 버튼)
+    ↓
+ChangePasswordModal (현재/새 비밀번호 입력)
+    ↓
+/api/auth/change-password (비밀번호 검증 및 업데이트)
+    ↓
+MongoDB users 컬렉션 업데이트
 ```
 
 ## 주요 기능
 
 ### 1. 홈 화면
-- 통합 검색 바 (식당, 빌딩, 음식, 도로명 검색)
+- 헤더 (타이틀, 사용자 메뉴 드롭다운)
+- 통합 검색 바 (헤더 아래 메인 콘텐츠 영역 상단에 위치)
+  - 식당, 빌딩, 음식, 도로명 검색 지원
+  - 실시간 자동완성 드롭다운
 - 카테고리 퀵 버튼 (한식, 양식, 중식, 일식, 동남아식)
 - 인기 맛집 카드 (카테고리별 최고 평점)
 - 지역별 맛집 (서여의도/동여의도)
@@ -119,6 +136,11 @@ AuthModal (로그인/회원가입)
 - 별점 (전체, 음식, 서비스, 분위기)
 - 사진 첨부 (최대 4장, iOS Safari 호환)
 - 식사 유형 선택
+
+### 6. 사용자 계정 관리
+- 로그인/회원가입 (이메일, 비밀번호)
+- 비밀번호 변경 (현재 비밀번호 확인 필수)
+- 사용자 메뉴 드롭다운 (프로필 버튼 클릭 시)
 
 ## 성능 최적화
 
