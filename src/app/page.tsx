@@ -12,6 +12,7 @@ import { CategorySheet } from "@/components/category-sheet";
 import { BuildingSheet } from "@/components/building-sheet";
 import { AuthModal } from "@/components/auth-modal";
 import { RecommendationView } from "@/components/recommendation-view";
+import { SearchBar } from "@/components/search-bar";
 import {
   Restaurant,
   categories,
@@ -278,6 +279,10 @@ export default function Home() {
                 <User className="w-5 h-5" />
               </button>
             )}
+          </div>
+          {/* 검색 바 */}
+          <div className="px-4 pb-3">
+            <SearchBar onSelect={handleRestaurantSelect} />
           </div>
         </header>
 

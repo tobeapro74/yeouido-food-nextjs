@@ -2543,3 +2543,62 @@ export function getGoogleSearchLink(name: string): string {
   const query = `${name} 여의도`;
   return `https://www.google.com/search?q=${encodeURIComponent(query)}`;
 }
+
+// 통합 검색 함수
+export function searchRestaurants(query: string): Restaurant[] {
+  if (!query.trim()) return [];
+
+  const searchTerm = query.toLowerCase().trim();
+  const all = getAllRestaurants();
+
+  // 검색 결과에 점수 부여
+  const scored = all.map((restaurant) => {
+    let score = 0;
+
+    // 식당 이름 매칭 (가장 높은 우선순위)
+    if (restaurant.이름.toLowerCase().includes(searchTerm)) {
+      score += 100;
+      // 정확히 시작하면 추가 점수
+      if (restaurant.이름.toLowerCase().startsWith(searchTerm)) {
+        score += 50;
+      }
+    }
+
+    // 빌딩명 매칭
+    if (restaurant.빌딩?.toLowerCase().includes(searchTerm)) {
+      score += 80;
+    }
+
+    // 카테고리 매칭
+    if (restaurant.카테고리.toLowerCase().includes(searchTerm)) {
+      score += 70;
+    }
+
+    // 특징/음식 매칭
+    if (restaurant.특징?.toLowerCase().includes(searchTerm)) {
+      score += 60;
+    }
+
+    // 주소/도로명 매칭
+    if (restaurant.주소.toLowerCase().includes(searchTerm)) {
+      score += 50;
+    }
+
+    // 지역 매칭
+    if (restaurant.지역.toLowerCase().includes(searchTerm)) {
+      score += 40;
+    }
+
+    return { restaurant, score };
+  });
+
+  // 점수가 있는 것만 필터링하고 정렬
+  return scored
+    .filter((item) => item.score > 0)
+    .sort((a, b) => {
+      // 점수 내림차순, 같으면 평점 내림차순
+      if (b.score !== a.score) return b.score - a.score;
+      return (b.restaurant.평점 || 0) - (a.restaurant.평점 || 0);
+    })
+    .map((item) => item.restaurant);
+}
