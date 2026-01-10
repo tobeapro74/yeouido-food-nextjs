@@ -23,28 +23,22 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     const resultIndex = Math.floor(Math.random() * items.length);
     resultRef.current = items[resultIndex].id;
 
-    // 섹션 레이아웃 분석:
-    // - 각 섹션은 w-1/2 h-1/2 (좌상단 1/4 영역)
-    // - origin-bottom-right (휠 중심 기준 회전)
-    // - rotate(0)일 때 섹션 0은 12시~2시 방향 차지 (좌상단 → 우상단으로)
-    // - 섹션 중앙은 약 1시 방향 (30도 위치, 12시 기준으로 시계방향)
+    // 목표: resultIndex 섹션의 중앙이 포인터(상단, 12시) 아래에 오도록 회전
     //
-    // rotation=0일 때:
-    // - 섹션 0(한식): 12시~2시 (중앙: 1시 = 30도)
-    // - 섹션 1(양식): 2시~4시 (중앙: 3시 = 90도)
-    // - 섹션 2(중식): 4시~6시 (중앙: 5시 = 150도)
-    // - 섹션 3(일식): 6시~8시 (중앙: 7시 = 210도)
-    // - 섹션 4(동남아): 8시~10시 (중앙: 9시 = 270도)
-    // - 섹션 5(랜덤): 10시~12시 (중앙: 11시 = 330도)
+    // 휠의 현재 상태에서 섹션 n이 가리키는 CSS transform은 rotate(n * 60deg)
+    // 예: 동남아(index 4) = rotate(240deg)
     //
-    // 포인터는 12시(0도) 방향에 있음
-    // 섹션 n의 중앙을 12시(0도)로 가져오려면:
-    // - 섹션 n의 초기 중앙 위치 = n * 60 + 30
-    // - 이를 0도로 이동시키려면 -(n * 60 + 30) 만큼 회전 필요
-    // - CSS rotate는 시계방향이 양수이므로, 360 - (n * 60 + 30)
+    // 포인터는 상단(12시)에 고정되어 있고, 휠이 회전함
+    // 휠이 X도 회전하면, 원래 0도에 있던 것이 X도 위치로 이동
+    // 즉, 상단(0도)에는 원래 (360-X)도에 있던 섹션이 옴
+    //
+    // 섹션 n의 중앙 각도 = n * sectionAngle + sectionAngle/2
+    // 이 섹션이 상단에 오려면, 휠을 (섹션 중앙 각도)만큼 회전시키면 됨
+    // 왜냐하면 rotate(X)는 시계방향 회전이고,
+    // X만큼 회전하면 원래 X 위치에 있던 것이 상단(0도)으로 옴
 
-    const sectionCenterInitial = resultIndex * sectionAngle + sectionAngle / 2;
-    const targetRotation = (360 - sectionCenterInitial + 360) % 360;
+    const sectionCenter = resultIndex * sectionAngle + sectionAngle / 2;
+    const targetRotation = sectionCenter;
 
     // 최소 5바퀴 + 목표 위치
     const spins = 5;
