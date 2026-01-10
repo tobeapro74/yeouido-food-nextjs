@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Building2 } from "lucide-react";
-import { Restaurant, getPlaceholderImage } from "@/data/yeouido-food";
+import { Restaurant } from "@/data/yeouido-food";
 import Image from "next/image";
 
 function formatReviewCount(count: number): string {
@@ -37,14 +37,13 @@ export function RestaurantCard({
   variant = "vertical",
   showCategory = false,
 }: RestaurantCardProps) {
-  const fallbackUrl = getPlaceholderImage(restaurant.이름);
-  const [imageUrl, setImageUrl] = useState<string>(fallbackUrl);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isClosed, setIsClosed] = useState(false);
+  const cacheKey = restaurant.이름;
+  // 캐시에 이미지가 있으면 바로 사용, 없으면 빈 문자열로 시작
+  const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
+  const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
+  const [isClosed, setIsClosed] = useState(closedCache[cacheKey] || false);
 
   useEffect(() => {
-    const cacheKey = restaurant.이름;
-
     // 이미 폐업/휴업으로 확인된 경우
     if (closedCache[cacheKey]) {
       setIsClosed(true);
@@ -52,6 +51,7 @@ export function RestaurantCard({
       return;
     }
 
+    // 이미 캐시된 경우
     if (imageCache[cacheKey]) {
       setImageUrl(imageCache[cacheKey]);
       setIsLoading(false);
@@ -75,17 +75,30 @@ export function RestaurantCard({
           imageCache[cacheKey] = data.photoUrl;
           setImageUrl(data.photoUrl);
         } else {
-          imageCache[cacheKey] = fallbackUrl;
+          // Google에서 못 찾으면 카테고리 기반 placeholder 사용
+          const categoryPlaceholders: Record<string, string> = {
+            한식: "/images/placeholder-korean.svg",
+            양식: "/images/placeholder-western.svg",
+            중식: "/images/placeholder-chinese.svg",
+            일식: "/images/placeholder-japanese.svg",
+            동남아식: "/images/placeholder-asian.svg",
+          };
+          const placeholder = categoryPlaceholders[restaurant.카테고리] || "/images/placeholder-food.svg";
+          imageCache[cacheKey] = placeholder;
+          setImageUrl(placeholder);
         }
       } catch {
-        imageCache[cacheKey] = fallbackUrl;
+        // 에러 시에도 카테고리 기반 placeholder 사용
+        const placeholder = "/images/placeholder-food.svg";
+        imageCache[cacheKey] = placeholder;
+        setImageUrl(placeholder);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchImage();
-  }, [restaurant.이름, restaurant.주소, fallbackUrl]);
+  }, [restaurant.이름, restaurant.주소, restaurant.카테고리, cacheKey]);
 
   // 휴업/폐업 식당은 렌더링하지 않음
   if (isClosed) {

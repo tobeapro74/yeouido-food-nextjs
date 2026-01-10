@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#fef9c3"/>
+  <ellipse cx="200" cy="150" rx="70" ry="50" fill="#fde047"/>
+  <path d="M140 140 Q150 120 160 140 M170 130 Q180 110 190 130 M200 125 Q210 105 220 125 M230 130 Q240 110 250 130 M260 140 Q270 120 280 140" stroke="#ca8a04" stroke-width="2" fill="none"/>
+  <ellipse cx="200" cy="160" rx="50" ry="25" fill="#fef08a"/>
+  <circle cx="180" cy="155" r="6" fill="#16a34a"/>
+  <circle cx="200" cy="160" r="5" fill="#dc2626"/>
+  <circle cx="220" cy="155" r="6" fill="#ea580c"/>
+  <ellipse cx="200" cy="200" rx="75" ry="16" fill="#eab308"/>
+  <text x="200" y="260" text-anchor="middle" fill="#854d0e" font-family="system-ui" font-size="14">동남아식</text>
+</svg>

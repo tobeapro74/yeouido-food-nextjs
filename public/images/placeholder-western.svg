@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#fce7f3"/>
+  <ellipse cx="200" cy="150" rx="70" ry="50" fill="#f9a8d4"/>
+  <ellipse cx="200" cy="150" rx="55" ry="38" fill="#fbcfe8"/>
+  <rect x="160" y="130" width="80" height="25" rx="5" fill="#be185d"/>
+  <circle cx="175" cy="142" r="5" fill="#fecdd3"/>
+  <circle cx="200" cy="142" r="5" fill="#fecdd3"/>
+  <circle cx="225" cy="142" r="5" fill="#fecdd3"/>
+  <ellipse cx="200" cy="200" rx="75" ry="18" fill="#db2777"/>
+  <text x="200" y="260" text-anchor="middle" fill="#9d174d" font-family="system-ui" font-size="14">양식</text>
+</svg>

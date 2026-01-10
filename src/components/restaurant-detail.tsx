@@ -5,7 +5,7 @@ import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Buildi
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Restaurant, getPlaceholderImage, getGoogleMapsLink, getGoogleSearchLink } from "@/data/yeouido-food";
+import { Restaurant, getGoogleMapsLink, getGoogleSearchLink } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import Image from "next/image";
 
@@ -22,12 +22,31 @@ const categoryIcons: Record<string, string> = {
   동남아식: "🍜",
 };
 
+// 이미지 캐시 (restaurant-card와 공유하기 위해 window 객체 사용)
+const getImageCache = (): Record<string, string> => {
+  if (typeof window !== "undefined") {
+    if (!(window as unknown as { __imageCache?: Record<string, string> }).__imageCache) {
+      (window as unknown as { __imageCache: Record<string, string> }).__imageCache = {};
+    }
+    return (window as unknown as { __imageCache: Record<string, string> }).__imageCache;
+  }
+  return {};
+};
+
 export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) {
-  const fallbackUrl = getPlaceholderImage(restaurant.이름);
-  const [imageUrl, setImageUrl] = useState<string>(fallbackUrl);
-  const [isLoading, setIsLoading] = useState(true);
+  const cacheKey = restaurant.이름;
+  const imageCache = getImageCache();
+  const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
+  const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
 
   useEffect(() => {
+    // 이미 캐시된 경우
+    if (imageCache[cacheKey]) {
+      setImageUrl(imageCache[cacheKey]);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchImage = async () => {
       try {
         const query = `${restaurant.이름} ${restaurant.주소 || ""}`.trim();
@@ -35,17 +54,32 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
         const data = await res.json();
 
         if (data.photoUrl) {
+          imageCache[cacheKey] = data.photoUrl;
           setImageUrl(data.photoUrl);
+        } else {
+          // 카테고리 기반 placeholder 사용
+          const categoryPlaceholders: Record<string, string> = {
+            한식: "/images/placeholder-korean.svg",
+            양식: "/images/placeholder-western.svg",
+            중식: "/images/placeholder-chinese.svg",
+            일식: "/images/placeholder-japanese.svg",
+            동남아식: "/images/placeholder-asian.svg",
+          };
+          const placeholder = categoryPlaceholders[restaurant.카테고리] || "/images/placeholder-food.svg";
+          imageCache[cacheKey] = placeholder;
+          setImageUrl(placeholder);
         }
       } catch {
-        // 에러 시 폴백 이미지 사용
+        const placeholder = "/images/placeholder-food.svg";
+        imageCache[cacheKey] = placeholder;
+        setImageUrl(placeholder);
       } finally {
         setIsLoading(false);
       }
     };
 
     fetchImage();
-  }, [restaurant.이름, restaurant.주소]);
+  }, [restaurant.이름, restaurant.주소, restaurant.카테고리, cacheKey, imageCache]);
 
   const mapsLink = getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);

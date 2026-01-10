@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300">
+  <rect width="400" height="300" fill="#fef3c7"/>
+  <circle cx="200" cy="140" r="55" fill="#fde68a"/>
+  <circle cx="200" cy="140" r="45" fill="#fef3c7"/>
+  <circle cx="200" cy="140" r="35" fill="#fde68a"/>
+  <ellipse cx="200" cy="200" rx="70" ry="18" fill="#f59e0b"/>
+  <rect x="195" y="60" width="10" height="50" rx="2" fill="#78350f"/>
+  <rect x="175" y="70" width="10" height="40" rx="2" fill="#78350f" transform="rotate(-15 180 90)"/>
+  <text x="200" y="260" text-anchor="middle" fill="#92400e" font-family="system-ui" font-size="14">한식</text>
+</svg>
