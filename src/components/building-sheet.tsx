@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Sheet,
   SheetContent,
@@ -33,12 +34,16 @@ function sortKoreanFirst(a: string, b: string): number {
   return a.localeCompare(b, 'ko');
 }
 
+type RegionTab = "동여의도" | "서여의도";
+
 export function BuildingSheet({
   open,
   onOpenChange,
   options,
   onSelect,
 }: BuildingSheetProps) {
+  const [activeRegion, setActiveRegion] = useState<RegionTab>("동여의도");
+
   const handleSelect = (id: string) => {
     onSelect(id);
     onOpenChange(false);
@@ -57,66 +62,76 @@ export function BuildingSheet({
     .filter(b => b.지역 === "서여의도")
     .sort((a, b) => sortKoreanFirst(a.name, b.name));
 
+  const currentBuildings = activeRegion === "동여의도" ? 동여의도Buildings : 서여의도Buildings;
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="rounded-t-2xl h-[70vh]">
         <SheetHeader>
           <SheetTitle className="text-lg">빌딩 선택</SheetTitle>
         </SheetHeader>
-        <ScrollArea className="h-[calc(100%-3rem)] pr-4">
-          <div className="py-4 space-y-6">
-            {/* 전체 옵션 */}
-            {allOption && (
+
+        <div className="py-3 space-y-3">
+          {/* 전체 옵션 */}
+          {allOption && (
+            <button
+              onClick={() => handleSelect(allOption.id)}
+              className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
+            >
+              <span className="text-lg">{allOption.icon}</span>
+              <span className="font-medium text-primary text-sm">전체 빌딩 보기</span>
+            </button>
+          )}
+
+          {/* 지역 탭 버튼 */}
+          <div className="flex gap-2 p-1 bg-muted rounded-lg">
+            <button
+              onClick={() => setActiveRegion("동여의도")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
+                activeRegion === "동여의도"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>🏙️</span>
+              <span>동여의도</span>
+              <span className="text-xs text-muted-foreground">({동여의도Buildings.length})</span>
+            </button>
+            <button
+              onClick={() => setActiveRegion("서여의도")}
+              className={`flex-1 flex items-center justify-center gap-2 py-2.5 px-4 rounded-md text-sm font-medium transition-all ${
+                activeRegion === "서여의도"
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <span>🏛️</span>
+              <span>서여의도</span>
+              <span className="text-xs text-muted-foreground">({서여의도Buildings.length})</span>
+            </button>
+          </div>
+
+          {/* 지역 설명 */}
+          <p className="text-xs text-muted-foreground text-center">
+            {activeRegion === "동여의도"
+              ? "IFC, 더현대, 국제금융로 주변"
+              : "국회, 여의도공원, 국회대로 주변"}
+          </p>
+        </div>
+
+        {/* 빌딩 리스트 */}
+        <ScrollArea className="h-[calc(100%-12rem)] pr-4">
+          <div className="grid grid-cols-2 gap-2 pb-4">
+            {currentBuildings.map((building) => (
               <button
-                onClick={() => handleSelect(allOption.id)}
-                className="w-full flex items-center gap-3 p-3 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
+                key={building.id}
+                onClick={() => handleSelect(building.id)}
+                className="flex items-center gap-2 p-3 rounded-lg hover:bg-muted transition-colors text-left border border-border/50"
               >
-                <span className="text-xl">{allOption.icon}</span>
-                <span className="font-medium text-primary">전체 빌딩 보기</span>
+                <span className="text-lg">{building.icon}</span>
+                <span className="text-sm truncate">{building.name}</span>
               </button>
-            )}
-
-            {/* 동여의도 */}
-            <div>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                <span>🏙️</span>
-                <span>동여의도</span>
-                <span className="text-xs font-normal">(IFC, 더현대, 국제금융로)</span>
-              </h3>
-              <div className="space-y-1">
-                {동여의도Buildings.map((building) => (
-                  <button
-                    key={building.id}
-                    onClick={() => handleSelect(building.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
-                  >
-                    <span className="text-lg w-6 text-center">{building.icon}</span>
-                    <span className="text-sm">{building.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* 서여의도 */}
-            <div>
-              <h3 className="text-sm font-semibold text-muted-foreground mb-2 flex items-center gap-2">
-                <span>🏛️</span>
-                <span>서여의도</span>
-                <span className="text-xs font-normal">(국회, 여의도공원)</span>
-              </h3>
-              <div className="space-y-1">
-                {서여의도Buildings.map((building) => (
-                  <button
-                    key={building.id}
-                    onClick={() => handleSelect(building.id)}
-                    className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-muted transition-colors text-left"
-                  >
-                    <span className="text-lg w-6 text-center">{building.icon}</span>
-                    <span className="text-sm">{building.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
+            ))}
           </div>
         </ScrollArea>
       </SheetContent>
