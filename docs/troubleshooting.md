@@ -146,55 +146,74 @@ git push origin main
 - 룰렛에서 "동남아"가 포인터 아래에 멈췄는데 "일식 카테고리에서 추천!"이 표시됨
 - 시각적으로 보이는 섹션과 실제 결과가 일치하지 않음
 
-**원인**
-- 섹션 레이아웃이 `origin-bottom-right` + `w-1/2 h-1/2`로 구현되어 일반적인 각도 계산과 다름
-- 섹션 0이 12시가 아닌 9시~11시 영역에서 시작
-- 결과를 미리 선택하고 회전시키는 방식에서 각도 계산 오류 발생
+**원인 분석**
 
-**해결**
-휠이 멈춘 후 **실제 포인터 위치에서 섹션을 역산**하는 방식으로 변경:
+1. **CSS 렌더링과 결과 계산의 좌표계 불일치**
+   - CSS에서 섹션을 `-90도`부터 시작하도록 렌더링 (`angle = index * 60 - 90`)
+   - 결과 계산에서 이 오프셋을 고려하지 않음
+
+2. **`origin-bottom-right` 특성**
+   - 섹션이 `w-1/2 h-1/2` + `origin-bottom-right`로 구현
+   - 일반적인 원형 좌표계와 다른 위치에서 시작
+
+3. **복잡한 오프셋 계산 시도 실패**
+   - for문으로 각 섹션 범위를 체크하는 방식: 360도 경계 처리 복잡
+   - 임의의 `pointerPosition` 값 설정: 일관성 없음
+
+**해결 방법: 단순한 역산 공식**
+
+핵심 원리: "룰렛이 시계방향으로 N도 회전했다 = 포인터가 반시계방향으로 N도 이동한 것과 같다"
 
 ```typescript
-// 회전 완료 후, 포인터(12시)가 어느 섹션 안에 있는지 확인
 setTimeout(() => {
-  const normalizedRotation = finalRotationRef.current % 360;
+  // 1. 실제 회전한 각도 (0~360 범위)
+  const actualRotation = finalRotationRef.current % 360;
 
-  // 포인터는 화면 상단(12시 방향)에 고정
-  // CSS 좌표계에서 12시 = -90도 = 270도
-  const pointerPosition = 270;
+  // 2. 포인터가 가리키는 각도 계산 (역산)
+  // - (360 - actualRotation): 반시계방향 이동 계산
+  // - +150도: CSS 렌더링 오프셋 보정
+  //   - -90도: 섹션이 12시 방향부터 시작
+  //   - +60도: origin-bottom-right 특성 보정
+  //   - 총 +150도 (실험적으로 도출)
+  const deg = (360 - actualRotation + 150) % 360;
 
-  // 각 섹션을 순회하며 포인터가 해당 섹션 범위 안에 있는지 확인
-  for (let i = 0; i < items.length; i++) {
-    const sectionStart = i * sectionAngle;
-    const sectionEnd = (i + 1) * sectionAngle;
-
-    // 휠 회전 후 섹션의 현재 위치
-    const currentStart = (sectionStart + normalizedRotation) % 360;
-    const currentEnd = (sectionEnd + normalizedRotation) % 360;
-
-    // 포인터(270도)가 이 섹션 범위 안에 있는지 확인
-    let isInRange = false;
-    if (currentStart < currentEnd) {
-      isInRange = pointerPosition >= currentStart && pointerPosition < currentEnd;
-    } else {
-      // 360도 경계를 넘는 경우 (예: 330~30)
-      isInRange = pointerPosition >= currentStart || pointerPosition < currentEnd;
-    }
-
-    if (isInRange) {
-      resultIndex = i;
-      break;
-    }
-  }
+  // 3. 해당 각도가 몇 번째 섹션인지 계산
+  const index = Math.floor(deg / sectionAngle);
+  const resultIndex = index >= items.length ? 0 : index;
 
   onResult(items[resultIndex].id);
 }, 4000);
 ```
 
-**핵심 포인트**
-- 결과를 미리 선택하지 않고 **랜덤 회전 후** 결과 계산
-- CSS 좌표계에서 12시 방향 = 270도
-- 섹션이 360도 경계를 넘는 경우도 처리 (예: 330°~30°)
+**+150도 오프셋 도출 과정**
+
+| 시도 | 오프셋 | 결과 |
+|------|--------|------|
+| 1차 | +0도 | 2~3칸 차이 |
+| 2차 | -90도 | 여전히 불일치 |
+| 3차 | +30도 | 경계에서 틀림 |
+| 4차 | +90도 | 1칸 차이 |
+| 5차 | +120도 | 거의 맞음 |
+| **최종** | **+150도** | **정확히 일치** |
+
+**디버깅 팁**
+
+콘솔 로그로 검증:
+```typescript
+console.log("actualRotation:", actualRotation);
+console.log("deg:", deg);
+console.log("resultIndex:", resultIndex);
+console.log("result:", items[resultIndex].id);
+```
+
+화면의 섹션 `transform: rotate(Xdeg)`와 비교:
+- 섹션 n의 원래 각도 = `n * 60 - 90`
+- 해당 섹션이 12시에 있으면 결과도 n이어야 함
+
+**핵심 교훈**
+1. CSS 렌더링 좌표계와 수학적 좌표계는 다를 수 있음
+2. 복잡한 조건문보다 단순한 수식 + 오프셋 조정이 효과적
+3. 실험 데이터 기반으로 오프셋을 도출하는 것이 가장 확실
 
 **파일**: `src/components/roulette-wheel.tsx`
 

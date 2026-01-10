@@ -46,12 +46,6 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
       // 부동소수점 오차 방지
       const resultIndex = index >= items.length ? 0 : index;
 
-      console.log("=== 룰렛 디버그 ===");
-      console.log("actualRotation:", actualRotation);
-      console.log("deg:", deg);
-      console.log("resultIndex:", resultIndex);
-      console.log("result:", items[resultIndex].id);
-
       setIsSpinning(false);
       onResult(items[resultIndex].id);
     }, 4000);
