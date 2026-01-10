@@ -1,23 +1,114 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- 배경 -->
-  <rect width="512" height="512" rx="80" fill="#dc2626"/>
+  <defs>
+    <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1e3a5f"/>
+      <stop offset="50%" style="stop-color:#2d5a87"/>
+      <stop offset="100%" style="stop-color:#dc2626"/>
+    </linearGradient>
+    <linearGradient id="buildingGradient1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#1a1a2e"/>
+      <stop offset="50%" style="stop-color:#2d2d44"/>
+      <stop offset="100%" style="stop-color:#1a1a2e"/>
+    </linearGradient>
+    <linearGradient id="buildingGradient2" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#252540"/>
+      <stop offset="50%" style="stop-color:#3d3d5c"/>
+      <stop offset="100%" style="stop-color:#252540"/>
+    </linearGradient>
+    <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a90a4"/>
+      <stop offset="100%" style="stop-color:#2d5a6b"/>
+    </linearGradient>
+  </defs>
 
-  <!-- 밥그릇 -->
-  <ellipse cx="256" cy="320" rx="140" ry="60" fill="#ffffff"/>
-  <path d="M116 320 Q116 400 256 400 Q396 400 396 320" fill="#ffffff"/>
+  <!-- 배경 (그라데이션 하늘) -->
+  <rect width="512" height="512" rx="90" ry="90" fill="url(#skyGradient)"/>
 
-  <!-- 밥 -->
-  <ellipse cx="256" cy="300" rx="120" ry="45" fill="#fef3c7"/>
+  <!-- 63빌딩 (가장 높은 빌딩, 왼쪽) -->
+  <path d="M95 380 L95 120 L115 80 L135 120 L135 380 Z" fill="url(#buildingGradient1)"/>
+  <!-- 63빌딩 창문 -->
+  <rect x="100" y="130" width="8" height="12" fill="#ffd700" opacity="0.8"/>
+  <rect x="112" y="130" width="8" height="12" fill="#ffd700" opacity="0.6"/>
+  <rect x="100" y="150" width="8" height="12" fill="#ffd700" opacity="0.7"/>
+  <rect x="112" y="150" width="8" height="12" fill="#ffd700" opacity="0.9"/>
+  <rect x="100" y="170" width="8" height="12" fill="#ffd700" opacity="0.5"/>
+  <rect x="112" y="170" width="8" height="12" fill="#ffd700" opacity="0.8"/>
+  <rect x="100" y="190" width="8" height="12" fill="#ffd700" opacity="0.6"/>
+  <rect x="112" y="190" width="8" height="12" fill="#ffd700" opacity="0.7"/>
+  <rect x="100" y="210" width="8" height="12" fill="#ffd700" opacity="0.9"/>
+  <rect x="112" y="210" width="8" height="12" fill="#ffd700" opacity="0.5"/>
+
+  <!-- IFC 트윈타워 (중앙) -->
+  <rect x="150" y="160" width="45" height="220" fill="url(#buildingGradient2)"/>
+  <rect x="200" y="140" width="50" height="240" fill="url(#glassGradient)"/>
+  <rect x="255" y="160" width="45" height="220" fill="url(#buildingGradient2)"/>
+
+  <!-- IFC 창문들 -->
+  <g fill="#87CEEB" opacity="0.6">
+    <rect x="155" y="170" width="10" height="15"/>
+    <rect x="170" y="170" width="10" height="15"/>
+    <rect x="155" y="195" width="10" height="15"/>
+    <rect x="170" y="195" width="10" height="15"/>
+    <rect x="155" y="220" width="10" height="15"/>
+    <rect x="170" y="220" width="10" height="15"/>
+    <rect x="155" y="245" width="10" height="15"/>
+    <rect x="170" y="245" width="10" height="15"/>
+  </g>
+
+  <!-- 중앙 유리 빌딩 창문 -->
+  <g fill="#ffffff" opacity="0.3">
+    <rect x="208" y="150" width="12" height="20"/>
+    <rect x="228" y="150" width="12" height="20"/>
+    <rect x="208" y="180" width="12" height="20"/>
+    <rect x="228" y="180" width="12" height="20"/>
+    <rect x="208" y="210" width="12" height="20"/>
+    <rect x="228" y="210" width="12" height="20"/>
+    <rect x="208" y="240" width="12" height="20"/>
+    <rect x="228" y="240" width="12" height="20"/>
+  </g>
+
+  <!-- 오른쪽 빌딩들 -->
+  <rect x="310" y="180" width="40" height="200" fill="url(#buildingGradient1)"/>
+  <rect x="355" y="200" width="35" height="180" fill="url(#buildingGradient2)"/>
+  <rect x="395" y="220" width="30" height="160" fill="url(#buildingGradient1)"/>
+
+  <!-- 오른쪽 창문들 -->
+  <g fill="#ffd700" opacity="0.7">
+    <rect x="318" y="190" width="8" height="10"/>
+    <rect x="332" y="190" width="8" height="10"/>
+    <rect x="318" y="210" width="8" height="10"/>
+    <rect x="332" y="210" width="8" height="10"/>
+    <rect x="318" y="230" width="8" height="10"/>
+    <rect x="332" y="230" width="8" height="10"/>
+    <rect x="363" y="215" width="7" height="10"/>
+    <rect x="375" y="215" width="7" height="10"/>
+    <rect x="363" y="235" width="7" height="10"/>
+    <rect x="375" y="235" width="7" height="10"/>
+    <rect x="402" y="235" width="6" height="8"/>
+    <rect x="412" y="235" width="6" height="8"/>
+    <rect x="402" y="255" width="6" height="8"/>
+    <rect x="412" y="255" width="6" height="8"/>
+  </g>
+
+  <!-- 한강 반사 효과 -->
+  <ellipse cx="256" cy="395" rx="200" ry="25" fill="#1a3a5c" opacity="0.5"/>
+
+  <!-- 밥그릇 아이콘 (하단 중앙) -->
+  <ellipse cx="256" cy="340" rx="55" ry="18" fill="#fff5e6"/>
+  <path d="M201 340 Q201 380 256 385 Q311 380 311 340" fill="#fff5e6"/>
+  <ellipse cx="256" cy="340" rx="45" ry="12" fill="#ffe4c4"/>
+
+  <!-- 밥알 표현 -->
+  <circle cx="240" cy="338" r="5" fill="#ffffff" opacity="0.8"/>
+  <circle cx="256" cy="335" r="4" fill="#ffffff" opacity="0.7"/>
+  <circle cx="270" cy="338" r="5" fill="#ffffff" opacity="0.8"/>
 
   <!-- 젓가락 -->
-  <rect x="320" y="120" width="12" height="200" rx="6" fill="#ffffff" transform="rotate(15, 326, 220)"/>
-  <rect x="350" y="120" width="12" height="200" rx="6" fill="#ffffff" transform="rotate(20, 356, 220)"/>
+  <line x1="280" y1="300" x2="320" y2="260" stroke="#8B4513" stroke-width="4" stroke-linecap="round"/>
+  <line x1="290" y1="305" x2="330" y2="265" stroke="#A0522D" stroke-width="4" stroke-linecap="round"/>
 
-  <!-- 김치/반찬 표시 (빨간 점) -->
-  <circle cx="220" cy="290" r="15" fill="#ef4444"/>
-  <circle cx="280" cy="280" r="12" fill="#22c55e"/>
-  <circle cx="250" cy="310" r="10" fill="#f97316"/>
-
-  <!-- 여의도 텍스트 -->
-  <text x="256" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff">여의도</text>
+  <!-- 텍스트 그림자 효과 -->
+  <text x="258" y="462" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" font-weight="bold" fill="#000000" opacity="0.3">여의도한끼</text>
+  <!-- 앱 이름 텍스트 -->
+  <text x="256" y="460" text-anchor="middle" font-family="Arial, sans-serif" font-size="52" font-weight="bold" fill="#ffffff">여의도한끼</text>
 </svg>
