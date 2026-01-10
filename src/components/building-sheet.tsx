@@ -120,8 +120,8 @@ export function BuildingSheet({
         </div>
 
         {/* 빌딩 리스트 */}
-        <ScrollArea className="h-[calc(100%-12rem)] pr-4">
-          <div className="grid grid-cols-2 gap-2 pb-4">
+        <ScrollArea className="flex-1 h-[calc(70vh-14rem)]">
+          <div className="grid grid-cols-2 gap-2 pb-20 pr-4">
             {currentBuildings.map((building) => (
               <button
                 key={building.id}
