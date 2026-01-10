@@ -16,11 +16,11 @@
 
 ### Backend
 - **Next.js API Routes** - 서버리스 API
-- **Turso (libSQL)** - SQLite 기반 엣지 데이터베이스
+- **MongoDB Atlas** - 클라우드 데이터베이스
 - **Cloudinary** - 이미지 업로드/저장
 
 ### External APIs
-- **Google Places API** - 식당 사진 및 영업 상태 조회
+- **Google Places API** - 식당 사진, 영업 상태, 건물 정보 조회
 
 ### Deployment
 - **Vercel** - 호스팅 및 CI/CD
@@ -84,23 +84,45 @@ src/
 │   ├── roulette-wheel.tsx # 룰렛 휠 컴포넌트
 │   └── search-bar.tsx    # 통합 검색 바
 ├── data/
-│   └── yeouido-food.ts   # 맛집 정적 데이터 (180+ 식당)
+│   └── yeouido-food.ts   # 맛집 정적 데이터 (194개 식당)
 └── lib/
-    ├── db.ts             # Turso 데이터베이스 연결
+    ├── mongodb.ts        # MongoDB 연결
     └── utils.ts          # 유틸리티 함수
+
+scripts/                   # 데이터 동기화 스크립트
+├── sync-restaurants-v2.mjs      # 정적 데이터 → MongoDB 동기화
+├── fetch-building-info.mjs      # Google API 건물 정보 수집
+├── fetch-building-info-v2.mjs   # 개선된 건물 정보 수집
+├── manual-building-update.mjs   # 수동 건물 정보 업데이트
+└── restaurant-data.json         # 식당 데이터 JSON
 ```
 
 ## 데이터 흐름
 
 ### 맛집 데이터
 ```
-yeouido-food.ts (정적 데이터)
+yeouido-food.ts (정적 데이터, 194개)
     ↓
-getPopularRestaurants() / getRestaurantsByCategory() 등
+sync-restaurants-v2.mjs (동기화 스크립트)
+    ↓
+MongoDB Atlas (restaurants 컬렉션, 330개)
     ↓
 RestaurantCard / RestaurantList 컴포넌트
     ↓
 Google Places API (사진/영업상태 조회)
+```
+
+### 건물 정보 수집
+```
+Google Places API (containingPlaces)
+    ↓
+fetch-building-info.mjs (자동 수집)
+    ↓
+manual-building-update.mjs (수동 보완)
+    ↓
+MongoDB (restaurant_buildings 컬렉션)
+    ↓
+restaurants.building 필드 업데이트
 ```
 
 ### 리뷰 데이터
@@ -109,7 +131,7 @@ ReviewModal (사용자 입력)
     ↓
 /api/upload (이미지 → Cloudinary)
     ↓
-/api/reviews (리뷰 → Turso DB)
+/api/reviews (리뷰 → MongoDB)
     ↓
 RestaurantDetail (리뷰 표시)
 ```
@@ -209,20 +231,81 @@ MongoDB users 컬렉션 업데이트
 - 폐업 식당 자동 필터링 (return null)
 - Lazy loading 이미지
 
+## 데이터베이스 스키마
+
+### MongoDB Collections
+
+#### restaurants
+```javascript
+{
+  name: String,           // 식당명
+  address: String,        // 주소
+  description: String,    // 특징/설명
+  region: String,         // "서여의도" | "동여의도"
+  category: String,       // "한식" | "양식" | "중식" | "일식" | "동남아식"
+  building: String,       // 건물명
+  rating: Number,         // 평점
+  reviewCount: Number,    // 리뷰 수
+  businessHours: String,  // 영업시간
+  priceRange: String,     // 가격대
+  googleBuildingName: String,  // Google API에서 가져온 건물명
+  updatedAt: Date
+}
+```
+
+#### restaurant_buildings
+```javascript
+{
+  restaurantName: String,    // 식당명
+  buildingName: String,      // 건물명
+  address: String,           // 주소
+  containingPlaceId: String, // Google Place ID
+  source: String,            // "google" | "manual"
+  updatedAt: Date
+}
+```
+
+#### users
+```javascript
+{
+  email: String,
+  password: String,  // bcrypt hashed
+  name: String,
+  createdAt: Date
+}
+```
+
+#### reviews
+```javascript
+{
+  restaurantName: String,
+  userId: ObjectId,
+  rating: Number,
+  content: String,
+  images: [String],
+  mealType: String,
+  createdAt: Date
+}
+```
+
 ## 환경 변수
 
 ```env
-# Database
-TURSO_DATABASE_URL=
-TURSO_AUTH_TOKEN=
+# MongoDB
+MONGODB_URI=mongodb+srv://...
 
 # Cloudinary
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
 
-# Google
-GOOGLE_PLACES_API_KEY=
+# Google Places API
+GOOGLE_PLACES_API_NEW_KEY=
+NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=
+
+# Auth
+JWT_SECRET=
+ADMIN_SECRET_KEY=
 ```
 
 ## 배포
