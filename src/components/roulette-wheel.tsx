@@ -37,7 +37,8 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
 
       // 2. 포인터가 가리키는 각도 계산 (역산)
       // 룰렛이 시계방향으로 돌면, 포인터는 반시계방향으로 이동한 셈
-      const deg = (360 - actualRotation) % 360;
+      // CSS에서 섹션이 -90도부터 시작하므로 +90도 오프셋 적용
+      const deg = (360 - actualRotation + 90) % 360;
 
       // 3. 해당 각도가 몇 번째 인덱스인지 계산
       const index = Math.floor(deg / sectionAngle);
