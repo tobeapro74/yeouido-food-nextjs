@@ -32,10 +32,27 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     setTimeout(() => {
       const normalizedRotation = finalRotationRef.current % 360;
 
-      // 섹션은 12시 방향(-90도)부터 시작하도록 렌더링됨
-      // 휠이 시계방향으로 normalizedRotation 회전하면
-      // 12시 포인터가 가리키는 섹션 = (360 - normalizedRotation) / sectionAngle
-      const resultIndex = Math.floor((360 - normalizedRotation + 360) % 360 / sectionAngle) % items.length;
+      // 섹션 렌더링: index n의 원래 각도 = n * 60 - 90
+      // 휠 회전 후 섹션의 최종 각도 = (n * 60 - 90 + normalizedRotation) % 360
+      //
+      // 12시 포인터가 가리키는 섹션을 찾으려면:
+      // 포인터는 CSS에서 상단(-90도 또는 270도)에 위치
+      // 하지만 origin-bottom-right로 인해 섹션은 왼쪽 상단에서 시작
+      //
+      // 실험적 접근: 화면에 보이는 섹션의 transform에서 역산
+      // 중식(index 2)이 rotate(30deg)로 12시에 보일 때:
+      // 원래 각도 = 2*60 - 90 = 30
+      // 휠 회전 = 0 (처음이라면)
+      // 하지만 30도는 12시(270도)가 아님
+      //
+      // CSS origin-bottom-right + w-1/2 h-1/2:
+      // 섹션이 실제로 12시에 있으려면 섹션의 rotate가 약 270도여야 함
+      // 섹션 n이 12시에 있으려면: (n*60 - 90 + normalizedRotation) % 360 ≈ 270
+      // n*60 ≈ 270 + 90 - normalizedRotation = 360 - normalizedRotation
+      // n = (360 - normalizedRotation) / 60
+      //
+      // 추가 오프셋 +60도 필요 (CSS 렌더링 특성상)
+      const resultIndex = Math.floor((360 - normalizedRotation + 60 + 360) % 360 / sectionAngle) % items.length;
 
       console.log("=== 룰렛 디버그 ===");
       console.log("normalizedRotation:", normalizedRotation);
