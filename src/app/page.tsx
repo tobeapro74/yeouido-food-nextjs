@@ -9,6 +9,7 @@ import { RestaurantCard } from "@/components/restaurant-card";
 import { RestaurantList } from "@/components/restaurant-list";
 import { RestaurantDetail } from "@/components/restaurant-detail";
 import { CategorySheet } from "@/components/category-sheet";
+import { BuildingSheet } from "@/components/building-sheet";
 import { AuthModal } from "@/components/auth-modal";
 import {
   Restaurant,
@@ -170,10 +171,9 @@ export default function Home() {
           options={regions}
           onSelect={handleRegionSelect}
         />
-        <CategorySheet
+        <BuildingSheet
           open={buildingSheetOpen}
           onOpenChange={setBuildingSheetOpen}
-          title="빌딩 선택"
           options={buildings}
           onSelect={handleBuildingSelect}
         />
@@ -205,10 +205,9 @@ export default function Home() {
           options={regions}
           onSelect={handleRegionSelect}
         />
-        <CategorySheet
+        <BuildingSheet
           open={buildingSheetOpen}
           onOpenChange={setBuildingSheetOpen}
-          title="빌딩 선택"
           options={buildings}
           onSelect={handleBuildingSelect}
         />
