@@ -10,7 +10,7 @@ interface RouletteWheelProps {
 export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
   const [isSpinning, setIsSpinning] = useState(false);
   const [rotation, setRotation] = useState(0);
-  const resultRef = useRef<string | null>(null);
+  const finalRotationRef = useRef(0);
 
   const spin = () => {
     if (isSpinning) return;
@@ -19,45 +19,49 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
 
     const sectionAngle = 360 / items.length; // 60도
 
-    // 먼저 결과를 랜덤으로 선택
-    const resultIndex = Math.floor(Math.random() * items.length);
-    resultRef.current = items[resultIndex].id;
-
-    // 휠은 시계방향으로 회전 (CSS rotate 양수 = 시계방향)
-    // 시계방향 회전 시, 포인터(상단 고정)에는 반시계방향의 섹션이 옴
-    //
-    // 섹션 n을 포인터에 가져오려면:
-    // - 섹션 n의 시작 각도 = n * sectionAngle
-    // - 섹션 n의 중앙 = n * sectionAngle + sectionAngle/2
-    // - 휠을 -(섹션 중앙)만큼 회전 = 360 - 섹션 중앙
-    //
-    // 하지만 origin-bottom-right 배치로 인해 섹션 0이 12시~2시에 있음
-    // 포인터가 정확히 12시에 있으므로, 섹션 중앙(1시 = 30도)을 12시로 가져와야 함
-    // 즉, -30도 회전 필요 (또는 330도)
-    //
-    // 따라서 섹션 n 중앙을 12시로 가져오려면:
-    // targetRotation = -(n * 60 + 30) = 360 - (n * 60 + 30) = 330 - n * 60
-
-    const sectionCenter = resultIndex * sectionAngle + sectionAngle / 2;
-    const targetRotation = (360 - sectionCenter + 360) % 360;
-
-    // 최소 5바퀴 + 목표 위치
+    // 랜덤 회전: 5바퀴 + 랜덤 각도
     const spins = 5;
-    const currentNormalized = rotation % 360;
-
-    let additionalRotation = targetRotation - currentNormalized;
-    if (additionalRotation <= 0) additionalRotation += 360;
-
-    const totalRotation = 360 * spins + additionalRotation;
+    const randomAngle = Math.random() * 360;
+    const totalRotation = 360 * spins + randomAngle;
     const newRotation = rotation + totalRotation;
 
+    finalRotationRef.current = newRotation;
     setRotation(newRotation);
 
+    // 회전 완료 후, 실제 포인터가 가리키는 섹션 계산
     setTimeout(() => {
+      // 최종 회전 각도를 0-360으로 정규화
+      const normalizedRotation = finalRotationRef.current % 360;
+
+      // 포인터는 12시 방향(상단)에 고정
+      // 휠이 시계방향으로 normalizedRotation 만큼 회전했음
+      //
+      // 섹션 레이아웃 (origin-bottom-right, w-1/2 h-1/2):
+      // - 초기(rotation=0)에서 섹션들의 위치:
+      //   섹션 0: rotate(0deg) → 약 11시~1시 영역 (상단)
+      //   섹션 1: rotate(60deg) → 약 1시~3시 영역
+      //   섹션 2: rotate(120deg) → 약 3시~5시 영역
+      //   섹션 3: rotate(180deg) → 약 5시~7시 영역
+      //   섹션 4: rotate(240deg) → 약 7시~9시 영역
+      //   섹션 5: rotate(300deg) → 약 9시~11시 영역
+      //
+      // 휠이 X도 회전하면, 원래 (360-X)도 위치에 있던 섹션이 상단(12시)으로 옴
+      //
+      // 예: 휠이 90도 회전 → 원래 270도(9시) 위치에 있던 섹션이 12시로 옴
+      //     270도 위치의 섹션 = 섹션 4 (240~300도)의 중간쯤
+      //
+      // 포인터가 가리키는 각도 = (360 - normalizedRotation) % 360
+      // 해당 각도가 어느 섹션에 속하는지 계산
+
+      const pointerAngle = (360 - normalizedRotation + 360) % 360;
+
+      // 섹션 n은 (n * sectionAngle) ~ ((n+1) * sectionAngle) 범위를 차지
+      // pointerAngle이 어느 섹션 범위에 있는지 확인
+      let resultIndex = Math.floor(pointerAngle / sectionAngle);
+      if (resultIndex >= items.length) resultIndex = 0;
+
       setIsSpinning(false);
-      if (resultRef.current) {
-        onResult(resultRef.current);
-      }
+      onResult(items[resultIndex].id);
     }, 4000);
   };
 
