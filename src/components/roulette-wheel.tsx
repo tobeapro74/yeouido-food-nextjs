@@ -17,56 +17,37 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
 
     setIsSpinning(true);
 
-    const sectionAngle = 360 / items.length; // 60도
+    const sectionAngle = 360 / items.length;
 
-    // 랜덤 회전: 5바퀴 + 랜덤 각도
+    // 랜덤 회전: 최소 5바퀴(1800도) + 랜덤 각도
     const spins = 5;
     const randomAngle = Math.random() * 360;
     const totalRotation = 360 * spins + randomAngle;
+
+    // 기존 회전값에 누적
     const newRotation = rotation + totalRotation;
 
     finalRotationRef.current = newRotation;
     setRotation(newRotation);
 
-    // 회전 완료 후 결과 계산
+    // 회전 완료 후 결과 계산 (CSS transition 시간인 4초와 맞춤)
     setTimeout(() => {
-      const normalizedRotation = finalRotationRef.current % 360;
+      // 1. 실제 회전한 각도를 360으로 나눈 나머지
+      const actualRotation = finalRotationRef.current % 360;
 
-      // 각 섹션을 순회하며 12시 포인터 위치에 있는 섹션 찾기
-      // 섹션 n의 원래 시작각 = n * 60 - 90
-      // 휠 회전 후 섹션 n의 시작각 = (n * 60 - 90 + normalizedRotation) % 360
-      // 섹션 n의 범위 = 시작각 ~ 시작각 + 60
-      //
-      // CSS origin-bottom-right 특성상 12시 포인터가 가리키는 위치는
-      // 섹션의 시작각이 약 270도(또는 -90도) 근처일 때
-      // 실험 데이터: 동남아(index 4)가 12시일 때 normalizedRotation=219
-      // 동남아 시작각 = (4*60 - 90 + 219) % 360 = 9도
-      // 동남아 끝각 = 69도
-      // 따라서 포인터는 약 30도 위치 (섹션 중앙)
-      const pointerPosition = 30;
+      // 2. 포인터가 가리키는 각도 계산 (역산)
+      // 룰렛이 시계방향으로 돌면, 포인터는 반시계방향으로 이동한 셈
+      const deg = (360 - actualRotation) % 360;
 
-      let resultIndex = 0;
-      for (let i = 0; i < items.length; i++) {
-        const startAngle = (i * sectionAngle - 90 + normalizedRotation + 360) % 360;
-        const endAngle = (startAngle + sectionAngle) % 360;
+      // 3. 해당 각도가 몇 번째 인덱스인지 계산
+      const index = Math.floor(deg / sectionAngle);
 
-        // 포인터가 이 섹션 범위 안에 있는지 확인
-        if (startAngle < endAngle) {
-          if (pointerPosition >= startAngle && pointerPosition < endAngle) {
-            resultIndex = i;
-            break;
-          }
-        } else {
-          // 360도를 넘어가는 경우 (예: 330~30)
-          if (pointerPosition >= startAngle || pointerPosition < endAngle) {
-            resultIndex = i;
-            break;
-          }
-        }
-      }
+      // 부동소수점 오차 방지
+      const resultIndex = index >= items.length ? 0 : index;
 
       console.log("=== 룰렛 디버그 ===");
-      console.log("normalizedRotation:", normalizedRotation);
+      console.log("actualRotation:", actualRotation);
+      console.log("deg:", deg);
       console.log("resultIndex:", resultIndex);
       console.log("result:", items[resultIndex].id);
 
@@ -77,7 +58,7 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
 
   return (
     <div className="flex flex-col items-center">
-      {/* 포인터 */}
+      {/* 포인터 (12시 방향 고정) */}
       <div className="relative z-10 mb-[-20px]">
         <div className="w-0 h-0 border-l-[15px] border-r-[15px] border-t-[25px] border-l-transparent border-r-transparent border-t-orange-600 drop-shadow-md" />
       </div>
@@ -92,7 +73,7 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
           }}
         >
           {items.map((item, index) => {
-            // 12시 방향(-90도)부터 시작하도록 오프셋 적용
+            // 12시 방향(-90도)부터 시작
             const angle = (360 / items.length) * index - 90;
             const skewAngle = 90 - 360 / items.length;
 
@@ -133,7 +114,6 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
         </button>
       </div>
 
-      {/* 안내 텍스트 */}
       <p className="mt-4 text-sm text-gray-500">
         {isSpinning ? "돌아가는 중..." : "중앙 버튼을 눌러 돌려보세요!"}
       </p>
