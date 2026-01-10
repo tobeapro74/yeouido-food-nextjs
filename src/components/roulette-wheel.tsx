@@ -28,37 +28,17 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
     finalRotationRef.current = newRotation;
     setRotation(newRotation);
 
-    // 회전 완료 후, 포인터(12시)가 어느 섹션 안에 있는지 확인
+    // 회전 완료 후 결과 계산
     setTimeout(() => {
       const normalizedRotation = finalRotationRef.current % 360;
 
-      // 포인터는 상단(12시)에 고정
-      // 휠이 시계방향으로 회전하면, 포인터 관점에서는 반시계방향으로 섹션이 지나감
-      //
-      // 휠이 normalizedRotation 만큼 회전한 상태에서
-      // 포인터(상단)가 가리키는 섹션을 찾으려면:
-      // - 원래 상단에 있던 각도 0의 위치가 이제 normalizedRotation 위치로 이동
-      // - 따라서 상단(0도 위치)에는 원래 (360 - normalizedRotation)도에 있던 부분이 옴
-      //
-      // 섹션 n은 n*60 ~ (n+1)*60 범위를 차지
-      // (360 - normalizedRotation)이 어느 섹션 범위에 있는지 확인
-
-      // 12시 포인터가 가리키는 섹션 계산:
-      // - 섹션 n의 원래 CSS rotate = n * 60도
-      // - 휠이 normalizedRotation 회전 후, 섹션 n의 최종 위치 = n*60 + normalizedRotation
-      // - 12시 = CSS 360도 (또는 0도) 위치
-      // - 12시에 있는 섹션: n*60 + normalizedRotation ≈ 360 (mod 360)
-      // - 따라서: n*60 ≈ 360 - normalizedRotation (mod 360)
-      // - n = (360 - normalizedRotation) / 60
-      //
-      // 하지만 CSS origin-bottom-right 때문에 섹션이 약간 시계방향으로 치우침
-      // 실험 결과: +14도 오프셋 필요 (섹션이 12시 기준 왼쪽으로 약간 치우쳐 있음)
-      const pointerAngle = (360 - normalizedRotation + 14 + 360) % 360;
-      const resultIndex = Math.floor(pointerAngle / sectionAngle) % items.length;
+      // 섹션은 12시 방향(-90도)부터 시작하도록 렌더링됨
+      // 휠이 시계방향으로 normalizedRotation 회전하면
+      // 12시 포인터가 가리키는 섹션 = (360 - normalizedRotation) / sectionAngle
+      const resultIndex = Math.floor((360 - normalizedRotation + 360) % 360 / sectionAngle) % items.length;
 
       console.log("=== 룰렛 디버그 ===");
       console.log("normalizedRotation:", normalizedRotation);
-      console.log("pointerAngle:", pointerAngle);
       console.log("resultIndex:", resultIndex);
       console.log("result:", items[resultIndex].id);
 
@@ -84,7 +64,8 @@ export function RouletteWheel({ items, onResult }: RouletteWheelProps) {
           }}
         >
           {items.map((item, index) => {
-            const angle = (360 / items.length) * index;
+            // 12시 방향(-90도)부터 시작하도록 오프셋 적용
+            const angle = (360 / items.length) * index - 90;
             const skewAngle = 90 - 360 / items.length;
 
             return (
