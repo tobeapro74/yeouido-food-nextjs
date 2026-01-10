@@ -1,10 +1,17 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { Shuffle, MapPin, Star, ChevronRight } from "lucide-react";
+import { Shuffle, MapPin, Star, ChevronRight, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Restaurant, getAllRestaurants } from "@/data/yeouido-food";
 import { RouletteWheel } from "@/components/roulette-wheel";
+import {
+  PreferenceSettings,
+  UserPreferences,
+  loadPreferences,
+  savePreferences,
+  defaultPreferences,
+} from "@/components/preference-settings";
 
 interface RecommendationViewProps {
   onSelectRestaurant: (restaurant: Restaurant) => void;
@@ -62,6 +69,16 @@ const rouletteItems = [
   { id: "random", label: "🎲 랜덤", color: "#8b5cf6" },
 ];
 
+// 가격 파싱 헬퍼
+function parsePrice(priceStr?: string): number {
+  if (!priceStr) return 15000;
+  const match = priceStr.match(/[\d,]+/);
+  if (match) {
+    return parseInt(match[0].replace(/,/g, ""), 10);
+  }
+  return 15000;
+}
+
 type TabMode = "mood" | "roulette";
 
 export function RecommendationView({ onSelectRestaurant }: RecommendationViewProps) {
@@ -71,18 +88,64 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
   const [isSpinning, setIsSpinning] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [rouletteResult, setRouletteResult] = useState<string | null>(null);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences);
 
   const allRestaurants = useMemo(() => getAllRestaurants(), []);
   const timeContext = useMemo(() => getTimeBasedTags(), []);
 
-  // 추천 로직
-  const getRecommendation = (mood?: string, category?: string) => {
+  // 취향 설정 로드
+  useEffect(() => {
+    setPreferences(loadPreferences());
+  }, []);
+
+  // 취향 설정 저장
+  const handleSavePreferences = (newPrefs: UserPreferences) => {
+    setPreferences(newPrefs);
+    savePreferences(newPrefs);
+    // 설정 변경 후 다시 추천
+    handleRecommend(selectedMood || undefined, rouletteResult || undefined, newPrefs);
+  };
+
+  // 추천 로직 (취향 반영)
+  const getRecommendation = (mood?: string, category?: string, prefs?: UserPreferences) => {
+    const currentPrefs = prefs || preferences;
     let candidates = [...allRestaurants];
 
     // 평점 3.5 이상 필터
     candidates = candidates.filter(r => (r.평점 || 0) >= 3.5);
 
-    // 카테고리 필터 (룰렛 결과)
+    // 취향 설정 반영: 카테고리 필터
+    if (currentPrefs.categories.length < 5) {
+      candidates = candidates.filter(r => currentPrefs.categories.includes(r.카테고리));
+    }
+
+    // 취향 설정 반영: 지역 필터
+    if (currentPrefs.region !== "전체") {
+      candidates = candidates.filter(r => r.지역 === currentPrefs.region);
+    }
+
+    // 취향 설정 반영: 가격대 필터
+    if (currentPrefs.priceRange !== "all") {
+      candidates = candidates.filter(r => {
+        const price = parsePrice(r.가격대);
+        if (currentPrefs.priceRange === "low") return price <= 10000;
+        if (currentPrefs.priceRange === "mid") return price > 10000 && price <= 20000;
+        if (currentPrefs.priceRange === "high") return price > 20000;
+        return true;
+      });
+    }
+
+    // 취향 설정 반영: 제외 태그
+    if (currentPrefs.excludeTags.length > 0) {
+      candidates = candidates.filter(r =>
+        !currentPrefs.excludeTags.some(tag =>
+          r.특징.includes(tag) || r.이름.includes(tag)
+        )
+      );
+    }
+
+    // 룰렛 카테고리 필터
     if (category && category !== "random") {
       candidates = candidates.filter(r => r.카테고리 === category);
     }
@@ -113,17 +176,18 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
       return candidates[randomIndex];
     }
 
+    // 후보가 없으면 전체에서 랜덤 (취향 무시)
     const randomIndex = Math.floor(Math.random() * allRestaurants.length);
     return allRestaurants[randomIndex];
   };
 
   // 추천 실행
-  const handleRecommend = (mood?: string, category?: string) => {
+  const handleRecommend = (mood?: string, category?: string, prefs?: UserPreferences) => {
     setIsSpinning(true);
     setShowResult(false);
 
     setTimeout(() => {
-      const restaurant = getRecommendation(mood, category);
+      const restaurant = getRecommendation(mood, category, prefs);
       setRecommendedRestaurant(restaurant);
       setIsSpinning(false);
       setShowResult(true);
@@ -153,15 +217,40 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
 
   // 초기 추천
   useEffect(() => {
-    handleRecommend();
+    // preferences 로드 후 추천
+    const prefs = loadPreferences();
+    setPreferences(prefs);
+    setTimeout(() => handleRecommend(undefined, undefined, prefs), 100);
   }, []);
+
+  // 취향 설정 여부 표시
+  const hasCustomPrefs = preferences.categories.length < 5 ||
+    preferences.region !== "전체" ||
+    preferences.priceRange !== "all" ||
+    preferences.excludeTags.length > 0;
 
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-b from-orange-50 to-white">
       {/* 헤더 */}
       <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-6 safe-area-top">
-        <h2 className="text-xl font-bold text-center mb-1">🎲 한끼 추천</h2>
+        <div className="flex items-center justify-between mb-1">
+          <div className="w-8" />
+          <h2 className="text-xl font-bold text-center">🎲 한끼 추천</h2>
+          <button
+            onClick={() => setSettingsOpen(true)}
+            className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
+              hasCustomPrefs ? "bg-white/30" : "bg-white/20 hover:bg-white/30"
+            }`}
+          >
+            <Settings className="w-5 h-5" />
+          </button>
+        </div>
         <p className="text-center text-orange-100 text-sm">{timeContext.message}</p>
+        {hasCustomPrefs && (
+          <p className="text-center text-orange-200 text-xs mt-1">
+            ⚙️ 내 취향이 반영되고 있어요
+          </p>
+        )}
       </div>
 
       <div className="px-4 py-4 space-y-4">
@@ -309,9 +398,17 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
 
         {/* 팁 */}
         <div className="text-center text-xs text-gray-400 mt-4">
-          💡 선택이 어려우면 {tabMode === "roulette" ? "룰렛을 다시 돌려보세요!" : "다시 추천을 눌러보세요!"}
+          💡 {tabMode === "roulette" ? "룰렛을 다시 돌려보세요!" : "기분을 선택하거나 다시 추천을 눌러보세요!"}
         </div>
       </div>
+
+      {/* 취향 설정 모달 */}
+      <PreferenceSettings
+        open={settingsOpen}
+        onClose={() => setSettingsOpen(false)}
+        preferences={preferences}
+        onSave={handleSavePreferences}
+      />
     </div>
   );
 }
