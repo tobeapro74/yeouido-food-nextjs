@@ -115,8 +115,13 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
     // 평점 3.5 이상 필터
     candidates = candidates.filter(r => (r.평점 || 0) >= 3.5);
 
-    // 취향 설정 반영: 카테고리 필터
-    if (currentPrefs.categories.length < 5) {
+    // 룰렛 카테고리 필터 (최우선 적용 - 룰렛 결과는 반드시 지켜야 함)
+    if (category && category !== "random") {
+      candidates = candidates.filter(r => r.카테고리 === category);
+    }
+
+    // 취향 설정 반영: 카테고리 필터 (룰렛 모드가 아닐 때만 적용)
+    if (!category && currentPrefs.categories.length < 5) {
       candidates = candidates.filter(r => currentPrefs.categories.includes(r.카테고리));
     }
 
@@ -145,11 +150,6 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
       );
     }
 
-    // 룰렛 카테고리 필터
-    if (category && category !== "random") {
-      candidates = candidates.filter(r => r.카테고리 === category);
-    }
-
     // 기분 기반 필터링
     if (mood) {
       const moodData = moodOptions.find(m => m.id === mood);
@@ -176,7 +176,16 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
       return candidates[randomIndex];
     }
 
-    // 후보가 없으면 전체에서 랜덤 (취향 무시)
+    // 후보가 없으면 룰렛 카테고리만 적용하여 재시도
+    if (category && category !== "random") {
+      const categoryOnly = allRestaurants.filter(r => r.카테고리 === category);
+      if (categoryOnly.length > 0) {
+        const randomIndex = Math.floor(Math.random() * categoryOnly.length);
+        return categoryOnly[randomIndex];
+      }
+    }
+
+    // 그래도 없으면 전체에서 랜덤
     const randomIndex = Math.floor(Math.random() * allRestaurants.length);
     return allRestaurants[randomIndex];
   };
