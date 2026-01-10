@@ -13,6 +13,38 @@ function formatReviewCount(count: number): string {
   return count.toString();
 }
 
+// 주소에서 층수 정보 추출 (예: "2층", "B1", "지하 1층" 등)
+function extractFloor(address: string): string | null {
+  // 다양한 층수 패턴 매칭
+  const patterns = [
+    /(\d+)\s*층/,           // "2층", "2 층"
+    /(\d+)F/i,              // "2F", "2f"
+    /(B\d+)/i,              // "B1", "B2"
+    /지하\s*(\d+)\s*층?/,    // "지하 1층", "지하1"
+    /(\d+)호/,              // "413호" -> 4층으로 추정 (선택적)
+  ];
+
+  for (const pattern of patterns) {
+    const match = address.match(pattern);
+    if (match) {
+      const value = match[1] || match[0];
+      // B1, B2 등은 그대로 반환
+      if (/^B\d+$/i.test(value)) {
+        return value.toUpperCase();
+      }
+      // 지하인 경우
+      if (address.includes("지하")) {
+        return `B${value}`;
+      }
+      // 일반 층수
+      if (/^\d+$/.test(value)) {
+        return `${value}층`;
+      }
+    }
+  }
+  return null;
+}
+
 const imageCache: Record<string, string> = {};
 const closedCache: Record<string, boolean> = {};
 const buildingCache: Record<string, string | null> = {};
@@ -161,7 +193,10 @@ export function RestaurantCard({
           )}
           <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
             <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{restaurant.지역} · {restaurant.주소.split(' ').slice(-1)[0]}</span>
+            <span className="truncate">
+              {restaurant.지역}
+              {extractFloor(restaurant.주소) && ` · ${extractFloor(restaurant.주소)}`}
+            </span>
           </p>
           {buildingName && (
             <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
@@ -208,7 +243,10 @@ export function RestaurantCard({
             </div>
             <p className="text-sm text-muted-foreground flex items-center gap-1 mt-1">
               <MapPin className="h-3 w-3 flex-shrink-0" />
-              <span className="truncate">{restaurant.지역} · {restaurant.주소.split(' ').slice(-1)[0]}</span>
+              <span className="truncate">
+                {restaurant.지역}
+                {extractFloor(restaurant.주소) && ` · ${extractFloor(restaurant.주소)}`}
+              </span>
             </p>
             {restaurant.특징 && (
               <p className="text-xs text-muted-foreground mt-1 line-clamp-1">
