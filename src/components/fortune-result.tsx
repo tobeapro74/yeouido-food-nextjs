@@ -1,6 +1,6 @@
 "use client";
 
-import { FortuneResult, 오행색상 } from "@/lib/fortune";
+import { FortuneResult } from "@/lib/fortune";
 import { Restaurant, getRestaurantsByCategoryAndRegion } from "@/data/yeouido-food";
 import { MapPin, Utensils, Compass, Sparkles } from "lucide-react";
 import { RestaurantCard } from "./restaurant-card";
@@ -31,11 +31,11 @@ export function FortuneResultView({ result, onReset, onSelectRestaurant }: Fortu
       result.luckyRegion
     );
 
-    // 평점 높은 순으로 정렬 후 최대 6개
+    // 평점 높은 순으로 정렬 후 최대 3개
     const sorted = [...filtered]
       .filter(r => r.평점)
       .sort((a, b) => (b.평점 || 0) - (a.평점 || 0))
-      .slice(0, 6);
+      .slice(0, 3);
 
     setRecommendations(sorted);
   }, [result]);

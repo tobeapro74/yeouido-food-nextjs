@@ -75,6 +75,29 @@ export const 오행음식: Record<Element, { category: string; description: stri
   }
 };
 
+// 성별/결혼여부별 추가 음식 특성
+const 성별음식특성: Record<Gender, { preferredElements: Element[]; foods: string[] }> = {
+  male: {
+    preferredElements: ["화", "토"],  // 든든하고 푸짐한 음식
+    foods: ["고기", "국밥", "찌개", "덮밥"]
+  },
+  female: {
+    preferredElements: ["수", "목"],  // 건강하고 가벼운 음식
+    foods: ["샐러드", "브런치", "디저트", "차"]
+  }
+};
+
+const 결혼음식특성: Record<MaritalStatus, { preferredElements: Element[]; style: string }> = {
+  single: {
+    preferredElements: ["화", "금"],  // 트렌디하고 새로운
+    style: "새롭고 트렌디한"
+  },
+  married: {
+    preferredElements: ["목", "토"],  // 안정적이고 건강한
+    style: "안정적이고 편안한"
+  }
+};
+
 // 오행별 색상
 export const 오행색상: Record<Element, string> = {
   목: "#22c55e", // 초록
@@ -120,7 +143,7 @@ export function getTodayElement(): Element {
   return 천간오행[gan];
 }
 
-// 길방 계산 (동/서)
+// 길방 계산 (동/서) - 성별/결혼여부 영향 강화
 export function getLuckyDirection(
   birthYear: number,
   birthMonth: number,
@@ -135,22 +158,39 @@ export function getLuckyDirection(
   let eastScore = 0;
   let westScore = 0;
 
-  // 오행 조합에 따른 길방
+  // 1. 오행 조합에 따른 길방 (기본)
   // 목, 화는 동쪽 (양)
   // 금, 수는 서쪽 (음)
-  // 토는 중앙 (성별에 따라)
-
+  // 토는 중앙
   if (personElement === "목" || personElement === "화") {
     eastScore += 2;
   } else if (personElement === "금" || personElement === "수") {
     westScore += 2;
   } else {
-    // 토
-    if (gender === "male") eastScore += 1;
-    else westScore += 1;
+    // 토는 중립
+    eastScore += 1;
+    westScore += 1;
   }
 
-  // 오늘의 오행과 상생 관계
+  // 2. 성별에 따른 조정 (모든 오행에 영향)
+  if (gender === "male") {
+    // 남성: 양(동쪽) 기운 가점
+    eastScore += 1.5;
+  } else {
+    // 여성: 음(서쪽) 기운 가점
+    westScore += 1.5;
+  }
+
+  // 3. 결혼 여부에 따른 조정 (모든 오행에 영향)
+  if (maritalStatus === "married") {
+    // 기혼: 안정(서쪽) 선호
+    westScore += 1.5;
+  } else {
+    // 미혼: 활동(동쪽) 선호
+    eastScore += 1.5;
+  }
+
+  // 4. 오늘의 오행과 상생 관계
   if (상생[todayElement] === personElement) {
     // 오늘 오행이 본명을 생해주면 동쪽 유리
     eastScore += 1;
@@ -159,57 +199,70 @@ export function getLuckyDirection(
     westScore += 1;
   }
 
-  // 결혼 여부에 따른 조정
-  if (maritalStatus === "married") {
-    // 기혼자는 안정적인 방향
-    if (personElement === "토" || personElement === "금") {
-      westScore += 1;
-    }
-  } else {
-    // 미혼자는 활동적인 방향
-    if (personElement === "목" || personElement === "화") {
-      eastScore += 1;
-    }
-  }
-
-  // 날짜 기반 변동 (매일 다른 결과)
+  // 5. 날짜 기반 변동 (매일 다른 결과)
   const today = new Date();
-  const dayFactor = today.getDate() % 2;
+  const dayFactor = today.getDate() % 3;
   if (dayFactor === 0) eastScore += 0.5;
-  else westScore += 0.5;
+  else if (dayFactor === 1) westScore += 0.5;
+  // dayFactor === 2 일때는 변동 없음
 
   return eastScore >= westScore ? "동" : "서";
 }
 
-// 추천 음식 카테고리 계산
+// 추천 음식 카테고리 계산 (성별/결혼여부 반영)
 export function getLuckyFood(
   birthYear: number,
   birthMonth: number,
-  birthDay: number
+  birthDay: number,
+  gender: Gender,
+  maritalStatus: MaritalStatus
 ): { element: Element; category: string; description: string; foods: string[] } {
   const personElement = getPersonElement(birthYear, birthMonth, birthDay);
   const todayElement = getTodayElement();
 
-  // 오늘 본인에게 필요한 오행 찾기
-  let luckyElement: Element;
-
-  // 상생 받는 오행이 좋음 (나를 생해주는 오행)
+  // 각 오행별 점수 계산
   const elements: Element[] = ["목", "화", "토", "금", "수"];
+  const scores: Record<Element, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
+
+  // 1. 나를 생해주는 오행 가점 (+3)
   const generatingElement = elements.find(e => 상생[e] === personElement);
-
   if (generatingElement) {
-    // 나를 생해주는 오행의 음식
-    luckyElement = generatingElement;
-  } else {
-    // 오늘의 오행과 조화로운 음식
-    luckyElement = todayElement;
+    scores[generatingElement] += 3;
   }
 
-  // 상극 피하기
-  if (상극[luckyElement] === personElement) {
-    // 나를 극하는 오행이면 다른 것으로
-    luckyElement = 상생[personElement]; // 내가 생하는 오행
+  // 2. 오늘 오행과 조화 (+2)
+  scores[todayElement] += 2;
+
+  // 3. 성별 선호 오행 가점 (+2)
+  성별음식특성[gender].preferredElements.forEach(e => {
+    scores[e] += 2;
+  });
+
+  // 4. 결혼여부 선호 오행 가점 (+2)
+  결혼음식특성[maritalStatus].preferredElements.forEach(e => {
+    scores[e] += 2;
+  });
+
+  // 5. 나를 극하는 오행 감점 (-3)
+  const harmfulElement = elements.find(e => 상극[e] === personElement);
+  if (harmfulElement) {
+    scores[harmfulElement] -= 3;
   }
+
+  // 6. 날짜 기반 변동 (매일 다른 결과)
+  const today = new Date();
+  const dayIndex = today.getDate() % 5;
+  scores[elements[dayIndex]] += 1;
+
+  // 가장 높은 점수의 오행 선택
+  let luckyElement: Element = "목";
+  let maxScore = -Infinity;
+  elements.forEach(e => {
+    if (scores[e] > maxScore) {
+      maxScore = scores[e];
+      luckyElement = e;
+    }
+  });
 
   return {
     element: luckyElement,
@@ -217,11 +270,13 @@ export function getLuckyFood(
   };
 }
 
-// 운세 메시지 생성
+// 운세 메시지 생성 (성별/결혼여부 반영)
 export function getFortuneMessage(
   personElement: Element,
   todayElement: Element,
-  direction: Direction
+  direction: Direction,
+  gender: Gender,
+  maritalStatus: MaritalStatus
 ): string {
   const messages: string[] = [];
 
@@ -236,6 +291,28 @@ export function getFortuneMessage(
     messages.push("오늘은 적극적으로 도전해볼 만한 날입니다.");
   } else {
     messages.push("오늘은 평온하고 안정적인 하루가 될 것입니다.");
+  }
+
+  // 성별별 조언
+  if (gender === "male") {
+    if (personElement === "화" || personElement === "목") {
+      messages.push("활력 넘치는 식사로 에너지를 충전하세요.");
+    } else {
+      messages.push("든든한 한 끼로 하루를 마무리하세요.");
+    }
+  } else {
+    if (personElement === "수" || personElement === "금") {
+      messages.push("가볍고 건강한 음식이 오늘의 컨디션을 높여줍니다.");
+    } else {
+      messages.push("맛있는 음식으로 자신에게 선물을 주세요.");
+    }
+  }
+
+  // 결혼여부별 조언
+  if (maritalStatus === "single") {
+    messages.push("새로운 맛집 탐험이 좋은 인연으로 이어질 수 있어요.");
+  } else {
+    messages.push("소중한 사람과 함께하는 식사가 행복을 더해줍니다.");
   }
 
   // 길방 메시지
@@ -274,8 +351,8 @@ export function calculateFortune(
   const personElement = getPersonElement(birthYear, birthMonth, birthDay);
   const todayElement = getTodayElement();
   const direction = getLuckyDirection(birthYear, birthMonth, birthDay, gender, maritalStatus);
-  const luckyFood = getLuckyFood(birthYear, birthMonth, birthDay);
-  const message = getFortuneMessage(personElement, todayElement, direction);
+  const luckyFood = getLuckyFood(birthYear, birthMonth, birthDay, gender, maritalStatus);
+  const message = getFortuneMessage(personElement, todayElement, direction, gender, maritalStatus);
 
   return {
     personElement,
