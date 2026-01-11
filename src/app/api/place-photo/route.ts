@@ -107,41 +107,12 @@ export async function GET(request: NextRequest) {
     // MongoDB에서 건물 정보 조회 (병렬로 실행)
     const buildingPromise = restaurantName ? getBuildingFromDB(restaurantName) : Promise.resolve(null);
 
-    // 2. Cloudinary에서 캐시된 이미지 확인
-    try {
-      const existingImage = await cloudinary.api.resource(publicId);
-      if (existingImage?.secure_url) {
-        // 캐시된 이미지 반환 (최적화된 URL)
-        const optimizedUrl = cloudinary.url(publicId, {
-          fetch_format: "auto",
-          quality: "auto",
-          width: 400,
-          height: 300,
-          crop: "fill",
-        });
-        const buildingName = await buildingPromise;
-
-        // MongoDB에도 캐시 저장 (다음부터는 MongoDB에서 바로 조회)
-        if (restaurantName) {
-          await saveImageCache({
-            restaurantName,
-            photoUrl: optimizedUrl,
-            buildingName,
-          });
-        }
-
-        return NextResponse.json({ photoUrl: optimizedUrl, cached: true, buildingName });
-      }
-    } catch {
-      // 이미지가 없으면 계속 진행
-    }
-
-    // 3. Google Places API 키 확인
+    // 2. Google Places API 키 확인
     if (!GOOGLE_API_KEY) {
       return NextResponse.json({ photoUrl: null, error: "API key not configured" });
     }
 
-    // 3. Google Places API로 사진 검색 (여의도 Seoul Korea 추가)
+    // 3. Google Places API로 사진 검색
     // business_status 필드 추가: OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY
     const searchQuery = `${query} 여의도 Seoul Korea`;
     const searchUrl = `https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=${encodeURIComponent(
@@ -179,7 +150,7 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 4. 사진 참조 가져오기
+    // 4. 사진 참조 추출
     let photoRef: string | null = null;
 
     if (candidate.photos && candidate.photos.length > 0) {
