@@ -33,12 +33,25 @@ const getImageCache = (): Record<string, string> => {
   return {};
 };
 
+// 가격대 캐시
+const getPriceCache = (): Record<string, string | null> => {
+  if (typeof window !== "undefined") {
+    if (!(window as unknown as { __priceCache?: Record<string, string | null> }).__priceCache) {
+      (window as unknown as { __priceCache: Record<string, string | null> }).__priceCache = {};
+    }
+    return (window as unknown as { __priceCache: Record<string, string | null> }).__priceCache;
+  }
+  return {};
+};
+
 export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) {
   const cacheKey = restaurant.이름;
   const imageCache = getImageCache();
+  const priceCache = getPriceCache();
   const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
   const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
-  const [priceRange, setPriceRange] = useState<string | null>(null);
+  const [priceRange, setPriceRange] = useState<string | null>(priceCache[cacheKey] ?? null);
+  const [priceLoaded, setPriceLoaded] = useState(cacheKey in priceCache);
 
   useEffect(() => {
     // 이미 캐시된 경우
@@ -84,20 +97,30 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
 
   // 가격대 정보 가져오기
   useEffect(() => {
+    // 이미 캐시된 경우
+    if (cacheKey in priceCache) {
+      setPriceRange(priceCache[cacheKey]);
+      setPriceLoaded(true);
+      return;
+    }
+
     const fetchPriceRange = async () => {
       try {
         const res = await fetch(`/api/restaurant-prices/${encodeURIComponent(restaurant.이름)}`);
         const data = await res.json();
-        if (data.priceRange) {
-          setPriceRange(data.priceRange);
-        }
+        const fetchedPrice = data.priceRange || null;
+        priceCache[cacheKey] = fetchedPrice;
+        setPriceRange(fetchedPrice);
       } catch (error) {
         console.error("Error fetching price range:", error);
+        priceCache[cacheKey] = null;
+      } finally {
+        setPriceLoaded(true);
       }
     };
 
     fetchPriceRange();
-  }, [restaurant.이름]);
+  }, [restaurant.이름, cacheKey, priceCache]);
 
   const mapsLink = getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
@@ -193,11 +216,13 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
             </div>
           )}
 
-          {/* 가격대 - DB 가격대 우선, 없으면 기본 가격대 표시 */}
-          {(priceRange || restaurant.가격대) && (
+          {/* 가격대 - 로딩 완료 후 DB 가격대 표시, 없으면 기본 가격대 표시 */}
+          {(priceLoaded ? (priceRange || restaurant.가격대) : restaurant.가격대) && (
             <div className="flex items-center gap-3">
               <Banknote className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm">{priceRange || restaurant.가격대}</span>
+              <span className="text-sm">
+                {priceLoaded ? (priceRange || restaurant.가격대) : restaurant.가격대}
+              </span>
             </div>
           )}
         </div>
