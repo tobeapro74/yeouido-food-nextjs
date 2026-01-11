@@ -219,6 +219,44 @@ console.log("result:", items[resultIndex].id);
 
 ---
 
+### 7. 모바일에서 이미지 로딩 속도 저하
+
+**문제**
+- 모바일에서 앱을 열면 식당 카드 이미지 로딩에 시간이 오래 걸림
+- 매번 같은 식당도 느리게 로딩됨
+
+**원인**
+- 매 요청마다 Cloudinary API로 이미지 존재 여부 확인
+- Google Places API 호출 → Cloudinary 업로드 순차 처리
+
+**해결**
+MongoDB에 이미지 URL 캐시 레이어 추가:
+```typescript
+// 1. MongoDB 캐시 확인 (가장 빠름)
+const cached = await getCachedImage(restaurantName);
+if (cached) {
+  return NextResponse.json({
+    photoUrl: cached.photoUrl,
+    cached: true
+  });
+}
+
+// 2. 캐시 없으면 Google API 호출 후 MongoDB에 저장
+await saveImageCache({
+  restaurantName,
+  photoUrl: optimizedUrl,
+  buildingName,
+});
+```
+
+**개선된 흐름**
+- 첫 조회: Google API → Cloudinary 업로드 → MongoDB 저장
+- 이후 조회: MongoDB에서 바로 반환 (API 호출 0)
+
+**파일**: `src/app/api/place-photo/route.ts`
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버

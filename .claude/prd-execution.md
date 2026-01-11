@@ -53,6 +53,12 @@
   - 길방(동/서여의도) 추천
   - 오행별 음식 카테고리 추천
 
+### 성능 최적화
+- [x] MongoDB 이미지 URL 캐시 (image_cache 컬렉션)
+  - 첫 조회: Google API → Cloudinary 업로드 → MongoDB 저장
+  - 이후 조회: MongoDB에서 바로 반환 (API 호출 0)
+- [x] Cloudinary API 확인 단계 제거로 로딩 속도 개선
+
 ### 버그 수정
 - [x] iOS Safari 이미지 업로드
 - [x] 인기 맛집 중식 미표시
