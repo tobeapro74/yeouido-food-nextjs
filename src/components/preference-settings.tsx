@@ -111,13 +111,12 @@ export function PreferenceSettings({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center touch-none"
-      onTouchMove={(e) => e.stopPropagation()}
+      className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div
-        className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 touch-auto"
-        onTouchMove={(e) => e.stopPropagation()}
-      >
+      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
         {/* 헤더 */}
         <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <h2 className="text-lg font-bold">⚙️ 내 취향 설정</h2>
@@ -130,7 +129,10 @@ export function PreferenceSettings({
         </div>
 
         {/* 설정 내용 */}
-        <div className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain">
+        <div
+          className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain pb-4"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
           {/* 선호 카테고리 */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3">선호 카테고리</h3>
