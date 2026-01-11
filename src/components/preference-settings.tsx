@@ -111,14 +111,14 @@ export function PreferenceSettings({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center"
+      className="fixed inset-0 z-[60] bg-black/50 flex items-end justify-center"
       onClick={(e) => {
         if (e.target === e.currentTarget) onClose();
       }}
     >
       <div
-        className="bg-white rounded-t-2xl w-full max-w-md flex flex-col animate-in slide-in-from-bottom duration-300"
-        style={{ maxHeight: "70dvh" }}
+        className="bg-white rounded-t-2xl w-full max-w-md flex flex-col animate-in slide-in-from-bottom duration-300 mb-16"
+        style={{ maxHeight: "calc(70dvh - 64px)" }}
       >
         {/* 헤더 */}
         <div className="flex items-center justify-between p-4 border-b">
