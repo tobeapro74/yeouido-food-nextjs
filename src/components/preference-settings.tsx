@@ -66,6 +66,18 @@ export function PreferenceSettings({
     setLocalPrefs(preferences);
   }, [preferences, open]);
 
+  // 모달이 열리면 배경 스크롤 방지
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
   const toggleCategory = (categoryId: string) => {
     setLocalPrefs(prev => {
       const newCategories = prev.categories.includes(categoryId)
@@ -98,8 +110,14 @@ export function PreferenceSettings({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
-      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+    <div
+      className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center touch-none"
+      onTouchMove={(e) => e.stopPropagation()}
+    >
+      <div
+        className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300 touch-auto"
+        onTouchMove={(e) => e.stopPropagation()}
+      >
         {/* 헤더 */}
         <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <h2 className="text-lg font-bold">⚙️ 내 취향 설정</h2>
@@ -112,7 +130,7 @@ export function PreferenceSettings({
         </div>
 
         {/* 설정 내용 */}
-        <div className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0">
+        <div className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain">
           {/* 선호 카테고리 */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3">선호 카테고리</h3>
