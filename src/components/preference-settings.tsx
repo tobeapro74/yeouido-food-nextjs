@@ -99,9 +99,9 @@ export function PreferenceSettings({
 
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end justify-center">
-      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] overflow-hidden animate-in slide-in-from-bottom duration-300">
+      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b">
+        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
           <h2 className="text-lg font-bold">⚙️ 내 취향 설정</h2>
           <button
             onClick={onClose}
@@ -112,7 +112,7 @@ export function PreferenceSettings({
         </div>
 
         {/* 설정 내용 */}
-        <div className="p-4 space-y-6 overflow-y-auto max-h-[60vh]">
+        <div className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0">
           {/* 선호 카테고리 */}
           <div>
             <h3 className="text-sm font-semibold text-gray-700 mb-3">선호 카테고리</h3>
@@ -201,7 +201,7 @@ export function PreferenceSettings({
         </div>
 
         {/* 하단 버튼 */}
-        <div className="p-4 border-t flex gap-3">
+        <div className="p-4 border-t flex gap-3 flex-shrink-0">
           <Button
             variant="outline"
             onClick={handleReset}

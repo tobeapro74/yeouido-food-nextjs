@@ -94,10 +94,7 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
   const allRestaurants = useMemo(() => getAllRestaurants(), []);
   const timeContext = useMemo(() => getTimeBasedTags(), []);
 
-  // 취향 설정 로드
-  useEffect(() => {
-    setPreferences(loadPreferences());
-  }, []);
+  // 취향 설정 로드는 아래 useEffect에서 통합 처리
 
   // 취향 설정 저장
   const handleSavePreferences = (newPrefs: UserPreferences) => {
@@ -224,12 +221,13 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
     handleRecommend(undefined, categoryId);
   };
 
-  // 초기 추천
+  // 초기 로드: preferences 로드 및 추천
   useEffect(() => {
-    // preferences 로드 후 추천
     const prefs = loadPreferences();
     setPreferences(prefs);
+    // 첫 추천 실행
     setTimeout(() => handleRecommend(undefined, undefined, prefs), 100);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 취향 설정 여부 표시
