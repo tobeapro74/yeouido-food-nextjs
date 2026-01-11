@@ -7,6 +7,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BottomNav } from "@/components/bottom-nav";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { RestaurantList } from "@/components/restaurant-list";
+import { PopularRestaurants } from "@/components/popular-restaurants";
 import { RestaurantDetail } from "@/components/restaurant-detail";
 import { CategorySheet } from "@/components/category-sheet";
 import { BuildingSheet } from "@/components/building-sheet";
@@ -447,24 +448,11 @@ export default function Home() {
             </ScrollArea>
           </section>
 
-          {/* 인기 맛집 */}
-          <section className="bg-card rounded-xl p-4 shadow-sm">
-            <h2 className="text-base font-semibold mb-3 text-foreground">인기 맛집</h2>
-            <ScrollArea className="w-full">
-              <div className="flex gap-3 pb-2">
-                {popularRestaurants.map((restaurant, index) => (
-                  <RestaurantCard
-                    key={`${restaurant.이름}-${index}`}
-                    restaurant={restaurant}
-                    variant="horizontal"
-                    showCategory={true}
-                    onClick={() => handleRestaurantSelect(restaurant)}
-                  />
-                ))}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </section>
+          {/* 인기 맛집 - 배치 로딩 적용 */}
+          <PopularRestaurants
+            restaurants={popularRestaurants}
+            onSelect={handleRestaurantSelect}
+          />
 
           {/* 지역별 맛집 */}
           <section className="bg-card rounded-xl p-4 shadow-sm">
