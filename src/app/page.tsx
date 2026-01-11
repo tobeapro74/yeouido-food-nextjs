@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { User, LogOut, Key, ChevronDown } from "lucide-react";
+import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BottomNav } from "@/components/bottom-nav";
@@ -64,6 +65,32 @@ export default function Home() {
   // 운세 상태
   const [fortuneModalOpen, setFortuneModalOpen] = useState(false);
   const [fortuneResult, setFortuneResult] = useState<FortuneResult | null>(null);
+
+  // 스와이프 뒤로가기 (홈이 아닌 화면에서만 활성화)
+  const handleSwipeBack = useCallback(() => {
+    if (currentView === "detail") {
+      if (previousView === "home") {
+        setCurrentView("home");
+        setActiveTab("home");
+      } else if (previousView === "recommend") {
+        setCurrentView("recommend");
+        setActiveTab("recommend");
+      } else {
+        setCurrentView("list");
+      }
+      setSelectedRestaurant(null);
+    } else if (currentView !== "home") {
+      setCurrentView("home");
+      setActiveTab("home");
+    }
+  }, [currentView, previousView]);
+
+  useSwipeBack({
+    onSwipeBack: handleSwipeBack,
+    enabled: currentView !== "home",
+    threshold: 80,
+    edgeWidth: 25,
+  });
 
   // 로그인 상태 확인
   useEffect(() => {
