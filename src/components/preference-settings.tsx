@@ -116,9 +116,12 @@ export function PreferenceSettings({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="bg-white rounded-t-2xl w-full max-w-md max-h-[85vh] flex flex-col animate-in slide-in-from-bottom duration-300">
+      <div
+        className="bg-white rounded-t-2xl w-full max-w-md flex flex-col animate-in slide-in-from-bottom duration-300"
+        style={{ maxHeight: "70dvh" }}
+      >
         {/* 헤더 */}
-        <div className="flex items-center justify-between p-4 border-b flex-shrink-0">
+        <div className="flex items-center justify-between p-4 border-b">
           <h2 className="text-lg font-bold">⚙️ 내 취향 설정</h2>
           <button
             onClick={onClose}
@@ -130,8 +133,12 @@ export function PreferenceSettings({
 
         {/* 설정 내용 */}
         <div
-          className="p-4 space-y-6 overflow-y-auto flex-1 min-h-0 overscroll-contain pb-4"
-          style={{ WebkitOverflowScrolling: "touch" }}
+          className="p-4 space-y-6 overflow-y-scroll overscroll-contain"
+          style={{
+            WebkitOverflowScrolling: "touch",
+            flex: "1 1 auto",
+            minHeight: 0,
+          }}
         >
           {/* 선호 카테고리 */}
           <div>
@@ -221,7 +228,7 @@ export function PreferenceSettings({
         </div>
 
         {/* 하단 버튼 */}
-        <div className="p-4 border-t flex gap-3 flex-shrink-0">
+        <div className="p-4 border-t flex gap-3" style={{ flexShrink: 0 }}>
           <Button
             variant="outline"
             onClick={handleReset}
