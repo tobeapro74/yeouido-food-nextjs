@@ -133,25 +133,25 @@ export const 오행음식: Record<Element, { category: string; description: stri
   }
 };
 
-// 성별/결혼여부별 추가 음식 특성
+// 성별/결혼여부별 추가 음식 특성 (서로 다른 오행 강조)
 const 성별음식특성: Record<Gender, { preferredElements: Element[]; foods: string[] }> = {
   male: {
-    preferredElements: ["화", "토"],  // 든든하고 푸짐한 음식
+    preferredElements: ["화", "토"],  // 든든하고 푸짐한 음식 (양식, 중식)
     foods: ["고기", "국밥", "찌개", "덮밥"]
   },
   female: {
-    preferredElements: ["수", "목"],  // 건강하고 가벼운 음식
+    preferredElements: ["수", "금"],  // 건강하고 세련된 음식 (일식, 동남아)
     foods: ["샐러드", "브런치", "디저트", "차"]
   }
 };
 
 const 결혼음식특성: Record<MaritalStatus, { preferredElements: Element[]; style: string }> = {
   single: {
-    preferredElements: ["화", "금"],  // 트렌디하고 새로운
+    preferredElements: ["금", "화"],  // 트렌디하고 새로운 (동남아, 양식)
     style: "새롭고 트렌디한"
   },
   married: {
-    preferredElements: ["목", "토"],  // 안정적이고 건강한
+    preferredElements: ["목", "수"],  // 안정적이고 건강한 (한식, 일식)
     style: "안정적이고 편안한"
   }
 };
@@ -278,61 +278,45 @@ export function getLuckyDirection(
   let eastScore = 0;
   let westScore = 0;
 
-  // 1. 오행 조합에 따른 길방 (기본)
-  // 목, 화는 동쪽 (양)
-  // 금, 수는 서쪽 (음)
-  // 토는 중앙
+  // 1. 오행 조합에 따른 길방 (기본 - 가중치 낮춤)
   if (personElement === "목" || personElement === "화") {
-    eastScore += 2;
-  } else if (personElement === "금" || personElement === "수") {
-    westScore += 2;
-  } else {
-    // 토는 중립
     eastScore += 1;
+  } else if (personElement === "금" || personElement === "수") {
     westScore += 1;
   }
 
-  // 2. 성별에 따른 조정 (모든 오행에 영향)
+  // 2. 성별에 따른 조정 (가중치 높임)
   if (gender === "male") {
-    // 남성: 양(동쪽) 기운 가점
-    eastScore += 1.5;
+    eastScore += 3;  // 남성: 양(동쪽)
   } else {
-    // 여성: 음(서쪽) 기운 가점
-    westScore += 1.5;
+    westScore += 3;  // 여성: 음(서쪽)
   }
 
-  // 3. 결혼 여부에 따른 조정 (모든 오행에 영향)
+  // 3. 결혼 여부에 따른 조정 (가중치 높임)
   if (maritalStatus === "married") {
-    // 기혼: 안정(서쪽) 선호
-    westScore += 1.5;
+    westScore += 3;  // 기혼: 안정(서쪽)
   } else {
-    // 미혼: 활동(동쪽) 선호
-    eastScore += 1.5;
+    eastScore += 3;  // 미혼: 활동(동쪽)
   }
 
   // 4. 오늘의 오행과 상생 관계
   if (상생[todayElement] === personElement) {
-    // 오늘 오행이 본명을 생해주면 동쪽 유리
     eastScore += 1;
   } else if (상생[personElement] === todayElement) {
-    // 본명이 오늘을 생해주면 서쪽 유리 (에너지 소모)
     westScore += 1;
   }
 
-  // 5. 띠(지지) 관계에 따른 조정 (NEW!)
+  // 5. 띠(지지) 관계에 따른 조정
   if (zodiacRelation.relation === "육합") {
-    // 육합이면 활동적인 동쪽 추천
-    eastScore += 2;
+    eastScore += 1;
   } else if (zodiacRelation.relation === "충") {
-    // 충이면 안정적인 서쪽 추천
-    westScore += 2;
+    westScore += 1;
   } else if (zodiacRelation.relation === "삼합") {
-    // 삼합이면 해당 오행에 따라
     const zodiacElement = 지지오행[todayZodiac];
     if (zodiacElement === "목" || zodiacElement === "화") {
-      eastScore += 1.5;
+      eastScore += 0.5;
     } else {
-      westScore += 1.5;
+      westScore += 0.5;
     }
   }
 
@@ -344,7 +328,7 @@ export function getLuckyDirection(
     westScore += 0.5;
   }
 
-  return eastScore >= westScore ? "동" : "서";
+  return eastScore > westScore ? "동" : "서";
 }
 
 // 추천 음식 카테고리 계산 (띠/성별/결혼여부 반영)
@@ -365,49 +349,47 @@ export function getLuckyFood(
   const elements: Element[] = ["목", "화", "토", "금", "수"];
   const scores: Record<Element, number> = { 목: 0, 화: 0, 토: 0, 금: 0, 수: 0 };
 
-  // 1. 나를 생해주는 오행 가점 (+3)
+  // 1. 나를 생해주는 오행 가점 (+2)
   const generatingElement = elements.find(e => 상생[e] === personElement);
   if (generatingElement) {
-    scores[generatingElement] += 3;
+    scores[generatingElement] += 2;
   }
 
-  // 2. 오늘 오행과 조화 (+2)
-  scores[todayElement] += 2;
+  // 2. 오늘 오행과 조화 (+1)
+  scores[todayElement] += 1;
 
-  // 3. 성별 선호 오행 가점 (+2)
+  // 3. 성별 선호 오행 가점 (+4 - 가중치 높임!)
   성별음식특성[gender].preferredElements.forEach(e => {
-    scores[e] += 2;
+    scores[e] += 4;
   });
 
-  // 4. 결혼여부 선호 오행 가점 (+2)
+  // 4. 결혼여부 선호 오행 가점 (+4 - 가중치 높임!)
   결혼음식특성[maritalStatus].preferredElements.forEach(e => {
-    scores[e] += 2;
+    scores[e] += 4;
   });
 
-  // 5. 나를 극하는 오행 감점 (-3)
+  // 5. 나를 극하는 오행 감점 (-2)
   const harmfulElement = elements.find(e => 상극[e] === personElement);
   if (harmfulElement) {
-    scores[harmfulElement] -= 3;
+    scores[harmfulElement] -= 2;
   }
 
-  // 6. 띠별 선호 오행 가점 (+2) (NEW!)
+  // 6. 띠별 선호 오행 가점 (+1)
   const zodiacData = 띠성향[personZodiac];
   if (zodiacData) {
     zodiacData.luckyElements.forEach(e => {
-      scores[e] += 2;
+      scores[e] += 1;
     });
     zodiacData.unluckyElements.forEach(e => {
       scores[e] -= 1;
     });
   }
 
-  // 7. 오늘 일진과의 관계에 따른 조정 (NEW!)
+  // 7. 오늘 일진과의 관계에 따른 조정
   if (zodiacRelation.relation === "육합" || zodiacRelation.relation === "삼합") {
-    // 길한 날에는 오늘 일진의 오행 가점
     const todayZodiacElement = 지지오행[todayZodiac];
-    scores[todayZodiacElement] += 2;
+    scores[todayZodiacElement] += 1;
   } else if (zodiacRelation.relation === "충") {
-    // 충인 날에는 본인 띠의 lucky 오행 강화
     if (zodiacData) {
       zodiacData.luckyElements.forEach(e => {
         scores[e] += 1;
