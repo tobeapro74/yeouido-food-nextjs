@@ -2,7 +2,7 @@
 
 import { FortuneResult } from "@/lib/fortune";
 import { Restaurant, getRestaurantsByCategoryAndRegion } from "@/data/yeouido-food";
-import { MapPin, Utensils, Compass, Sparkles } from "lucide-react";
+import { MapPin, Utensils, Compass, Sparkles, Star } from "lucide-react";
 import { RestaurantCard } from "./restaurant-card";
 import { useState, useEffect } from "react";
 
@@ -19,6 +19,14 @@ const 오행설명: Record<string, string> = {
   토: "흙 (土)",
   금: "쇠 (金)",
   수: "물 (水)"
+};
+
+// 띠 관계 배경색
+const 관계색상: Record<string, string> = {
+  육합: "bg-green-100 text-green-800 border-green-300",
+  삼합: "bg-blue-100 text-blue-800 border-blue-300",
+  충: "bg-red-100 text-red-800 border-red-300",
+  보통: "bg-gray-100 text-gray-700 border-gray-300"
 };
 
 export function FortuneResultView({ result, onReset, onSelectRestaurant }: FortuneResultViewProps) {
@@ -49,6 +57,37 @@ export function FortuneResultView({ result, onReset, onSelectRestaurant }: Fortu
       <div className="text-center space-y-1">
         <p className="text-sm text-muted-foreground">{dateString}</p>
         <h2 className="text-xl font-bold">오늘의 맛집 운세</h2>
+      </div>
+
+      {/* 띠 정보 카드 */}
+      <div className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-100">
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-3">
+            <span className="text-4xl">{result.zodiac.emoji}</span>
+            <div>
+              <p className="font-bold text-lg">{result.zodiac.name}</p>
+              <p className="text-xs text-muted-foreground">{result.zodiac.personality}</p>
+            </div>
+          </div>
+          <div className="text-right">
+            <p className="text-xs text-muted-foreground">오늘의 일진</p>
+            <p className="text-2xl">{result.todayZodiac.emoji}</p>
+          </div>
+        </div>
+
+        {/* 띠 관계 표시 */}
+        <div className={`rounded-lg p-3 border ${관계색상[result.zodiacRelation.relation]}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Star className="w-4 h-4" />
+            <span className="font-medium text-sm">
+              오늘의 띠 궁합: {result.zodiacRelation.relation}
+              {result.zodiacRelation.relation === "육합" && " ⭐⭐⭐"}
+              {result.zodiacRelation.relation === "삼합" && " ⭐⭐"}
+              {result.zodiacRelation.relation === "충" && " ⚠️"}
+            </span>
+          </div>
+          <p className="text-xs">{result.zodiacRelation.description}</p>
+        </div>
       </div>
 
       {/* 운세 카드 */}

@@ -28,6 +28,64 @@ const 지지오행: Record<string, Element> = {
   해: "수", 자: "수"
 };
 
+// 띠 이름 (한글)
+export const 띠이름: Record<string, string> = {
+  자: "쥐띠", 축: "소띠", 인: "호랑이띠", 묘: "토끼띠",
+  진: "용띠", 사: "뱀띠", 오: "말띠", 미: "양띠",
+  신: "원숭이띠", 유: "닭띠", 술: "개띠", 해: "돼지띠"
+};
+
+// 띠 이모지
+export const 띠이모지: Record<string, string> = {
+  자: "🐀", 축: "🐂", 인: "🐅", 묘: "🐇",
+  진: "🐉", 사: "🐍", 오: "🐎", 미: "🐑",
+  신: "🐵", 유: "🐓", 술: "🐕", 해: "🐷"
+};
+
+// 띠별 성향 및 음식 궁합
+const 띠성향: Record<string, { personality: string; luckyElements: Element[]; unluckyElements: Element[] }> = {
+  자: { personality: "영리하고 적응력이 뛰어남", luckyElements: ["수", "금"], unluckyElements: ["화"] },
+  축: { personality: "성실하고 인내심이 강함", luckyElements: ["토", "금"], unluckyElements: ["목"] },
+  인: { personality: "용감하고 리더십이 있음", luckyElements: ["목", "화"], unluckyElements: ["금"] },
+  묘: { personality: "온화하고 예술적 감각이 뛰어남", luckyElements: ["목", "수"], unluckyElements: ["금"] },
+  진: { personality: "야망이 크고 카리스마가 있음", luckyElements: ["토", "화"], unluckyElements: ["목"] },
+  사: { personality: "지혜롭고 직관력이 뛰어남", luckyElements: ["화", "토"], unluckyElements: ["수"] },
+  오: { personality: "활발하고 자유로운 영혼", luckyElements: ["화", "목"], unluckyElements: ["수"] },
+  미: { personality: "창의적이고 예술적임", luckyElements: ["토", "화"], unluckyElements: ["목"] },
+  신: { personality: "재치있고 호기심이 많음", luckyElements: ["금", "토"], unluckyElements: ["화"] },
+  유: { personality: "꼼꼼하고 완벽주의적", luckyElements: ["금", "토"], unluckyElements: ["화"] },
+  술: { personality: "충직하고 정의로움", luckyElements: ["토", "화"], unluckyElements: ["목"] },
+  해: { personality: "너그럽고 낙천적임", luckyElements: ["수", "목"], unluckyElements: ["토"] }
+};
+
+// 육합 (六合) - 서로 잘 맞는 관계
+const 육합: Record<string, string> = {
+  자: "축", 축: "자",
+  인: "해", 해: "인",
+  묘: "술", 술: "묘",
+  진: "유", 유: "진",
+  사: "신", 신: "사",
+  오: "미", 미: "오"
+};
+
+// 충 (冲) - 서로 상충하는 관계
+const 충: Record<string, string> = {
+  자: "오", 오: "자",
+  축: "미", 미: "축",
+  인: "신", 신: "인",
+  묘: "유", 유: "묘",
+  진: "술", 술: "진",
+  사: "해", 해: "사"
+};
+
+// 삼합 (三合) - 세 지지가 모여 강한 기운을 이룸
+const 삼합: Record<string, { members: string[]; element: Element }> = {
+  신자진: { members: ["신", "자", "진"], element: "수" },
+  해묘미: { members: ["해", "묘", "미"], element: "목" },
+  인오술: { members: ["인", "오", "술"], element: "화" },
+  사유축: { members: ["사", "유", "축"], element: "금" }
+};
+
 // 오행 상생 관계 (A가 B를 생함)
 const 상생: Record<Element, Element> = {
   목: "화", // 목생화
@@ -143,7 +201,66 @@ export function getTodayElement(): Element {
   return 천간오행[gan];
 }
 
-// 길방 계산 (동/서) - 성별/결혼여부 영향 강화
+// 태어난 해의 띠(지지) 계산
+export function getPersonZodiac(birthYear: number): string {
+  const baseYear = 1984; // 갑자년
+  const yearDiff = birthYear - baseYear;
+  const 지지Index = ((yearDiff % 12) + 12) % 12;
+  return 지지[지지Index];
+}
+
+// 오늘의 일진 지지 계산
+export function getTodayZodiac(): string {
+  const { 지지: zhi } = getTodayGanZhi();
+  return zhi;
+}
+
+// 지지 관계 분석 (육합/충/삼합)
+export type ZodiacRelation = "육합" | "충" | "삼합" | "보통";
+export function getZodiacRelation(personZodiac: string, todayZodiac: string): { relation: ZodiacRelation; description: string; luckScore: number } {
+  // 육합 체크
+  if (육합[personZodiac] === todayZodiac) {
+    return {
+      relation: "육합",
+      description: "오늘은 당신의 띠와 육합(六合)을 이루는 길한 날입니다!",
+      luckScore: 3
+    };
+  }
+
+  // 충 체크
+  if (충[personZodiac] === todayZodiac) {
+    return {
+      relation: "충",
+      description: "오늘은 띠와 충(冲)이 있어 조심스럽게 행동하세요.",
+      luckScore: -2
+    };
+  }
+
+  // 삼합 체크
+  for (const key of Object.keys(삼합)) {
+    const group = 삼합[key];
+    if (group.members.includes(personZodiac) && group.members.includes(todayZodiac)) {
+      return {
+        relation: "삼합",
+        description: `오늘은 ${group.element}(${key}) 삼합의 기운이 함께합니다!`,
+        luckScore: 2
+      };
+    }
+  }
+
+  return {
+    relation: "보통",
+    description: "평온한 기운이 흐르는 날입니다.",
+    luckScore: 0
+  };
+}
+
+// 띠별 성향 정보 가져오기
+export function getZodiacPersonality(zodiac: string): string {
+  return 띠성향[zodiac]?.personality || "";
+}
+
+// 길방 계산 (동/서) - 띠/성별/결혼여부 영향 반영
 export function getLuckyDirection(
   birthYear: number,
   birthMonth: number,
@@ -153,6 +270,9 @@ export function getLuckyDirection(
 ): Direction {
   const personElement = getPersonElement(birthYear, birthMonth, birthDay);
   const todayElement = getTodayElement();
+  const personZodiac = getPersonZodiac(birthYear);
+  const todayZodiac = getTodayZodiac();
+  const zodiacRelation = getZodiacRelation(personZodiac, todayZodiac);
 
   // 기본 점수
   let eastScore = 0;
@@ -199,17 +319,35 @@ export function getLuckyDirection(
     westScore += 1;
   }
 
-  // 5. 날짜 기반 변동 (매일 다른 결과)
-  const today = new Date();
-  const dayFactor = today.getDate() % 3;
-  if (dayFactor === 0) eastScore += 0.5;
-  else if (dayFactor === 1) westScore += 0.5;
-  // dayFactor === 2 일때는 변동 없음
+  // 5. 띠(지지) 관계에 따른 조정 (NEW!)
+  if (zodiacRelation.relation === "육합") {
+    // 육합이면 활동적인 동쪽 추천
+    eastScore += 2;
+  } else if (zodiacRelation.relation === "충") {
+    // 충이면 안정적인 서쪽 추천
+    westScore += 2;
+  } else if (zodiacRelation.relation === "삼합") {
+    // 삼합이면 해당 오행에 따라
+    const zodiacElement = 지지오행[todayZodiac];
+    if (zodiacElement === "목" || zodiacElement === "화") {
+      eastScore += 1.5;
+    } else {
+      westScore += 1.5;
+    }
+  }
+
+  // 6. 띠의 지지 오행에 따른 조정
+  const personZodiacElement = 지지오행[personZodiac];
+  if (personZodiacElement === "목" || personZodiacElement === "화") {
+    eastScore += 0.5;
+  } else if (personZodiacElement === "금" || personZodiacElement === "수") {
+    westScore += 0.5;
+  }
 
   return eastScore >= westScore ? "동" : "서";
 }
 
-// 추천 음식 카테고리 계산 (성별/결혼여부 반영)
+// 추천 음식 카테고리 계산 (띠/성별/결혼여부 반영)
 export function getLuckyFood(
   birthYear: number,
   birthMonth: number,
@@ -219,6 +357,9 @@ export function getLuckyFood(
 ): { element: Element; category: string; description: string; foods: string[] } {
   const personElement = getPersonElement(birthYear, birthMonth, birthDay);
   const todayElement = getTodayElement();
+  const personZodiac = getPersonZodiac(birthYear);
+  const todayZodiac = getTodayZodiac();
+  const zodiacRelation = getZodiacRelation(personZodiac, todayZodiac);
 
   // 각 오행별 점수 계산
   const elements: Element[] = ["목", "화", "토", "금", "수"];
@@ -249,7 +390,32 @@ export function getLuckyFood(
     scores[harmfulElement] -= 3;
   }
 
-  // 6. 날짜 기반 변동 (매일 다른 결과)
+  // 6. 띠별 선호 오행 가점 (+2) (NEW!)
+  const zodiacData = 띠성향[personZodiac];
+  if (zodiacData) {
+    zodiacData.luckyElements.forEach(e => {
+      scores[e] += 2;
+    });
+    zodiacData.unluckyElements.forEach(e => {
+      scores[e] -= 1;
+    });
+  }
+
+  // 7. 오늘 일진과의 관계에 따른 조정 (NEW!)
+  if (zodiacRelation.relation === "육합" || zodiacRelation.relation === "삼합") {
+    // 길한 날에는 오늘 일진의 오행 가점
+    const todayZodiacElement = 지지오행[todayZodiac];
+    scores[todayZodiacElement] += 2;
+  } else if (zodiacRelation.relation === "충") {
+    // 충인 날에는 본인 띠의 lucky 오행 강화
+    if (zodiacData) {
+      zodiacData.luckyElements.forEach(e => {
+        scores[e] += 1;
+      });
+    }
+  }
+
+  // 8. 날짜 기반 변동 (매일 다른 결과)
   const today = new Date();
   const dayIndex = today.getDate() % 5;
   scores[elements[dayIndex]] += 1;
@@ -339,6 +505,23 @@ export interface FortuneResult {
   };
   message: string;
   color: string;
+  // 띠 관련 정보 추가
+  zodiac: {
+    sign: string;       // 지지 (자, 축, 인...)
+    name: string;       // 띠 이름 (쥐띠, 소띠...)
+    emoji: string;      // 이모지
+    personality: string; // 성향
+  };
+  todayZodiac: {
+    sign: string;
+    name: string;
+    emoji: string;
+  };
+  zodiacRelation: {
+    relation: ZodiacRelation;
+    description: string;
+    luckScore: number;
+  };
 }
 
 export function calculateFortune(
@@ -354,6 +537,11 @@ export function calculateFortune(
   const luckyFood = getLuckyFood(birthYear, birthMonth, birthDay, gender, maritalStatus);
   const message = getFortuneMessage(personElement, todayElement, direction, gender, maritalStatus);
 
+  // 띠 정보
+  const personZodiac = getPersonZodiac(birthYear);
+  const todayZodiac = getTodayZodiac();
+  const zodiacRelation = getZodiacRelation(personZodiac, todayZodiac);
+
   return {
     personElement,
     todayElement,
@@ -361,6 +549,18 @@ export function calculateFortune(
     luckyRegion: direction === "동" ? "동여의도" : "서여의도",
     luckyFood,
     message,
-    color: 오행색상[personElement]
+    color: 오행색상[personElement],
+    zodiac: {
+      sign: personZodiac,
+      name: 띠이름[personZodiac],
+      emoji: 띠이모지[personZodiac],
+      personality: getZodiacPersonality(personZodiac)
+    },
+    todayZodiac: {
+      sign: todayZodiac,
+      name: 띠이름[todayZodiac],
+      emoji: 띠이모지[todayZodiac]
+    },
+    zodiacRelation
   };
 }
