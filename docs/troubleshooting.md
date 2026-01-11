@@ -257,6 +257,54 @@ await saveImageCache({
 
 ---
 
+### 8. 인기맛집 이미지 로딩 시간 개선
+
+**문제**
+- 홈화면 인기맛집 섹션에서 이미지 5개가 순차적으로 느리게 로딩
+- 페이지 새로고침 시마다 시간이 소요됨
+
+**원인**
+- 각 식당 카드가 개별적으로 `/api/place-photo` API 호출 (5번)
+- 각 호출마다 MongoDB 쿼리 실행 (5번)
+- 네트워크 왕복 시간이 누적됨
+
+**해결**
+배치 이미지 조회 API와 전용 컴포넌트 구현:
+
+```typescript
+// /api/place-photos/route.ts - 배치 조회 API
+const cached = await collection.find({
+  restaurantName: { $in: restaurantNames }  // 한 번에 여러 개 조회
+}).toArray();
+
+// /components/popular-restaurants.tsx - 배치 로딩 사용
+const response = await fetch("/api/place-photos", {
+  method: "POST",
+  body: JSON.stringify({ names: restaurantNames }),
+});
+```
+
+**개선 효과**
+| 항목 | 이전 | 이후 |
+|------|------|------|
+| API 호출 | 5회 | 1회 |
+| MongoDB 쿼리 | 5회 | 1회 |
+| 체감 로딩 시간 | 느림 | 빠름 |
+
+**추가 최적화**: 글로벌 메모리 캐시 적용
+```typescript
+// /hooks/useImageBatch.ts
+const globalImageCache = new Map<string, ImageResult>();
+// 같은 세션 내에서는 재요청 없이 즉시 표시
+```
+
+**파일**:
+- `src/app/api/place-photos/route.ts`
+- `src/hooks/useImageBatch.ts`
+- `src/components/popular-restaurants.tsx`
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버

@@ -63,7 +63,8 @@ src/
 │   ├── api/               # API 라우트
 │   │   ├── auth/          # 인증 API (login, logout, register, me, change-password)
 │   │   ├── reviews/       # 리뷰 CRUD API
-│   │   ├── place-photo/   # Google Places 사진 API
+│   │   ├── place-photo/   # Google Places 사진 API (개별 조회)
+│   │   ├── place-photos/  # 배치 이미지 API (여러 개 한 번에)
 │   │   └── upload/        # Cloudinary 이미지 업로드
 │   ├── layout.tsx         # 루트 레이아웃
 │   ├── page.tsx           # 메인 페이지
@@ -75,6 +76,7 @@ src/
 │   ├── bottom-nav.tsx    # 하단 네비게이션
 │   ├── building-sheet.tsx # 빌딩 선택 시트
 │   ├── category-sheet.tsx # 카테고리 선택 시트
+│   ├── popular-restaurants.tsx # 인기 맛집 섹션 (배치 로딩)
 │   ├── preference-settings.tsx # 취향 설정
 │   ├── recommendation-view.tsx # 한끼추천 뷰
 │   ├── restaurant-card.tsx # 맛집 카드
@@ -87,6 +89,8 @@ src/
 │   └── fortune-result.tsx # 운세 결과 화면
 ├── data/
 │   └── yeouido-food.ts   # 맛집 정적 데이터 (195개 식당)
+├── hooks/
+│   └── useImageBatch.ts  # 이미지 배치 로딩 훅
 └── lib/
     ├── mongodb.ts        # MongoDB 연결
     ├── fortune.ts        # 오행 운세 계산 로직
@@ -246,6 +250,29 @@ MongoDB users 컬렉션 업데이트
   - 이후 조회: MongoDB에서 바로 반환 (빠른 응답)
 - Google Places 사진 URL 메모리 캐시 (클라이언트)
 - 폐업/휴업 상태 캐시
+
+### 배치 이미지 로딩
+인기맛집 섹션처럼 여러 이미지를 동시에 로딩해야 할 때 사용:
+
+```
+이전 방식 (느림):
+식당 5개 → 개별 API 호출 5회 → MongoDB 쿼리 5회
+
+배치 방식 (빠름):
+식당 5개 → /api/place-photos 1회 → MongoDB $in 쿼리 1회
+```
+
+**구현 파일**:
+- `/api/place-photos/route.ts` - 배치 이미지 조회 API
+- `/hooks/useImageBatch.ts` - 글로벌 캐시 + 배치 로딩 훅
+- `/components/popular-restaurants.tsx` - 배치 로딩 적용 컴포넌트
+
+**성능 개선 효과**:
+| 항목 | 개별 로딩 | 배치 로딩 |
+|------|----------|----------|
+| API 호출 | 5회 | 1회 |
+| MongoDB 쿼리 | 5회 | 1회 ($in) |
+| 네트워크 왕복 | ~250-500ms | ~50-100ms |
 
 ### 렌더링
 - 폐업 식당 자동 필터링 (return null)
