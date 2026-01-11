@@ -38,6 +38,7 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
   const imageCache = getImageCache();
   const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
   const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
+  const [priceRange, setPriceRange] = useState<string | null>(null);
 
   useEffect(() => {
     // 이미 캐시된 경우
@@ -80,6 +81,23 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
 
     fetchImage();
   }, [restaurant.이름, restaurant.주소, restaurant.카테고리, cacheKey, imageCache]);
+
+  // 가격대 정보 가져오기
+  useEffect(() => {
+    const fetchPriceRange = async () => {
+      try {
+        const res = await fetch(`/api/restaurant-prices/${encodeURIComponent(restaurant.이름)}`);
+        const data = await res.json();
+        if (data.priceRange) {
+          setPriceRange(data.priceRange);
+        }
+      } catch (error) {
+        console.error("Error fetching price range:", error);
+      }
+    };
+
+    fetchPriceRange();
+  }, [restaurant.이름]);
 
   const mapsLink = getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
@@ -175,11 +193,11 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
             </div>
           )}
 
-          {/* 가격대 */}
-          {restaurant.가격대 && (
+          {/* 가격대 - DB 가격대 우선, 없으면 기본 가격대 표시 */}
+          {(priceRange || restaurant.가격대) && (
             <div className="flex items-center gap-3">
               <Banknote className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm">{restaurant.가격대}</span>
+              <span className="text-sm">{priceRange || restaurant.가격대}</span>
             </div>
           )}
         </div>
