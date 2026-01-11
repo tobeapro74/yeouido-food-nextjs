@@ -14,6 +14,9 @@ import { AuthModal } from "@/components/auth-modal";
 import { ChangePasswordModal } from "@/components/change-password-modal";
 import { RecommendationView } from "@/components/recommendation-view";
 import { SearchBar } from "@/components/search-bar";
+import { FortuneModal } from "@/components/fortune-modal";
+import { FortuneResultView } from "@/components/fortune-result";
+import { calculateFortune, FortuneResult, Gender, MaritalStatus } from "@/lib/fortune";
 import {
   Restaurant,
   categories,
@@ -25,8 +28,8 @@ import {
   getPopularRestaurants,
 } from "@/data/yeouido-food";
 
-type View = "home" | "list" | "detail" | "recommend";
-type TabType = "home" | "recommend" | "category" | "region" | "building";
+type View = "home" | "list" | "detail" | "recommend" | "fortune";
+type TabType = "home" | "recommend" | "category" | "region" | "building" | "fortune";
 
 interface UserInfo {
   id: number;
@@ -56,6 +59,10 @@ export default function Home() {
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // 운세 상태
+  const [fortuneModalOpen, setFortuneModalOpen] = useState(false);
+  const [fortuneResult, setFortuneResult] = useState<FortuneResult | null>(null);
 
   // 로그인 상태 확인
   useEffect(() => {
@@ -113,6 +120,15 @@ export default function Home() {
     } else if (tab === "recommend") {
       setCurrentView("recommend");
       setActiveTab("recommend");
+    } else if (tab === "fortune") {
+      // 운세 결과가 있으면 결과 화면, 없으면 입력 모달
+      if (fortuneResult) {
+        setCurrentView("fortune");
+        setActiveTab("fortune");
+      } else {
+        setFortuneModalOpen(true);
+        setActiveTab("fortune");
+      }
     } else if (tab === "category") {
       setCategorySheetOpen(true);
     } else if (tab === "region") {
@@ -120,6 +136,32 @@ export default function Home() {
     } else if (tab === "building") {
       setBuildingSheetOpen(true);
     }
+  };
+
+  // 운세 계산 처리
+  const handleFortuneSubmit = (data: {
+    birthYear: number;
+    birthMonth: number;
+    birthDay: number;
+    gender: Gender;
+    maritalStatus: MaritalStatus;
+  }) => {
+    const result = calculateFortune(
+      data.birthYear,
+      data.birthMonth,
+      data.birthDay,
+      data.gender,
+      data.maritalStatus
+    );
+    setFortuneResult(result);
+    setFortuneModalOpen(false);
+    setCurrentView("fortune");
+  };
+
+  // 운세 다시하기
+  const handleFortuneReset = () => {
+    setFortuneResult(null);
+    setFortuneModalOpen(true);
   };
 
   // 카테고리 선택
@@ -223,6 +265,60 @@ export default function Home() {
           title="지역 선택"
           options={regions}
           onSelect={handleRegionSelect}
+        />
+        <BuildingSheet
+          open={buildingSheetOpen}
+          onOpenChange={setBuildingSheetOpen}
+          options={buildings}
+          onSelect={handleBuildingSelect}
+        />
+      </>
+    );
+  }
+
+  if (currentView === "fortune") {
+    return (
+      <>
+        <div className="min-h-screen pb-20">
+          <header className="bg-gradient-to-r from-purple-600 to-pink-500 safe-area-top">
+            <div className="px-4 py-3 flex items-center justify-center">
+              <h1 className="text-xl font-bold text-white">
+                🔮 오늘의 맛집 운세
+              </h1>
+            </div>
+          </header>
+          <div className="p-4">
+            {fortuneResult ? (
+              <FortuneResultView
+                result={fortuneResult}
+                onReset={handleFortuneReset}
+                onSelectRestaurant={handleRestaurantSelect}
+              />
+            ) : (
+              <div className="text-center py-20">
+                <p className="text-muted-foreground">운세 정보를 입력해주세요</p>
+                <button
+                  onClick={() => setFortuneModalOpen(true)}
+                  className="mt-4 px-6 py-2 bg-primary text-primary-foreground rounded-lg"
+                >
+                  운세 보기
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+        <FortuneModal
+          open={fortuneModalOpen}
+          onOpenChange={setFortuneModalOpen}
+          onSubmit={handleFortuneSubmit}
+        />
+        <CategorySheet
+          open={categorySheetOpen}
+          onOpenChange={setCategorySheetOpen}
+          title="카테고리 선택"
+          options={categories}
+          onSelect={handleCategorySelect}
         />
         <BuildingSheet
           open={buildingSheetOpen}
@@ -452,6 +548,13 @@ export default function Home() {
       <ChangePasswordModal
         isOpen={changePasswordModalOpen}
         onClose={() => setChangePasswordModalOpen(false)}
+      />
+
+      {/* 운세 모달 */}
+      <FortuneModal
+        open={fortuneModalOpen}
+        onOpenChange={setFortuneModalOpen}
+        onSubmit={handleFortuneSubmit}
       />
     </>
   );

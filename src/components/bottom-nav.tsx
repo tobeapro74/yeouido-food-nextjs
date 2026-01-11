@@ -1,17 +1,18 @@
 "use client";
 
-import { Home, Grid3X3, Building2, Dice5 } from "lucide-react";
+import { Home, Grid3X3, Building2, Dice5, Sparkles } from "lucide-react";
 
-type TabType = "home" | "recommend" | "category" | "region" | "building";
+type TabType = "home" | "recommend" | "category" | "region" | "building" | "fortune";
 
 interface BottomNavProps {
   activeTab: TabType;
   onTabChange: (tab: TabType) => void;
 }
 
-const tabs: { id: TabType; label: string; icon: typeof Home }[] = [
+const tabs: { id: TabType; label: string; icon: typeof Home; color?: string }[] = [
   { id: "home", label: "홈", icon: Home },
-  { id: "recommend", label: "한끼추천", icon: Dice5 },
+  { id: "recommend", label: "한끼추천", icon: Dice5, color: "orange" },
+  { id: "fortune", label: "오늘운세", icon: Sparkles, color: "purple" },
   { id: "category", label: "카테고리", icon: Grid3X3 },
   { id: "building", label: "빌딩", icon: Building2 },
 ];
@@ -23,14 +24,19 @@ export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
-          const isRecommend = tab.id === "recommend";
+
+          // 색상 결정
+          let activeColorClass = "text-primary";
+          if (tab.color === "orange") activeColorClass = "text-orange-500";
+          if (tab.color === "purple") activeColorClass = "text-purple-500";
+
           return (
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
               className={`flex flex-col items-center justify-center w-full h-full transition-colors ${
                 isActive
-                  ? isRecommend ? "text-orange-500" : "text-primary"
+                  ? activeColorClass
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
