@@ -271,6 +271,11 @@ export default function Home() {
           options={buildings}
           onSelect={handleBuildingSelect}
         />
+        <FortuneModal
+          open={fortuneModalOpen}
+          onOpenChange={setFortuneModalOpen}
+          onSubmit={handleFortuneSubmit}
+        />
       </>
     );
   }
@@ -299,6 +304,11 @@ export default function Home() {
           onOpenChange={setBuildingSheetOpen}
           options={buildings}
           onSelect={handleBuildingSelect}
+        />
+        <FortuneModal
+          open={fortuneModalOpen}
+          onOpenChange={setFortuneModalOpen}
+          onSubmit={handleFortuneSubmit}
         />
       </>
     );
