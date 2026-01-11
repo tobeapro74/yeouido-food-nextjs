@@ -241,7 +241,10 @@ MongoDB users 컬렉션 업데이트
 - URL.createObjectURL 사용 (iOS Safari 호환)
 
 ### 캐싱
-- Google Places 사진 URL 메모리 캐시
+- MongoDB 이미지 URL 캐시 (image_cache 컬렉션)
+  - 첫 조회: Google API → Cloudinary 업로드 → MongoDB 저장
+  - 이후 조회: MongoDB에서 바로 반환 (빠른 응답)
+- Google Places 사진 URL 메모리 캐시 (클라이언트)
 - 폐업/휴업 상태 캐시
 
 ### 렌더링
@@ -278,6 +281,19 @@ MongoDB users 컬렉션 업데이트
   address: String,           // 주소
   containingPlaceId: String, // Google Place ID
   source: String,            // "google" | "manual"
+  updatedAt: Date
+}
+```
+
+#### image_cache
+```javascript
+{
+  restaurantName: String,    // 식당명 (인덱스)
+  photoUrl: String,          // Cloudinary 이미지 URL
+  buildingName: String,      // 건물명
+  isClosed: Boolean,         // 폐업/휴업 여부
+  businessStatus: String,    // OPERATIONAL, CLOSED_TEMPORARILY, CLOSED_PERMANENTLY
+  createdAt: Date,
   updatedAt: Date
 }
 ```

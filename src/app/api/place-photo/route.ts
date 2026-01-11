@@ -4,6 +4,47 @@ import { getDb } from "@/lib/mongodb";
 
 const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
+// 이미지 캐시 타입
+interface ImageCache {
+  restaurantName: string;
+  photoUrl: string;
+  buildingName?: string | null;
+  isClosed?: boolean;
+  businessStatus?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// MongoDB에서 캐시된 이미지 조회
+async function getCachedImage(restaurantName: string): Promise<ImageCache | null> {
+  try {
+    const db = await getDb();
+    const collection = db.collection<ImageCache>("image_cache");
+    return await collection.findOne({ restaurantName });
+  } catch {
+    return null;
+  }
+}
+
+// MongoDB에 이미지 캐시 저장
+async function saveImageCache(data: Omit<ImageCache, "createdAt" | "updatedAt">): Promise<void> {
+  try {
+    const db = await getDb();
+    const collection = db.collection<ImageCache>("image_cache");
+    const now = new Date();
+    await collection.updateOne(
+      { restaurantName: data.restaurantName },
+      {
+        $set: { ...data, updatedAt: now },
+        $setOnInsert: { createdAt: now }
+      },
+      { upsert: true }
+    );
+  } catch (error) {
+    console.error("Failed to save image cache:", error);
+  }
+}
+
 // MongoDB에서 건물 정보 조회
 async function getBuildingFromDB(restaurantName: string): Promise<string | null> {
   try {
@@ -39,11 +80,34 @@ export async function GET(request: NextRequest) {
 
   const publicId = toPublicId(query);
 
-  // MongoDB에서 건물 정보 조회 (병렬로 실행)
-  const buildingPromise = restaurantName ? getBuildingFromDB(restaurantName) : Promise.resolve(null);
-
   try {
-    // 1. Cloudinary에서 캐시된 이미지 확인
+    // 1. MongoDB 캐시 확인 (가장 빠름)
+    if (restaurantName) {
+      const cached = await getCachedImage(restaurantName);
+      if (cached) {
+        // 폐업/휴업 상태인 경우
+        if (cached.isClosed) {
+          return NextResponse.json({
+            photoUrl: null,
+            businessStatus: cached.businessStatus,
+            isClosed: true,
+            cached: true,
+            message: cached.businessStatus === "CLOSED_PERMANENTLY" ? "폐업" : "임시휴업"
+          });
+        }
+        // 캐시된 이미지 반환
+        return NextResponse.json({
+          photoUrl: cached.photoUrl,
+          buildingName: cached.buildingName,
+          cached: true
+        });
+      }
+    }
+
+    // MongoDB에서 건물 정보 조회 (병렬로 실행)
+    const buildingPromise = restaurantName ? getBuildingFromDB(restaurantName) : Promise.resolve(null);
+
+    // 2. Cloudinary에서 캐시된 이미지 확인
     try {
       const existingImage = await cloudinary.api.resource(publicId);
       if (existingImage?.secure_url) {
@@ -56,13 +120,23 @@ export async function GET(request: NextRequest) {
           crop: "fill",
         });
         const buildingName = await buildingPromise;
+
+        // MongoDB에도 캐시 저장 (다음부터는 MongoDB에서 바로 조회)
+        if (restaurantName) {
+          await saveImageCache({
+            restaurantName,
+            photoUrl: optimizedUrl,
+            buildingName,
+          });
+        }
+
         return NextResponse.json({ photoUrl: optimizedUrl, cached: true, buildingName });
       }
     } catch {
       // 이미지가 없으면 계속 진행
     }
 
-    // 2. Google Places API 키 확인
+    // 3. Google Places API 키 확인
     if (!GOOGLE_API_KEY) {
       return NextResponse.json({ photoUrl: null, error: "API key not configured" });
     }
@@ -88,6 +162,15 @@ export async function GET(request: NextRequest) {
     const businessStatus = candidate.business_status;
     // CLOSED_TEMPORARILY: 임시 휴업, CLOSED_PERMANENTLY: 폐업
     if (businessStatus === "CLOSED_TEMPORARILY" || businessStatus === "CLOSED_PERMANENTLY") {
+      // MongoDB에 폐업/휴업 상태 캐시
+      if (restaurantName) {
+        await saveImageCache({
+          restaurantName,
+          photoUrl: "",
+          isClosed: true,
+          businessStatus,
+        });
+      }
       return NextResponse.json({
         photoUrl: null,
         businessStatus,
@@ -139,11 +222,31 @@ export async function GET(request: NextRequest) {
       });
 
       const buildingName = await buildingPromise;
+
+      // MongoDB에 캐시 저장
+      if (restaurantName) {
+        await saveImageCache({
+          restaurantName,
+          photoUrl: optimizedUrl,
+          buildingName,
+        });
+      }
+
       return NextResponse.json({ photoUrl: optimizedUrl, cached: false, uploaded: true, buildingName });
     } catch (uploadError) {
       console.error("Cloudinary upload error:", uploadError);
       // 업로드 실패해도 Google 원본 URL 반환
       const buildingName = await buildingPromise;
+
+      // MongoDB에 캐시 저장 (Google URL)
+      if (restaurantName) {
+        await saveImageCache({
+          restaurantName,
+          photoUrl: googlePhotoUrl,
+          buildingName,
+        });
+      }
+
       return NextResponse.json({ photoUrl: googlePhotoUrl, cached: false, buildingName });
     }
   } catch (error) {
