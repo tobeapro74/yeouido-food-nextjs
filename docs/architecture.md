@@ -65,6 +65,8 @@ src/
 │   │   ├── reviews/       # 리뷰 CRUD API
 │   │   ├── place-photo/   # Google Places 사진 API (개별 조회)
 │   │   ├── place-photos/  # 배치 이미지 API (여러 개 한 번에)
+│   │   ├── restaurant-buildings/ # 건물 정보 조회/관리 API
+│   │   ├── restaurants/sync/  # 정적 데이터 → MongoDB 동기화 API
 │   │   └── upload/        # Cloudinary 이미지 업로드
 │   ├── layout.tsx         # 루트 레이아웃
 │   ├── page.tsx           # 메인 페이지
@@ -83,6 +85,7 @@ src/
 │   ├── restaurant-detail.tsx # 맛집 상세
 │   ├── restaurant-list.tsx # 맛집 리스트
 │   ├── review-modal.tsx  # 리뷰 작성 모달
+│   ├── review-section.tsx # 리뷰 섹션 (식당 상세용)
 │   ├── roulette-wheel.tsx # 룰렛 휠 컴포넌트
 │   ├── search-bar.tsx    # 통합 검색 바
 │   ├── fortune-modal.tsx # 운세 입력 모달
@@ -90,10 +93,12 @@ src/
 ├── data/
 │   └── yeouido-food.ts   # 맛집 정적 데이터 (195개 식당)
 ├── hooks/
-│   └── useImageBatch.ts  # 이미지 배치 로딩 훅
+│   ├── useImageBatch.ts  # 이미지 배치 로딩 훅
+│   └── useSwipeBack.ts   # 스와이프 뒤로가기 제스처 훅
 └── lib/
     ├── mongodb.ts        # MongoDB 연결
     ├── fortune.ts        # 오행 운세 계산 로직
+    ├── types.ts          # 공통 타입 정의
     └── utils.ts          # 유틸리티 함수
 
 scripts/                   # 데이터 동기화 스크립트
@@ -223,13 +228,24 @@ MongoDB users 컬렉션 업데이트
 - 비밀번호 변경 (현재 비밀번호 확인 필수)
 - 사용자 메뉴 드롭다운 (프로필 버튼 클릭 시)
 
-### 8. 운세맛집 (오행 기반 맛집 운세)
+### 8. 스와이프 제스처 네비게이션
+- **스와이프 뒤로가기**: 화면 왼쪽 가장자리에서 오른쪽으로 스와이프하여 이전 화면으로 이동
+- **설정**: threshold 80px, edgeWidth 25px
+- **구현**: `useSwipeBack` 훅 (touch 이벤트 기반)
+- **적용 화면**: detail, list, recommend, fortune 뷰
+
+### 9. 운세맛집 (오행 + 띠 기반 맛집 운세)
 - **입력 정보**: 생년월일, 성별, 결혼여부
 - **오행 계산**: 천간지지 기반 본명 오행 산출 (목/화/토/금/수)
+- **띠(12지지) 계산**: 출생년도 기반 띠 산출 (쥐/소/호랑이/토끼/용/뱀/말/양/원숭이/닭/개/돼지)
+  - 육합(六合): 서로 잘 맞는 관계
+  - 충(冲): 서로 상충하는 관계
+  - 삼합(三合): 세 지지가 모여 강한 기운
+- **성별/결혼여부별 차별화**: 동일 생년월일도 다른 결과 제공
 - **운세 결과**:
-  - 나의 오행 (색상별 카드 배경)
+  - 나의 오행 및 띠 (색상별 카드 배경, 띠 이모지)
   - 오늘의 길방 (동여의도/서여의도)
-  - 추천 음식 카테고리 (상생 관계 기반)
+  - 추천 음식 카테고리 (상생 관계 + 띠 성향 기반)
   - 추천 맛집 리스트 (길방 + 카테고리 조합)
 - **UI 특징**:
   - 오행별 색상 테마 (목-초록, 화-빨강, 토-노랑, 금-흰색, 수-파랑)

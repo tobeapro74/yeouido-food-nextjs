@@ -33,24 +33,35 @@ alwaysApply: true
 - `src/components/restaurant-detail.tsx` - 맛집 상세 페이지
 - `src/components/recommendation-view.tsx` - 한끼추천 (룰렛, 취향설정)
 - `src/components/review-modal.tsx` - 리뷰 작성 (이미지 리사이즈)
+- `src/components/review-section.tsx` - 리뷰 섹션 (식당 상세용)
 - `src/components/building-sheet.tsx` - 빌딩 선택 (지역별 탭)
 - `src/components/fortune-modal.tsx` - 운세 입력 모달 (생년월일/성별/결혼여부)
 - `src/components/fortune-result.tsx` - 운세 결과 화면
 - `src/components/change-password-modal.tsx` - 비밀번호 변경 모달
+- `src/components/popular-restaurants.tsx` - 인기 맛집 (배치 이미지 로딩)
+
+### 훅 (Hooks)
+- `src/hooks/useImageBatch.ts` - 이미지 배치 로딩 + 글로벌 캐시
+- `src/hooks/useSwipeBack.ts` - 스와이프 뒤로가기 제스처
 
 ### 운세 시스템
-- `src/lib/fortune.ts` - 오행 기반 운세 계산 로직
+- `src/lib/fortune.ts` - 오행 + 띠 기반 운세 계산 로직
   - 천간지지 오행 분석
+  - 띠(12지지) 계산 및 성향 분석
+  - 육합/충/삼합 관계 적용
   - 상생/상극 관계 계산
   - 길방(동/서) 추천
   - 오행별 음식 카테고리 매핑
+  - 성별/결혼여부별 결과 차별화
 
 ### API 라우트
 - `src/app/api/auth/*` - 인증 (로그인, 회원가입, 세션, 비밀번호 변경)
 - `src/app/api/reviews/*` - 리뷰 CRUD
-- `src/app/api/place-photo/` - Google Places 사진/영업상태
+- `src/app/api/place-photo/` - Google Places 사진/영업상태 (개별)
+- `src/app/api/place-photos/` - 배치 이미지 조회 (여러 개)
 - `src/app/api/upload/` - Cloudinary 이미지 업로드
 - `src/app/api/restaurant-buildings/*` - 빌딩별 식당 조회
+- `src/app/api/restaurants/sync/` - 정적 데이터 → MongoDB 동기화
 
 ### 데이터베이스
 - `src/lib/db.ts` - Turso (libSQL) 연결
@@ -88,6 +99,10 @@ resizeImage(file, maxSize, quality)  // iOS Safari 호환 리사이즈
 3. **빌딩 시트 스크롤** - 높이 계산 및 패딩 조정
 4. **빌딩 선택 모달** - 실제 데이터에 있는 빌딩만 표시
 5. **이미지 로딩 속도** - MongoDB 캐시로 재조회 시 즉시 반환
+6. **룰렛 결과 불일치** - CSS 렌더링 오프셋 보정 (+150도)
+7. **인기맛집 배치 로딩** - 개별 API 5회 → 배치 API 1회
+8. **운세 화면 뒤로가기** - previousView === "fortune" 케이스 처리
+9. **상세화면 운세탭 이동** - FortuneModal 렌더링 누락 수정
 
 ## 코딩 가이드라인
 

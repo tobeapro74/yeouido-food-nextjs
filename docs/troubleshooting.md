@@ -305,6 +305,76 @@ const globalImageCache = new Map<string, ImageResult>();
 
 ---
 
+### 9. 운세 화면에서 뒤로가기 시 빈 화면 문제
+
+**문제**
+- 운세맛집 탭에서 맛집 상세 화면으로 이동 후 뒤로가기 시 빈 화면 표시
+- 이전 뷰(fortune)로 돌아가지 않음
+
+**원인**
+- `handleBack()` 함수에서 `previousView === "fortune"` 케이스 처리 누락
+
+**해결**
+```typescript
+const handleBack = () => {
+  if (currentView === "detail") {
+    if (previousView === "home") {
+      setCurrentView("home");
+      setActiveTab("home");
+    } else if (previousView === "recommend") {
+      setCurrentView("recommend");
+      setActiveTab("recommend");
+    } else if (previousView === "fortune") {  // 추가
+      setCurrentView("fortune");
+      setActiveTab("fortune");
+    } else {
+      setCurrentView("list");
+    }
+    setSelectedRestaurant(null);
+  }
+};
+```
+
+**파일**: `src/app/page.tsx`
+
+---
+
+### 10. 상세화면에서 운세맛집 탭 이동 안되는 문제
+
+**문제**
+- 맛집 상세 화면에서 하단 네비게이션의 운세맛집 탭 클릭 시 화면 전환 안됨
+- 한끼추천 뷰에서도 동일한 문제 발생
+
+**원인**
+- detail 뷰와 recommend 뷰에서 `FortuneModal` 컴포넌트가 렌더링되지 않음
+- 시트들은 렌더링되어 있으나 운세 모달 누락
+
+**해결**
+- detail 뷰와 recommend 뷰의 return 문에 `FortuneModal` 추가
+
+```typescript
+// detail view
+if (currentView === "detail" && selectedRestaurant) {
+  return (
+    <>
+      <RestaurantDetail ... />
+      <BottomNav ... />
+      <CategorySheet ... />
+      <BuildingSheet ... />
+      <FortuneModal  // 추가
+        open={fortuneModalOpen}
+        onOpenChange={setFortuneModalOpen}
+        onSubmit={handleFortuneSubmit}
+      />
+    </>
+  );
+}
+```
+
+**파일**: `src/app/page.tsx`
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버
