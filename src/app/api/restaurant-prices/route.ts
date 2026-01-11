@@ -44,7 +44,7 @@ async function fetchPriceInfo(restaurantName: string, address: string): Promise<
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_API_KEY!,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.priceLevel"
+        "X-Goog-FieldMask": "places.id,places.displayName,places.priceLevel,places.priceRange"
       },
       body: JSON.stringify({
         textQuery: `${restaurantName} ${address}`,
@@ -60,7 +60,25 @@ async function fetchPriceInfo(restaurantName: string, address: string): Promise<
     }
 
     const priceLevel = firstPlace.priceLevel || null;
-    const priceRange = priceLevelToRange(priceLevel);
+
+    // priceRange가 있으면 그것을 사용, 없으면 priceLevel로 변환
+    let priceRange: string | null = null;
+    if (firstPlace.priceRange) {
+      const startPrice = firstPlace.priceRange.startPrice?.units || null;
+      const endPrice = firstPlace.priceRange.endPrice?.units || null;
+      if (startPrice && endPrice) {
+        priceRange = `₩${Number(startPrice).toLocaleString()}~${Number(endPrice).toLocaleString()}`;
+      } else if (startPrice) {
+        priceRange = `₩${Number(startPrice).toLocaleString()}~`;
+      } else if (endPrice) {
+        priceRange = `~₩${Number(endPrice).toLocaleString()}`;
+      }
+    }
+
+    // priceRange가 없으면 priceLevel로 대체
+    if (!priceRange) {
+      priceRange = priceLevelToRange(priceLevel);
+    }
 
     return {
       placeId: firstPlace.id || null,
@@ -101,6 +119,7 @@ export async function POST(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const adminKey = searchParams.get("key")?.trim();
   const expectedKey = process.env.ADMIN_SECRET_KEY?.trim();
+  const forceUpdate = searchParams.get("force") === "true";
 
   if (!expectedKey || adminKey !== expectedKey) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -117,12 +136,18 @@ export async function POST(request: NextRequest) {
     // 모든 식당 가져오기
     const restaurants = getAllRestaurants();
 
-    // 이미 저장된 식당 확인
-    const existing = await collection.find({}).toArray();
-    const existingNames = new Set(existing.map(e => e.restaurantName));
+    let toProcess = restaurants;
+    let existingCount = 0;
 
-    // 아직 저장되지 않은 식당만 필터링
-    const toProcess = restaurants.filter(r => !existingNames.has(r.이름));
+    if (!forceUpdate) {
+      // 이미 저장된 식당 확인
+      const existing = await collection.find({}).toArray();
+      const existingNames = new Set(existing.map(e => e.restaurantName));
+      existingCount = existingNames.size;
+
+      // 아직 저장되지 않은 식당만 필터링
+      toProcess = restaurants.filter(r => !existingNames.has(r.이름));
+    }
 
     const results: { name: string; priceRange: string | null; status: string }[] = [];
     let processed = 0;
@@ -169,8 +194,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       message: "Price info collection completed",
       total: restaurants.length,
-      alreadyExisted: existingNames.size,
+      alreadyExisted: existingCount,
       processed,
+      forceUpdate,
       results
     });
   } catch (error) {
