@@ -75,6 +75,9 @@ export default function Home() {
       } else if (previousView === "recommend") {
         setCurrentView("recommend");
         setActiveTab("recommend");
+      } else if (previousView === "fortune") {
+        setCurrentView("fortune");
+        setActiveTab("fortune");
       } else {
         setCurrentView("list");
       }
@@ -235,6 +238,9 @@ export default function Home() {
       } else if (previousView === "recommend") {
         setCurrentView("recommend");
         setActiveTab("recommend");
+      } else if (previousView === "fortune") {
+        setCurrentView("fortune");
+        setActiveTab("fortune");
       } else {
         setCurrentView("list");
       }
