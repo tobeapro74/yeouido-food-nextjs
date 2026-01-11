@@ -22,10 +22,10 @@ alwaysApply: true
 - `src/app/page.tsx` - 메인 SPA 페이지 (홈, 리스트, 상세, 추천 뷰 관리)
 
 ### 데이터
-- `src/data/yeouido-food.ts` - 180+ 식당 정적 데이터
+- `src/data/yeouido-food.ts` - 195개 식당 정적 데이터
   - 카테고리: 한식, 양식, 중식, 일식, 동남아식
   - 지역: 서여의도, 동여의도
-  - 빌딩: IFC, 더현대, 미원빌딩, 홍우빌딩 등 20+ 곳
+  - 빌딩: 24곳 (동여의도 17곳, 서여의도 7곳)
 
 ### 주요 컴포넌트
 - `src/components/search-bar.tsx` - 통합 검색 (식당, 빌딩, 음식, 도로명)
@@ -34,12 +34,23 @@ alwaysApply: true
 - `src/components/recommendation-view.tsx` - 한끼추천 (룰렛, 취향설정)
 - `src/components/review-modal.tsx` - 리뷰 작성 (이미지 리사이즈)
 - `src/components/building-sheet.tsx` - 빌딩 선택 (지역별 탭)
+- `src/components/fortune-modal.tsx` - 운세 입력 모달 (생년월일/성별/결혼여부)
+- `src/components/fortune-result.tsx` - 운세 결과 화면
+- `src/components/change-password-modal.tsx` - 비밀번호 변경 모달
+
+### 운세 시스템
+- `src/lib/fortune.ts` - 오행 기반 운세 계산 로직
+  - 천간지지 오행 분석
+  - 상생/상극 관계 계산
+  - 길방(동/서) 추천
+  - 오행별 음식 카테고리 매핑
 
 ### API 라우트
-- `src/app/api/auth/*` - 인증 (로그인, 회원가입, 세션)
+- `src/app/api/auth/*` - 인증 (로그인, 회원가입, 세션, 비밀번호 변경)
 - `src/app/api/reviews/*` - 리뷰 CRUD
 - `src/app/api/place-photo/` - Google Places 사진/영업상태
 - `src/app/api/upload/` - Cloudinary 이미지 업로드
+- `src/app/api/restaurant-buildings/*` - 빌딩별 식당 조회
 
 ### 데이터베이스
 - `src/lib/db.ts` - Turso (libSQL) 연결
@@ -56,6 +67,15 @@ getAllRestaurants()          // 전체 식당
 searchRestaurants(query)     // 통합 검색 (이름, 빌딩, 음식, 주소)
 ```
 
+### 운세 계산 (src/lib/fortune.ts)
+```typescript
+calculateFortune(birthYear, birthMonth, birthDay, gender, maritalStatus)  // 전체 운세 결과
+getPersonElement(birthYear, birthMonth, birthDay)  // 본명 오행
+getTodayElement()            // 오늘의 오행
+getLuckyDirection(...)       // 길방 (동/서)
+getLuckyFood(...)           // 추천 음식 카테고리
+```
+
 ### 이미지 처리
 ```typescript
 resizeImage(file, maxSize, quality)  // iOS Safari 호환 리사이즈
@@ -66,6 +86,7 @@ resizeImage(file, maxSize, quality)  // iOS Safari 호환 리사이즈
 1. **iOS Safari 이미지 업로드** - URL.createObjectURL 사용
 2. **인기 맛집 중식 미표시** - 폐업 식당 데이터 정리
 3. **빌딩 시트 스크롤** - 높이 계산 및 패딩 조정
+4. **빌딩 선택 모달** - 실제 데이터에 있는 빌딩만 표시
 
 ## 코딩 가이드라인
 

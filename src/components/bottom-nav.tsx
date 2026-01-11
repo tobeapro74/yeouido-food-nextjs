@@ -12,7 +12,7 @@ interface BottomNavProps {
 const tabs: { id: TabType; label: string; icon: typeof Home; color?: string }[] = [
   { id: "home", label: "홈", icon: Home },
   { id: "recommend", label: "한끼추천", icon: Dice5, color: "orange" },
-  { id: "fortune", label: "오늘운세", icon: Sparkles, color: "purple" },
+  { id: "fortune", label: "운세맛집", icon: Sparkles, color: "purple" },
   { id: "category", label: "카테고리", icon: Grid3X3 },
   { id: "building", label: "빌딩", icon: Building2 },
 ];
