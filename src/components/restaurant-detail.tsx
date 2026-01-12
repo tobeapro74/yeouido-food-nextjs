@@ -33,13 +33,13 @@ const getImageCache = (): Record<string, string> => {
   return {};
 };
 
-// 가격대 캐시
-const getPriceCache = (): Record<string, string | null> => {
+// 가격대/전화번호 캐시
+const getRestaurantInfoCache = (): Record<string, { priceRange: string | null; phoneNumber: string | null }> => {
   if (typeof window !== "undefined") {
-    if (!(window as unknown as { __priceCache?: Record<string, string | null> }).__priceCache) {
-      (window as unknown as { __priceCache: Record<string, string | null> }).__priceCache = {};
+    if (!(window as unknown as { __restaurantInfoCache?: Record<string, { priceRange: string | null; phoneNumber: string | null }> }).__restaurantInfoCache) {
+      (window as unknown as { __restaurantInfoCache: Record<string, { priceRange: string | null; phoneNumber: string | null }> }).__restaurantInfoCache = {};
     }
-    return (window as unknown as { __priceCache: Record<string, string | null> }).__priceCache;
+    return (window as unknown as { __restaurantInfoCache: Record<string, { priceRange: string | null; phoneNumber: string | null }> }).__restaurantInfoCache;
   }
   return {};
 };
@@ -47,11 +47,12 @@ const getPriceCache = (): Record<string, string | null> => {
 export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) {
   const cacheKey = restaurant.이름;
   const imageCache = getImageCache();
-  const priceCache = getPriceCache();
+  const infoCache = getRestaurantInfoCache();
   const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
   const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
-  const [priceRange, setPriceRange] = useState<string | null>(priceCache[cacheKey] ?? null);
-  const [priceLoaded, setPriceLoaded] = useState(cacheKey in priceCache);
+  const [priceRange, setPriceRange] = useState<string | null>(infoCache[cacheKey]?.priceRange ?? null);
+  const [phoneNumber, setPhoneNumber] = useState<string | null>(infoCache[cacheKey]?.phoneNumber ?? null);
+  const [infoLoaded, setInfoLoaded] = useState(cacheKey in infoCache);
 
   useEffect(() => {
     // 이미 캐시된 경우
@@ -95,32 +96,35 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
     fetchImage();
   }, [restaurant.이름, restaurant.주소, restaurant.카테고리, cacheKey, imageCache]);
 
-  // 가격대 정보 가져오기
+  // 가격대/전화번호 정보 가져오기
   useEffect(() => {
     // 이미 캐시된 경우
-    if (cacheKey in priceCache) {
-      setPriceRange(priceCache[cacheKey]);
-      setPriceLoaded(true);
+    if (cacheKey in infoCache) {
+      setPriceRange(infoCache[cacheKey].priceRange);
+      setPhoneNumber(infoCache[cacheKey].phoneNumber);
+      setInfoLoaded(true);
       return;
     }
 
-    const fetchPriceRange = async () => {
+    const fetchRestaurantInfo = async () => {
       try {
         const res = await fetch(`/api/restaurant-prices/${encodeURIComponent(restaurant.이름)}`);
         const data = await res.json();
         const fetchedPrice = data.priceRange || null;
-        priceCache[cacheKey] = fetchedPrice;
+        const fetchedPhone = data.phoneNumber || null;
+        infoCache[cacheKey] = { priceRange: fetchedPrice, phoneNumber: fetchedPhone };
         setPriceRange(fetchedPrice);
+        setPhoneNumber(fetchedPhone);
       } catch (error) {
-        console.error("Error fetching price range:", error);
-        priceCache[cacheKey] = null;
+        console.error("Error fetching restaurant info:", error);
+        infoCache[cacheKey] = { priceRange: null, phoneNumber: null };
       } finally {
-        setPriceLoaded(true);
+        setInfoLoaded(true);
       }
     };
 
-    fetchPriceRange();
-  }, [restaurant.이름, cacheKey, priceCache]);
+    fetchRestaurantInfo();
+  }, [restaurant.이름, cacheKey, infoCache]);
 
   const mapsLink = getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
@@ -208,21 +212,22 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
             </div>
           )}
 
-          {/* 전화번호 */}
-          {restaurant.전화번호 && (
-            <div className="flex items-center gap-3">
+          {/* 전화번호 - DB에서 가져온 전화번호 표시 */}
+          {phoneNumber && (
+            <a
+              href={`tel:${phoneNumber}`}
+              className="flex items-center gap-3 hover:text-primary transition-colors"
+            >
               <Phone className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm">{restaurant.전화번호}</span>
-            </div>
+              <span className="text-sm">{phoneNumber}</span>
+            </a>
           )}
 
-          {/* 가격대 - 로딩 완료 후 DB 가격대 표시, 없으면 기본 가격대 표시 */}
-          {(priceLoaded ? (priceRange || restaurant.가격대) : restaurant.가격대) && (
+          {/* 가격대 - DB에서 가져온 가격대 표시 */}
+          {priceRange && (
             <div className="flex items-center gap-3">
               <Banknote className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm">
-                {priceLoaded ? (priceRange || restaurant.가격대) : restaurant.가격대}
-              </span>
+              <span className="text-sm">{priceRange}</span>
             </div>
           )}
         </div>

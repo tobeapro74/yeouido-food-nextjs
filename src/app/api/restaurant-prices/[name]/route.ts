@@ -16,13 +16,14 @@ export async function GET(
     const price = await collection.findOne({ restaurantName });
 
     if (!price) {
-      return NextResponse.json({ priceRange: null });
+      return NextResponse.json({ priceRange: null, phoneNumber: null });
     }
 
     return NextResponse.json({
       restaurantName: price.restaurantName,
       priceLevel: price.priceLevel,
-      priceRange: price.priceRange
+      priceRange: price.priceRange,
+      phoneNumber: price.phoneNumber
     });
   } catch (error) {
     console.error("Error fetching price:", error);
