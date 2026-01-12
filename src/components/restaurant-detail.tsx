@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Restaurant, getGoogleMapsLink, getGoogleSearchLink } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
+import { GoogleReviews } from "@/components/google-reviews";
 import Image from "next/image";
 
 interface RestaurantDetailProps {
@@ -260,7 +261,12 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
 
         <Separator />
 
-        {/* 리뷰 섹션 */}
+        {/* Google 리뷰 섹션 */}
+        <GoogleReviews restaurantName={restaurant.이름} />
+
+        <Separator />
+
+        {/* 사용자 리뷰 섹션 */}
         <ReviewSection restaurantId={restaurant.이름} restaurantName={restaurant.이름} />
       </div>
     </div>
