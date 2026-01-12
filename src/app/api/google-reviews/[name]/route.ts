@@ -105,12 +105,14 @@ export async function GET(
 
     const placeId = searchData.candidates[0].place_id;
 
-    // 4. Place Details에서 리뷰 가져오기 (최신순 정렬)
-    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&language=ko&reviews_sort=newest&key=${GOOGLE_API_KEY}`;
+    // 4. Place Details에서 리뷰 가져오기
+    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&language=ko&key=${GOOGLE_API_KEY}`;
     const detailRes = await fetch(detailUrl);
     const detailData = await detailRes.json();
 
-    const reviews: GoogleReview[] = detailData.result?.reviews || [];
+    // 리뷰를 최신순으로 정렬 (time 필드는 Unix timestamp)
+    const reviews: GoogleReview[] = (detailData.result?.reviews || [])
+      .sort((a: GoogleReview, b: GoogleReview) => b.time - a.time);
     const rating = detailData.result?.rating || null;
     const userRatingsTotal = detailData.result?.user_ratings_total || null;
 
