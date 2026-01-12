@@ -20,7 +20,7 @@
 - **Cloudinary** - 이미지 업로드/저장
 
 ### External APIs
-- **Google Places API** - 식당 사진, 영업 상태, 건물 정보 조회
+- **Google Places API** - 식당 사진, 영업 상태, 건물 정보, 리뷰 조회
 
 ### Deployment
 - **Vercel** - 호스팅 및 CI/CD
@@ -65,7 +65,11 @@ src/
 │   │   ├── reviews/       # 리뷰 CRUD API
 │   │   ├── place-photo/   # Google Places 사진 API (개별 조회)
 │   │   ├── place-photos/  # 배치 이미지 API (여러 개 한 번에)
+│   │   ├── google-reviews/  # Google 리뷰 API
+│   │   │   ├── [name]/      # 식당별 리뷰 조회
+│   │   │   └── clear-cache/ # 리뷰 캐시 삭제
 │   │   ├── restaurant-buildings/ # 건물 정보 조회/관리 API
+│   │   ├── restaurant-prices/   # 가격대/전화번호 조회 API
 │   │   ├── restaurants/sync/  # 정적 데이터 → MongoDB 동기화 API
 │   │   └── upload/        # Cloudinary 이미지 업로드
 │   ├── layout.tsx         # 루트 레이아웃
@@ -85,7 +89,8 @@ src/
 │   ├── restaurant-detail.tsx # 맛집 상세
 │   ├── restaurant-list.tsx # 맛집 리스트
 │   ├── review-modal.tsx  # 리뷰 작성 모달
-│   ├── review-section.tsx # 리뷰 섹션 (식당 상세용)
+│   ├── review-section.tsx # 리뷰 섹션 (사용자 리뷰)
+│   ├── google-reviews.tsx # Google 리뷰 표시 컴포넌트
 │   ├── roulette-wheel.tsx # 룰렛 휠 컴포넌트
 │   ├── search-bar.tsx    # 통합 검색 바
 │   ├── fortune-modal.tsx # 운세 입력 모달
@@ -168,6 +173,23 @@ ChangePasswordModal (현재/새 비밀번호 입력)
 MongoDB users 컬렉션 업데이트
 ```
 
+### Google 리뷰 흐름
+```
+RestaurantDetail (식당 상세 페이지)
+    ↓
+GoogleReviews 컴포넌트
+    ↓
+/api/google-reviews/[name] (API 호출)
+    ↓
+MongoDB 캐시 확인 (google_reviews_cache)
+    ↓ (캐시 miss 또는 24시간 경과)
+Google Places API (Place Details - reviews 필드)
+    ↓
+최신순 정렬 (time 필드 기준)
+    ↓
+MongoDB 캐시 저장 → 클라이언트 반환
+```
+
 ## 주요 기능
 
 ### 1. 홈 화면
@@ -219,9 +241,18 @@ MongoDB users 컬렉션 업데이트
 - 빌딩별 필터 (IFC, 더현대, 미원빌딩 등)
 
 ### 6. 리뷰 시스템
+#### 사용자 리뷰
 - 별점 (전체, 음식, 서비스, 분위기)
 - 사진 첨부 (최대 4장, iOS Safari 호환)
 - 식사 유형 선택
+
+#### Google 리뷰 (2025.01.12 추가)
+- Google Places API에서 리뷰 데이터 조회
+- 최대 5개 리뷰 표시 (API 제한)
+- 최신순 정렬 (time 필드 기준 내림차순)
+- 24시간 MongoDB 캐싱
+- 표시 정보: 작성자, 프로필 사진, 별점, 작성 시간, 리뷰 내용
+- 긴 리뷰 더보기/접기 기능 (150자 기준)
 
 ### 7. 사용자 계정 관리
 - 로그인/회원가입 (이메일, 비밀번호)
@@ -361,6 +392,27 @@ MongoDB users 컬렉션 업데이트
   images: [String],
   mealType: String,
   createdAt: Date
+}
+```
+
+#### google_reviews_cache (2025.01.12 추가)
+```javascript
+{
+  restaurantName: String,    // 식당명 (인덱스)
+  placeId: String,           // Google Place ID
+  reviews: [{                // Google 리뷰 배열 (최대 5개)
+    author_name: String,
+    author_url: String,
+    profile_photo_url: String,
+    rating: Number,
+    relative_time_description: String,
+    text: String,
+    time: Number             // Unix timestamp
+  }],
+  rating: Number,            // 전체 평점
+  userRatingsTotal: Number,  // 총 리뷰 수
+  createdAt: Date,
+  updatedAt: Date            // 24시간 경과 시 캐시 갱신
 }
 ```
 
