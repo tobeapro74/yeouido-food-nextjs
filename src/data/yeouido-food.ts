@@ -33,7 +33,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 2850,
       영업시간: "24시간",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "하동관 여의도직영1호점",
@@ -45,7 +44,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1850,
       영업시간: "07:00-16:00 (일요일 휴무)",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "홍수계 여의도삼계탕",
@@ -57,7 +55,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 1680,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "미스터초우",
@@ -69,7 +66,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 920,
       영업시간: "09:00-21:00 (일요일 휴무)",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "해담온",
@@ -81,7 +77,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 780,
       영업시간: "11:00-22:00",
-      가격대: "14,000-20,000원"
     },
     // 유성빌딩 (동여의도 - 여의대방로69길 28)
     {
@@ -93,7 +88,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 650,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원",
       빌딩: "유성빌딩"
     },
     {
@@ -105,7 +99,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 400,
       영업시간: "11:00-22:00",
-      가격대: "15,000-20,000원",
       빌딩: "유성빌딩"
     },
     {
@@ -117,7 +110,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 350,
       영업시간: "11:00-21:00",
-      가격대: "9,000-12,000원",
       빌딩: "유성빌딩"
     },
     // 미원빌딩 (동여의도 - 국제금융로 70)
@@ -131,7 +123,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1850,
       영업시간: "11:30-21:00 (일요일 휴무)",
-      가격대: "13,000-36,000원"
     },
     {
       이름: "오락떡볶이",
@@ -143,7 +134,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 920,
       영업시간: "11:00-21:00 (일요일 휴무)",
-      가격대: "8,000-15,000원"
     },
     // 홍우빌딩 (동여의도 - 국제금융로 78)
     {
@@ -156,7 +146,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 850,
       영업시간: "11:00-22:00",
-      가격대: "12,000-25,000원"
     },
     {
       이름: "김가네 여의도점",
@@ -168,7 +157,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.8,
       리뷰수: 420,
       영업시간: "08:00-21:00",
-      가격대: "5,000-10,000원"
     },
     {
       이름: "장독대김치찌개",
@@ -180,7 +168,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 580,
       영업시간: "11:00-21:00",
-      가격대: "8,000-12,000원"
     },
     {
       이름: "청하",
@@ -192,7 +179,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 620,
       영업시간: "11:00-21:00",
-      가격대: "9,000-15,000원"
     },
     {
       이름: "가양칼국수버섯매운탕",
@@ -204,7 +190,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1200,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "홍정식당",
@@ -216,7 +201,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 780,
       영업시간: "11:00-20:00 (일요일 휴무)",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "마초갈비 여의도점",
@@ -227,7 +211,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 1250,
       영업시간: "11:30-22:00",
-      가격대: "40,000-70,000원"
     },
     // 여의도백화점 (동여의도 - 국제금융로6길, IFC 근처)
     {
@@ -240,7 +223,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 1850,
       영업시간: "11:00-21:00 (토,일 휴무)",
-      가격대: "10,000-12,000원"
     },
     {
       이름: "만나손칼국수",
@@ -252,7 +234,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 980,
       영업시간: "10:30-21:00",
-      가격대: "8,000-12,000원"
     },
     {
       이름: "깡장양곱창",
@@ -264,7 +245,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 720,
       영업시간: "11:30-22:00",
-      가격대: "15,000-25,000원"
     },
     // 신송빌딩 (동여의도 - 여의나루로, 환승센터 방향)
     {
@@ -277,7 +257,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 650,
       영업시간: "10:30-21:40",
-      가격대: "12,000원"
     },
     {
       이름: "신송한식",
@@ -289,7 +268,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.9,
       리뷰수: 420,
       영업시간: "08:00-22:00 (주말 휴무)",
-      가격대: "12,000-20,000원"
     },
     // 경호빌딩
     {
@@ -302,7 +280,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 850,
       영업시간: "11:00-22:00",
-      가격대: "12,000-20,000원"
     },
     {
       이름: "수하동 여의도점",
@@ -314,7 +291,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1200,
       영업시간: "11:00-21:00",
-      가격대: "12,000-18,000원"
     },
     // 백상빌딩
     {
@@ -327,7 +303,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 580,
       영업시간: "11:30-21:30 (토,일 휴무)",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "여의돈",
@@ -339,7 +314,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 420,
       영업시간: "10:00-22:00 (브레이크타임 14:00-16:00, 일 휴무)",
-      가격대: "10,000-25,000원"
     },
     {
       이름: "향토",
@@ -351,7 +325,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.7,
       리뷰수: 380,
       영업시간: "11:00-21:00 (토,일 휴무)",
-      가격대: "12,000-15,000원"
     },
     {
       이름: "쌍대포맷돌순두부",
@@ -363,7 +336,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 290,
       영업시간: "09:00-22:00 (토,일 휴무)",
-      가격대: "8,000-12,000원"
     },
     {
       이름: "고려호프",
@@ -375,7 +347,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.9,
       리뷰수: 350,
       영업시간: "11:30-14:30 (평일 점심만)",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "케이브 여의도점",
@@ -387,7 +358,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 310,
       영업시간: "11:00-23:00 (브레이크타임 14:30-17:00, 주말 휴무)",
-      가격대: "15,000-30,000원"
     },
     // 아일렉스빌딩 (동여의도 - 의사당대로 108, 여의도역 6번출구)
     {
@@ -400,7 +370,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 520,
       영업시간: "11:00-22:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "토방",
@@ -412,7 +381,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 680,
       영업시간: "10:00-22:00",
-      가격대: "9,000-15,000원"
     },
     {
       이름: "동남집",
@@ -424,7 +392,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 750,
       영업시간: "11:00-23:00 (토,일 휴무)",
-      가격대: "10,000-18,000원"
     },
     {
       이름: "골뱅이스쿨",
@@ -436,7 +403,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 420,
       영업시간: "11:00-21:00",
-      가격대: "8,000-12,000원"
     },
     {
       이름: "계림닭도리탕",
@@ -448,7 +414,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 380,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원"
     },
     // 원센티널 (동여의도 - 여의대로 70, 구 신한금융투자타워)
     {
@@ -461,7 +426,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 1200,
       영업시간: "11:00-22:00",
-      가격대: "30,000-60,000원"
     },
     {
       이름: "무안회관",
@@ -473,7 +437,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 850,
       영업시간: "11:00-22:00",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "중앙해장",
@@ -485,7 +448,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 720,
       영업시간: "07:00-22:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "무월",
@@ -497,7 +459,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 450,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원"
     },
     {
       이름: "미미옥",
@@ -509,7 +470,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 680,
       영업시간: "07:00-21:00",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "설성목장",
@@ -521,7 +481,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 520,
       영업시간: "11:30-22:00",
-      가격대: "40,000-80,000원"
     },
     {
       이름: "여의도 요정",
@@ -533,7 +492,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 380,
       영업시간: "17:00-24:00",
-      가격대: "20,000-40,000원"
     },
     // 파이낸스타워 (동여의도 - 국제금융로2길 32, 구 동양증권빌딩)
     {
@@ -546,7 +504,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 650,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "봉추찜닭 파이낸스타워점",
@@ -558,7 +515,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 580,
       영업시간: "11:00-21:00 (브레이크 14:30-17:00, 주말휴무)",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "비가오면",
@@ -570,7 +526,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 420,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "리김밥 파이낸스타워점",
@@ -582,7 +537,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 380,
       영업시간: "08:00-20:00",
-      가격대: "5,000-12,000원"
     },
     {
       이름: "모도우 여의도",
@@ -594,7 +548,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 720,
       영업시간: "11:30-22:00",
-      가격대: "50,000-100,000원"
     },
     {
       이름: "한암동 여의도점",
@@ -606,7 +559,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 850,
       영업시간: "11:00-22:00",
-      가격대: "20,000-50,000원"
     },
     // 씨티플라자
     {
@@ -619,7 +571,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 1200,
       영업시간: "11:00-21:30 (브레이크타임 15:00-17:00)",
-      가격대: "18,000-35,000원"
     },
     {
       이름: "고우가 여의도점",
@@ -631,7 +582,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 890,
       영업시간: "11:30-22:00",
-      가격대: "80,000-150,000원"
     },
     {
       이름: "진가와 여의도점",
@@ -643,7 +593,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 650,
       영업시간: "11:00-21:30 (브레이크타임 14:30-17:30)",
-      가격대: "50,000-80,000원"
     },
     {
       이름: "렌위치",
@@ -655,7 +604,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 480,
       영업시간: "10:00-21:00",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "브레드피트",
@@ -667,7 +615,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 320,
       영업시간: "08:00-20:00",
-      가격대: "5,000-12,000원"
     },
     // BNK금융타워
     {
@@ -680,7 +627,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 720,
       영업시간: "11:00-21:00",
-      가격대: "12,000-25,000원"
     },
     // 여의도백화점 (동여의도)
     {
@@ -693,7 +639,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 2100,
       영업시간: "11:00-21:00",
-      가격대: "9,000-12,000원"
     },
     // 오륜빌딩 (국제금융로8길 34)
     {
@@ -706,7 +651,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 580,
       영업시간: "11:00-21:00 (일 휴무)",
-      가격대: "35,000-39,000원"
     },
     {
       이름: "부흥동태",
@@ -718,7 +662,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 720,
       영업시간: "09:00-22:00 (토 15시까지, 일 휴무)",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "진진만두국",
@@ -730,7 +673,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 450,
       영업시간: "11:00-21:00 (토,일 휴무)",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "이도 여의도",
@@ -742,7 +684,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 380,
       영업시간: "11:30-22:00",
-      가격대: "30,000-50,000원"
     },
     {
       이름: "여의도 셋째집",
@@ -754,7 +695,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 320,
       영업시간: "11:30-21:30 (브레이크타임 15:00-17:00)",
-      가격대: "14,000-15,000원"
     },
     {
       이름: "가양 칼국수 버섯매운탕",
@@ -766,7 +706,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 1650,
       영업시간: "11:00-22:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "정인면옥 본점",
@@ -778,7 +717,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 3200,
       영업시간: "11:00-21:00",
-      가격대: "12,000-18,000원"
     },
     // 정우빌딩 (서여의도 - 은행로 29)
     {
@@ -791,7 +729,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 850,
       영업시간: "11:00-21:00 (토 점심까지)",
-      가격대: "9,000-15,000원"
     },
     {
       이름: "뒤푸리",
@@ -803,7 +740,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 920,
       영업시간: "07:00-21:00 (토 점심까지)",
-      가격대: "9,000-15,000원"
     },
     {
       이름: "짜글이양곱창",
@@ -815,7 +751,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 680,
       영업시간: "11:00-21:00 (토 점심까지)",
-      가격대: "10,000-18,000원"
     },
     {
       이름: "도시해장국",
@@ -827,7 +762,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 520,
       영업시간: "07:00-21:00 (토 점심까지)",
-      가격대: "8,000-12,000원"
     },
     // 더샵아일랜드파크 (서여의도 - 의사당대로 38)
     {
@@ -840,7 +774,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 850,
       영업시간: "11:00-14:00, 18:00-21:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "마초갈비 여의도공원점",
@@ -852,7 +785,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 720,
       영업시간: "11:30-22:00",
-      가격대: "20,000-40,000원"
     },
     {
       이름: "풍년식당1979 서여의도점",
@@ -864,7 +796,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 580,
       영업시간: "11:00-22:00",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "리셰",
@@ -876,7 +807,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.8,
       리뷰수: 420,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "장독대 김치찌개 여의도",
@@ -888,7 +818,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.3,
       리뷰수: 380,
       영업시간: "24시간",
-      가격대: "8,000-12,000원"
     },
     {
       이름: "도약 서여의도점",
@@ -900,7 +829,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.9,
       리뷰수: 450,
       영업시간: "11:30-22:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "엔터리 해장국 여의도점",
@@ -912,7 +840,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 2.9,
       리뷰수: 280,
       영업시간: "07:00-21:00",
-      가격대: "8,000-12,000원"
     },
     {
       이름: "8번대물집 여의도",
@@ -924,7 +851,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 520,
       영업시간: "11:30-22:00",
-      가격대: "30,000-50,000원"
     },
     {
       이름: "쫍태와노가리 여의도",
@@ -936,7 +862,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 5.0,
       리뷰수: 180,
       영업시간: "17:00-24:00",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "은호식당",
@@ -947,7 +872,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1450,
       영업시간: "11:00-21:00",
-      가격대: "15,000-30,000원"
     },
     // 국회대로66길
     {
@@ -960,7 +884,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 420,
       영업시간: "09:10-22:00 (일 휴무)",
-      가격대: "15,000-60,000원"
     },
     {
       이름: "소호66",
@@ -972,7 +895,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 580,
       영업시간: "11:00-22:00 (브레이크타임 15:00-17:00, 일 휴무)",
-      가격대: "15,000-30,000원"
     },
     // 국회대로66길
     {
@@ -985,7 +907,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 850,
       영업시간: "11:00-22:00",
-      가격대: "15,000-35,000원"
     },
     // 국회대로70길
     {
@@ -998,7 +919,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 480,
       영업시간: "08:00-22:00 (주말/공휴일 휴무)",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "창고43 VIP점",
@@ -1010,7 +930,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 680,
       영업시간: "11:30-22:00",
-      가격대: "50,000-100,000원"
     },
     {
       이름: "창고43 서여의도점",
@@ -1022,7 +941,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 520,
       영업시간: "11:30-22:00",
-      가격대: "40,000-80,000원"
     },
     {
       이름: "여의도 나주곰탕",
@@ -1034,7 +952,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 350,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     // 국회대로72길
     {
@@ -1047,7 +964,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 320,
       영업시간: "11:00-21:00",
-      가격대: "9,000-12,000원"
     },
     {
       이름: "한방대가삼계탕",
@@ -1059,7 +975,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 280,
       영업시간: "11:00-21:00",
-      가격대: "15,000-20,000원"
     },
     // 국회대로74길
     {
@@ -1072,7 +987,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.8,
       리뷰수: 450,
       영업시간: "11:00-22:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "교동전선생 서여의도점",
@@ -1084,7 +998,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 380,
       영업시간: "11:00-22:00",
-      가격대: "12,000-20,000원"
     },
     {
       이름: "해동복국",
@@ -1095,7 +1008,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 980,
       영업시간: "11:00-22:00",
-      가격대: "20,000-40,000원"
     },
     // CCMM빌딩 (여의공원로 101)
     {
@@ -1108,7 +1020,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 420,
       영업시간: "11:00-21:00",
-      가격대: "9,000-15,000원"
     },
     {
       이름: "운산",
@@ -1120,7 +1031,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 320,
       영업시간: "11:00-21:00",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "국민추어탕",
@@ -1132,7 +1042,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 280,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "여의도뚝배기",
@@ -1144,7 +1053,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.9,
       리뷰수: 250,
       영업시간: "11:00-21:00",
-      가격대: "9,000-13,000원"
     },
     {
       이름: "생라면시대",
@@ -1156,7 +1064,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.8,
       리뷰수: 180,
       영업시간: "11:00-20:00",
-      가격대: "8,000-12,000원"
     },
     // 삼도오피스텔 (은행로 58)
     {
@@ -1169,7 +1076,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 450,
       영업시간: "09:30-21:30 (브레이크 15:00-17:00, 토일 휴무)",
-      가격대: "11,000-33,000원"
     },
     // 더현대서울 6층
     {
@@ -1182,7 +1088,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 580,
       영업시간: "10:30-22:00 (라스트오더 21:00)",
-      가격대: "30,000-45,000원"
     },
     {
       이름: "나의가야 더현대서울",
@@ -1194,7 +1099,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 720,
       영업시간: "11:00-22:00 (라스트오더 21:00)",
-      가격대: "25,000-40,000원"
     },
     // 브라이튼여의도
     {
@@ -1207,7 +1111,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 680,
       영업시간: "11:30-22:00",
-      가격대: "80,000-150,000원"
     },
     {
       이름: "최선도 브라이튼여의도점",
@@ -1219,7 +1122,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 420,
       영업시간: "11:30-22:00",
-      가격대: "25,000-50,000원"
     },
     {
       이름: "단정 브라이튼여의도점",
@@ -1231,7 +1133,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 380,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "소이연남 브라이튼여의도점",
@@ -1243,7 +1144,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 350,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원"
     },
     {
       이름: "카츠아지 여의도점",
@@ -1255,7 +1155,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 680,
       영업시간: "10:30-21:00",
-      가격대: "15,000-25,000원"
     },
     // 동여의도 (IFC, 63빌딩, 더현대 쪽)
     {
@@ -1268,7 +1167,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 2100,
       영업시간: "10:30-21:00",
-      가격대: "12,000-18,000원"
     },
     {
       이름: "송옥 여의도 IFC몰점",
@@ -1280,7 +1178,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 1560,
       영업시간: "11:00-21:00",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "제일제면소 IFC몰 여의도점",
@@ -1292,7 +1189,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1200,
       영업시간: "10:30-21:30",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "호우섬 더현대서울점",
@@ -1304,7 +1200,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 1890,
       영업시간: "10:30-20:30",
-      가격대: "12,000-20,000원"
     },
   ],
   양식: [
@@ -1319,7 +1214,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 2100,
       영업시간: "10:00-21:00",
-      가격대: "19,000-32,000원"
     },
     {
       이름: "하얀과자점",
@@ -1331,7 +1225,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 1580,
       영업시간: "09:30-18:00",
-      가격대: "4,000-45,000원"
     },
     // 동여의도
     {
@@ -1343,7 +1236,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.6,
       리뷰수: 1850,
       영업시간: "11:30-22:00",
-      가격대: "50,000-120,000원"
     },
     {
       이름: "테이스팅룸 여의도",
@@ -1354,7 +1246,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 1120,
       영업시간: "11:00-22:00",
-      가격대: "20,000-40,000원"
     },
     {
       이름: "퍼스트플러스에이드 여의도",
@@ -1365,7 +1256,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 890,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     // CCMM빌딩
     {
@@ -1378,7 +1268,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 350,
       영업시간: "11:00-21:00",
-      가격대: "12,000-18,000원"
     },
     // 동여의도
     {
@@ -1390,7 +1279,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 2650,
       영업시간: "11:30-22:00",
-      가격대: "25,000-50,000원"
     },
     {
       이름: "로와이드 여의도점",
@@ -1402,7 +1290,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 1780,
       영업시간: "11:00-22:00",
-      가격대: "18,000-35,000원"
     },
     // 파이낸스타워
     {
@@ -1415,7 +1302,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 680,
       영업시간: "11:00-21:00",
-      가격대: "15,000-20,000원"
     },
     {
       이름: "카레나이스",
@@ -1427,7 +1313,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 380,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "샤이바나",
@@ -1439,7 +1324,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 420,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     // 63빌딩
     {
@@ -1452,7 +1336,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.8,
       리뷰수: 2100,
       영업시간: "12:00-22:00",
-      가격대: "250,000원~"
     },
     {
       이름: "워킹온더클라우드",
@@ -1464,7 +1347,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 3500,
       영업시간: "11:30-22:00",
-      가격대: "80,000-150,000원"
     },
     {
       이름: "63 레스토랑 파빌리온",
@@ -1476,7 +1358,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 4500,
       영업시간: "11:30-22:00",
-      가격대: "80,000-120,000원"
     },
     // IFC몰
     {
@@ -1489,7 +1370,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 2100,
       영업시간: "11:00-22:00",
-      가격대: "40,000-80,000원"
     },
     {
       이름: "바스버거 율촌빌딩점",
@@ -1501,7 +1381,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1580,
       영업시간: "11:00-21:30",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "브루클린 더 버거 조인트 BNK점",
@@ -1513,7 +1392,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1320,
       영업시간: "11:00-21:30",
-      가격대: "15,000-22,000원"
     },
     {
       이름: "온더보더 IFC몰점",
@@ -1525,7 +1403,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 980,
       영업시간: "11:00-22:00",
-      가격대: "20,000-35,000원"
     },
     {
       이름: "더플레이스 여의도IFC점",
@@ -1537,7 +1414,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 1500,
       영업시간: "11:00-22:00",
-      가격대: "15,000-35,000원"
     },
     {
       이름: "테이스티룸 IFC몰점",
@@ -1549,7 +1425,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 980,
       영업시간: "10:00-21:30",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "렌위치 여의도 IFC점",
@@ -1561,7 +1436,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 650,
       영업시간: "08:00-21:00",
-      가격대: "8,000-15,000원"
     },
     // 더현대서울
     {
@@ -1574,7 +1448,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1450,
       영업시간: "11:00-21:00",
-      가격대: "50,000-100,000원"
     },
     {
       이름: "번패티번 더현대서울점",
@@ -1586,7 +1459,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 890,
       영업시간: "10:30-20:30",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "수티 더현대서울점",
@@ -1598,7 +1470,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 720,
       영업시간: "10:30-20:30",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "이탈리 더현대서울점",
@@ -1610,7 +1481,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 680,
       영업시간: "10:30-22:00",
-      가격대: "20,000-40,000원"
     },
     {
       이름: "SMT라운지 더현대서울",
@@ -1622,7 +1492,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 520,
       영업시간: "10:30-22:00",
-      가격대: "25,000-45,000원"
     },
     // 브라이튼여의도
     {
@@ -1635,7 +1504,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 520,
       영업시간: "09:00-22:00",
-      가격대: "20,000-35,000원"
     },
     {
       이름: "탭샵바 브라이튼여의도점",
@@ -1647,7 +1515,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 380,
       영업시간: "11:30-23:00",
-      가격대: "30,000-60,000원"
     },
     {
       이름: "FOUR B 브라이튼여의도점",
@@ -1659,7 +1526,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 450,
       영업시간: "08:00-21:00",
-      가격대: "5,000-12,000원"
     },
     {
       이름: "젤라떼리아 도도 브라이튼여의도점",
@@ -1671,7 +1537,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 320,
       영업시간: "11:00-22:00",
-      가격대: "5,000-8,000원"
     },
     // 더샵아일랜드파크 (서여의도)
     {
@@ -1684,7 +1549,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 480,
       영업시간: "11:00-21:00",
-      가격대: "10,000-18,000원"
     },
     {
       이름: "37.5 시그니처",
@@ -1696,7 +1560,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 520,
       영업시간: "10:00-22:00",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "그리디몬 여의도",
@@ -1708,7 +1571,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.9,
       리뷰수: 380,
       영업시간: "11:00-21:00",
-      가격대: "12,000-18,000원"
     },
     // 원센티널
     {
@@ -1721,7 +1583,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 580,
       영업시간: "09:00-22:00",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "테디스오븐 원센티널점",
@@ -1733,7 +1594,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 420,
       영업시간: "08:00-21:00",
-      가격대: "5,000-15,000원"
     },
     {
       이름: "브릭샌드 원센티널점",
@@ -1745,7 +1605,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 350,
       영업시간: "08:00-20:00",
-      가격대: "8,000-15,000원"
     }
   ],
   중식: [
@@ -1760,7 +1619,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 680,
       영업시간: "11:00-22:00 (브레이크타임 14:00-17:30, 토일 휴무)",
-      가격대: "15,000-50,000원"
     },
     // 서여의도
     {
@@ -1773,7 +1631,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 2450,
       영업시간: "11:00-21:00",
-      가격대: "10,000-25,000원"
     },
     {
       이름: "짬뽕지존 여의도점",
@@ -1784,7 +1641,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 1680,
       영업시간: "11:00-21:00",
-      가격대: "9,000-15,000원"
     },
     // 국회대로68길
     {
@@ -1797,7 +1653,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 520,
       영업시간: "11:00-21:00 (일 휴무)",
-      가격대: "10,000-20,000원"
     },
     // 파이낸스타워
     {
@@ -1810,7 +1665,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 450,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원"
     },
     {
       이름: "신승반점",
@@ -1822,7 +1676,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 520,
       영업시간: "11:00-21:00",
-      가격대: "8,000-15,000원"
     },
     {
       이름: "백원 여의도점",
@@ -1833,7 +1686,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 920,
       영업시간: "11:30-22:00",
-      가격대: "20,000-50,000원"
     },
     {
       이름: "무탄 여의도",
@@ -1844,7 +1696,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 1350,
       영업시간: "11:00-21:00",
-      가격대: "10,000-20,000원"
     },
     {
       이름: "홀리차우 여의도점",
@@ -1855,7 +1706,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 580,
       영업시간: "11:00-22:00 (일 휴무)",
-      가격대: "12,000-25,000원"
     },
     // IFC몰
     {
@@ -1868,7 +1718,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 2100,
       영업시간: "11:00-21:30",
-      가격대: "15,000-35,000원"
     },
     {
       이름: "판다익스프레스 IFC몰점",
@@ -1880,7 +1729,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.8,
       리뷰수: 1200,
       영업시간: "10:30-21:30",
-      가격대: "10,000-15,000원"
     },
     // 더샵아일랜드파크 (서여의도)
     {
@@ -1893,7 +1741,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.4,
       리뷰수: 320,
       영업시간: "11:00-21:00",
-      가격대: "10,000-20,000원"
     },
     // 경호빌딩
     {
@@ -1906,7 +1753,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 920,
       영업시간: "11:00-21:00",
-      가격대: "10,000-20,000원"
     },
     // 더현대서울
     {
@@ -1919,7 +1765,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1560,
       영업시간: "11:00-21:00",
-      가격대: "40,000-80,000원"
     },
     {
       이름: "도원스타일 더현대서울점",
@@ -1931,7 +1776,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 890,
       영업시간: "10:30-20:30",
-      가격대: "20,000-40,000원"
     },
     {
       이름: "사천화가 더현대서울",
@@ -1943,7 +1787,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 620,
       영업시간: "10:30-22:00",
-      가격대: "20,000-35,000원"
     },
     {
       이름: "신홍러우 여의도",
@@ -1955,7 +1798,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 1240,
       영업시간: "11:30-22:00",
-      가격대: "25,000-50,000원"
     },
     // 63빌딩
     {
@@ -1968,7 +1810,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1900,
       영업시간: "11:30-22:00",
-      가격대: "50,000-100,000원"
     }
   ],
   일식: [
@@ -1983,7 +1824,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 380,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     // 서여의도
     {
@@ -1995,7 +1835,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.8,
       리뷰수: 2350,
       영업시간: "12:00-14:30, 18:00-22:00",
-      가격대: "33,000-45,000원"
     },
     {
       이름: "아루히 니와",
@@ -2006,7 +1845,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.7,
       리뷰수: 1280,
       영업시간: "12:00-14:30, 18:00-22:00",
-      가격대: "50,000-80,000원"
     },
     {
       이름: "스시미소 여의도",
@@ -2017,7 +1855,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.7,
       리뷰수: 980,
       영업시간: "12:00-14:30, 18:00-22:00",
-      가격대: "60,000-100,000원"
     },
     {
       이름: "스시유 여의도점",
@@ -2028,7 +1865,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 1560,
       영업시간: "12:00-14:30, 18:00-22:00",
-      가격대: "36,000-70,000원"
     },
     {
       이름: "아라타 여의도",
@@ -2039,7 +1875,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 720,
       영업시간: "12:00-15:00, 18:00-22:00",
-      가격대: "80,000-150,000원"
     },
     {
       이름: "타마 여의도",
@@ -2050,7 +1885,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 820,
       영업시간: "11:30-21:00",
-      가격대: "20,000-35,000원"
     },
     // 파이낸스타워
     {
@@ -2063,7 +1897,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 480,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "후라토식당 여의도점",
@@ -2075,7 +1908,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 520,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원"
     },
     // 정우빌딩
     {
@@ -2088,7 +1920,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 350,
       영업시간: "11:30-21:00 (토 점심까지)",
-      가격대: "12,000-25,000원"
     },
     // 원센티널
     {
@@ -2101,7 +1932,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.6,
       리뷰수: 420,
       영업시간: "17:00-24:00",
-      가격대: "30,000-50,000원"
     },
     {
       이름: "키보 락앤롤",
@@ -2113,7 +1943,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 380,
       영업시간: "17:00-24:00",
-      가격대: "40,000-70,000원"
     },
     // IFC몰
     {
@@ -2126,7 +1955,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.9,
       리뷰수: 1850,
       영업시간: "11:00-21:30",
-      가격대: "15,000-30,000원"
     },
     {
       이름: "시마스시 IFC몰점",
@@ -2138,7 +1966,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.5,
       리뷰수: 1320,
       영업시간: "11:00-21:30",
-      가격대: "25,000-50,000원"
     },
     {
       이름: "오미식당 IFC몰점",
@@ -2150,7 +1977,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 980,
       영업시간: "11:00-21:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "히바린 여의도 IFC몰점",
@@ -2162,7 +1988,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1100,
       영업시간: "11:00-21:30",
-      가격대: "12,000-18,000원"
     },
     // 경호빌딩
     {
@@ -2175,7 +2000,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 680,
       영업시간: "11:30-21:00",
-      가격대: "15,000-25,000원"
     },
     // 더샵아일랜드파크 (서여의도)
     {
@@ -2188,7 +2012,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.4,
       리뷰수: 280,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "핫담온 여의도",
@@ -2200,7 +2023,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 580,
       영업시간: "11:00-22:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "띠새라면 여의도KBS본관점",
@@ -2212,7 +2034,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.6,
       리뷰수: 320,
       영업시간: "11:00-21:00",
-      가격대: "9,000-13,000원"
     },
     // 63빌딩
     {
@@ -2225,7 +2046,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 1200,
       영업시간: "11:30-22:00",
-      가격대: "70,000-150,000원"
     },
     // 더현대서울
     {
@@ -2238,7 +2058,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 890,
       영업시간: "11:00-21:00",
-      가격대: "40,000-80,000원"
     },
     {
       이름: "로바 더현대서울",
@@ -2250,7 +2069,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 950,
       영업시간: "11:00-22:00",
-      가격대: "60,000-120,000원"
     },
     {
       이름: "송 더현대서울",
@@ -2262,7 +2080,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.9,
       리뷰수: 720,
       영업시간: "10:30-22:00",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "정돈 프리미엄 더현대서울",
@@ -2274,7 +2091,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 680,
       영업시간: "10:30-22:00",
-      가격대: "20,000-35,000원"
     },
     {
       이름: "마츠노하나 더현대서울점",
@@ -2286,7 +2102,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 3.8,
       리뷰수: 1450,
       영업시간: "10:30-20:30",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "탐광 더현대서울점",
@@ -2298,7 +2113,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 720,
       영업시간: "10:30-20:30",
-      가격대: "15,000-25,000원"
     }
   ],
   동남아식: [
@@ -2313,7 +2127,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 650,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     // 동여의도
     {
@@ -2325,7 +2138,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 980,
       영업시간: "10:30-21:00",
-      가격대: "10,000-15,000원"
     },
     {
       이름: "타이 익스프레스 여의도",
@@ -2336,7 +2148,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 720,
       영업시간: "11:00-21:00",
-      가격대: "12,000-20,000원"
     },
     // 국회대로70길
     {
@@ -2349,7 +2160,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 780,
       영업시간: "11:00-21:00",
-      가격대: "10,000-15,000원"
     },
     // IFC몰
     {
@@ -2362,7 +2172,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 2850,
       영업시간: "11:00-22:00",
-      가격대: "15,000-40,000원"
     },
     {
       이름: "아그라 IFC몰점",
@@ -2374,7 +2183,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 1650,
       영업시간: "11:00-21:30",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "점보씨푸드 IFC몰점",
@@ -2386,7 +2194,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.3,
       리뷰수: 2100,
       영업시간: "11:00-22:00",
-      가격대: "40,000-80,000원"
     },
     {
       이름: "퍼틴 IFC몰점",
@@ -2398,7 +2205,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 850,
       영업시간: "11:00-21:00",
-      가격대: "15,000원"
     },
     {
       이름: "포포유 IFC몰점",
@@ -2410,7 +2216,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.1,
       리뷰수: 720,
       영업시간: "11:00-21:30",
-      가격대: "15,000-25,000원"
     },
     {
       이름: "싱가포르 호커 여의도",
@@ -2421,7 +2226,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.4,
       리뷰수: 1120,
       영업시간: "11:00-22:00",
-      가격대: "15,000-35,000원"
     },
     // 더현대서울
     {
@@ -2434,7 +2238,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.0,
       리뷰수: 980,
       영업시간: "10:30-20:30",
-      가격대: "13,000-25,000원"
     },
     {
       이름: "효뜨 더현대서울",
@@ -2446,7 +2249,6 @@ export const yeouidoFoodMap: YeouidoFoodData = {
       평점: 4.2,
       리뷰수: 750,
       영업시간: "11:00-21:00",
-      가격대: "20,000-35,000원"
     }
   ]
 };
