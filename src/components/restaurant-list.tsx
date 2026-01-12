@@ -25,9 +25,8 @@ export function RestaurantList({
         <div className="flex items-center px-2 py-3">
           <Button
             variant="ghost"
-            size="icon"
             onClick={onBack}
-            className="mr-2"
+            className="h-11 w-11 min-w-[44px] min-h-[44px] rounded-full mr-2"
           >
             <ChevronLeft className="w-6 h-6" />
           </Button>

@@ -148,12 +148,11 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
           unoptimized
           priority
         />
-        {/* 뒤로가기 버튼 */}
+        {/* 뒤로가기 버튼 - Apple HIG 권장 44x44px 터치 영역 */}
         <Button
           variant="ghost"
-          size="icon"
           onClick={onBack}
-          className="absolute top-4 left-4 bg-black/30 hover:bg-black/50 text-white rounded-full safe-area-top"
+          className="absolute top-4 left-4 h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-black/50 text-white rounded-full safe-area-top"
         >
           <ChevronLeft className="w-6 h-6" />
         </Button>
