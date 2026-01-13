@@ -2345,18 +2345,41 @@ export interface PopularRestaurant extends Restaurant {
   카테고리명: string;
 }
 
+// 인기맛집 로테이션 로직
+// - 카테고리: 3시간마다 로테이션 (5개 카테고리 중 3개 표시)
+// - 순위: 하루마다 로테이션 (1등→2등→3등)
 export function getPopularRestaurants(): PopularRestaurant[] {
   const cats = ["한식", "양식", "중식", "일식", "동남아식"] as const;
+  const now = new Date();
+
+  // 카테고리 로테이션: 3시간마다 (0-2시: 0, 3-5시: 1, ...)
+  const hourSlot = Math.floor(now.getHours() / 3); // 0~7
+  const categoryOffset = hourSlot % cats.length;
+
+  // 순위 로테이션: 하루마다 (0=1등, 1=2등, 2=3등)
+  const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
+  const rankOffset = dayOfYear % 3;
+
+  // 3개 카테고리 선택 (로테이션된 순서로)
+  const selectedCategories = [
+    cats[(categoryOffset + 0) % cats.length],
+    cats[(categoryOffset + 1) % cats.length],
+    cats[(categoryOffset + 2) % cats.length],
+  ];
+
   const topByCategory: PopularRestaurant[] = [];
 
-  for (const cat of cats) {
+  for (const cat of selectedCategories) {
     const items = yeouidoFoodMap[cat];
     if (items && items.length > 0) {
       const sorted = [...items]
         .filter((r) => r.평점)
         .sort((a, b) => (b.평점 || 0) - (a.평점 || 0));
-      if (sorted.length > 0) {
-        topByCategory.push({ ...sorted[0], 카테고리명: cat });
+
+      // 순위 로테이션 적용 (1등, 2등, 3등 중 하나)
+      const rankIndex = Math.min(rankOffset, sorted.length - 1);
+      if (sorted.length > rankIndex) {
+        topByCategory.push({ ...sorted[rankIndex], 카테고리명: cat });
       }
     }
   }

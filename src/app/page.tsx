@@ -133,9 +133,36 @@ export default function Home() {
     }
   };
 
-  // 인기 맛집 (카테고리별 최고 평점)
-  const popularRestaurants = useMemo(() => {
-    return getPopularRestaurants();
+  // 인기 맛집 - 3시간마다 카테고리 로테이션, 하루마다 순위 로테이션
+  const [popularRestaurants, setPopularRestaurants] = useState(() => getPopularRestaurants());
+
+  // 3시간마다 인기맛집 갱신
+  useEffect(() => {
+    const updatePopular = () => {
+      setPopularRestaurants(getPopularRestaurants());
+    };
+
+    // 다음 3시간 단위까지 남은 시간 계산
+    const now = new Date();
+    const currentSlot = Math.floor(now.getHours() / 3);
+    const nextSlotHour = (currentSlot + 1) * 3;
+    const nextUpdate = new Date(now);
+    nextUpdate.setHours(nextSlotHour, 0, 0, 0);
+    if (nextSlotHour >= 24) {
+      nextUpdate.setDate(nextUpdate.getDate() + 1);
+      nextUpdate.setHours(0, 0, 0, 0);
+    }
+    const msUntilNext = nextUpdate.getTime() - now.getTime();
+
+    // 첫 업데이트 예약
+    const timeout = setTimeout(() => {
+      updatePopular();
+      // 이후 3시간마다 반복
+      const interval = setInterval(updatePopular, 3 * 60 * 60 * 1000);
+      return () => clearInterval(interval);
+    }, msUntilNext);
+
+    return () => clearTimeout(timeout);
   }, []);
 
   // 지역별 맛집
