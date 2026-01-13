@@ -84,7 +84,7 @@ type TabMode = "mood" | "roulette";
 export function RecommendationView({ onSelectRestaurant }: RecommendationViewProps) {
   const [tabMode, setTabMode] = useState<TabMode>("mood");
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
-  const [recommendedRestaurant, setRecommendedRestaurant] = useState<Restaurant | null>(null);
+  const [recommendedRestaurants, setRecommendedRestaurants] = useState<Restaurant[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [showResult, setShowResult] = useState(false);
   const [rouletteResult, setRouletteResult] = useState<string | null>(null);
@@ -104,8 +104,8 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
     handleRecommend(selectedMood || undefined, rouletteResult || undefined, newPrefs);
   };
 
-  // 추천 로직 (취향 반영)
-  const getRecommendation = (mood?: string, category?: string, prefs?: UserPreferences) => {
+  // 추천 로직 (취향 반영) - 3개 추천
+  const getRecommendations = (mood?: string, category?: string, prefs?: UserPreferences): Restaurant[] => {
     const currentPrefs = prefs || preferences;
     let candidates = [...allRestaurants];
 
@@ -167,24 +167,26 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
       }
     }
 
-    // 랜덤 선택
+    // 랜덤으로 3개 선택
+    const selectRandom = (arr: Restaurant[], count: number): Restaurant[] => {
+      const shuffled = [...arr].sort(() => Math.random() - 0.5);
+      return shuffled.slice(0, count);
+    };
+
     if (candidates.length > 0) {
-      const randomIndex = Math.floor(Math.random() * candidates.length);
-      return candidates[randomIndex];
+      return selectRandom(candidates, 3);
     }
 
     // 후보가 없으면 룰렛 카테고리만 적용하여 재시도
     if (category && category !== "random") {
       const categoryOnly = allRestaurants.filter(r => r.카테고리 === category);
       if (categoryOnly.length > 0) {
-        const randomIndex = Math.floor(Math.random() * categoryOnly.length);
-        return categoryOnly[randomIndex];
+        return selectRandom(categoryOnly, 3);
       }
     }
 
-    // 그래도 없으면 전체에서 랜덤
-    const randomIndex = Math.floor(Math.random() * allRestaurants.length);
-    return allRestaurants[randomIndex];
+    // 그래도 없으면 전체에서 랜덤 3개
+    return selectRandom(allRestaurants, 3);
   };
 
   // 추천 실행
@@ -193,8 +195,8 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
     setShowResult(false);
 
     setTimeout(() => {
-      const restaurant = getRecommendation(mood, category, prefs);
-      setRecommendedRestaurant(restaurant);
+      const restaurants = getRecommendations(mood, category, prefs);
+      setRecommendedRestaurants(restaurants);
       setIsSpinning(false);
       setShowResult(true);
     }, 800);
@@ -322,7 +324,7 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
               <div className="w-16 h-16 border-4 border-orange-200 border-t-orange-500 rounded-full animate-spin mb-4" />
               <p className="text-gray-500 text-sm">맛집 찾는 중...</p>
             </div>
-          ) : showResult && recommendedRestaurant ? (
+          ) : showResult && recommendedRestaurants.length > 0 ? (
             <div>
               {/* 추천 이유 */}
               <div className="bg-orange-50 px-4 py-2 text-center">
@@ -331,51 +333,54 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
                     ? `🎡 ${rouletteResult === "random" ? "랜덤" : rouletteResult} 카테고리에서 추천!`
                     : selectedMood
                     ? `${moodOptions.find(m => m.id === selectedMood)?.emoji} ${moodOptions.find(m => m.id === selectedMood)?.label} 기분에 딱!`
-                    : "🎯 오늘의 추천"}
+                    : "🎯 오늘의 추천 3곳"}
                 </span>
               </div>
 
-              {/* 식당 정보 */}
-              <div
-                className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
-                onClick={() => onSelectRestaurant(recommendedRestaurant)}
-              >
-                <div className="flex items-start justify-between mb-2">
-                  <div>
-                    <h3 className="text-lg font-bold text-gray-900">
-                      {recommendedRestaurant.이름}
-                    </h3>
-                    <p className="text-sm text-gray-500">{recommendedRestaurant.카테고리}</p>
-                  </div>
-                  <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span className="text-sm font-semibold text-yellow-700">
-                      {recommendedRestaurant.평점 || "-"}
-                    </span>
-                  </div>
-                </div>
+              {/* 식당 정보 - 3개 */}
+              <div className="divide-y divide-gray-100">
+                {recommendedRestaurants.map((restaurant, index) => (
+                  <div
+                    key={restaurant.이름 + index}
+                    className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                    onClick={() => onSelectRestaurant(restaurant)}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="w-6 h-6 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full text-sm font-bold">
+                          {index + 1}
+                        </span>
+                        <div>
+                          <h3 className="text-base font-bold text-gray-900">
+                            {restaurant.이름}
+                          </h3>
+                          <p className="text-xs text-gray-500">{restaurant.카테고리}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
+                        <Star className="w-3 h-3 fill-yellow-400 text-yellow-400" />
+                        <span className="text-xs font-semibold text-yellow-700">
+                          {restaurant.평점 || "-"}
+                        </span>
+                      </div>
+                    </div>
 
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-                  {recommendedRestaurant.특징}
-                </p>
+                    <p className="text-sm text-gray-600 mb-2 line-clamp-1 ml-8">
+                      {restaurant.특징}
+                    </p>
 
-                <div className="flex items-center gap-4 text-xs text-gray-500">
-                  <div className="flex items-center gap-1">
-                    <MapPin className="w-3 h-3" />
-                    <span>{recommendedRestaurant.지역}</span>
+                    <div className="flex items-center gap-3 text-xs text-gray-500 ml-8">
+                      <div className="flex items-center gap-1">
+                        <MapPin className="w-3 h-3" />
+                        <span>{restaurant.지역}</span>
+                      </div>
+                      {restaurant.가격대 && (
+                        <span className="text-gray-400">• {restaurant.가격대}</span>
+                      )}
+                      <ChevronRight className="w-4 h-4 ml-auto text-orange-400" />
+                    </div>
                   </div>
-                  {recommendedRestaurant.빌딩 && (
-                    <span className="text-gray-400">• {recommendedRestaurant.빌딩}</span>
-                  )}
-                  {recommendedRestaurant.가격대 && (
-                    <span className="text-gray-400">• {recommendedRestaurant.가격대}</span>
-                  )}
-                </div>
-
-                <div className="flex items-center justify-end mt-3 text-orange-500 text-sm font-medium">
-                  <span>자세히 보기</span>
-                  <ChevronRight className="w-4 h-4" />
-                </div>
+                ))}
               </div>
             </div>
           ) : null}
@@ -392,13 +397,6 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
             >
               <Shuffle className="w-5 h-5 mr-2" />
               다시 추천
-            </Button>
-            <Button
-              onClick={() => recommendedRestaurant && onSelectRestaurant(recommendedRestaurant)}
-              className="flex-1 h-12 text-base bg-orange-500 hover:bg-orange-600"
-              disabled={!recommendedRestaurant || isSpinning}
-            >
-              여기로 갈래! 🍽️
             </Button>
           </div>
         )}
