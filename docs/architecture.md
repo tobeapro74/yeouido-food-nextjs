@@ -466,6 +466,8 @@ ADMIN_SECRET_KEY=
 
 ## 배포
 
+### 웹 배포 (Vercel)
+
 Vercel을 통한 자동 배포:
 1. GitHub main 브랜치 push
 2. Vercel 자동 빌드
@@ -475,3 +477,46 @@ Vercel을 통한 자동 배포:
 ```bash
 npx vercel --prod --force
 ```
+
+### iOS 앱 배포 (App Store)
+
+Capacitor를 사용한 iOS 네이티브 앱 배포:
+
+#### iOS 프로젝트 구조
+```
+ios/
+├── App/
+│   ├── App/
+│   │   ├── Assets.xcassets/
+│   │   │   └── AppIcon.appiconset/
+│   │   │       ├── AppIcon.png (1024x1024, alpha 없음)
+│   │   │       └── Contents.json
+│   │   └── Info.plist
+│   └── App.xcworkspace
+└── capacitor.config.ts
+```
+
+#### 빌드 및 업로드 과정
+1. **웹 빌드**: `npm run build`
+2. **Capacitor 동기화**: `npx cap sync ios`
+3. **Xcode 열기**: `npx cap open ios`
+4. **Archive 생성**: Xcode → Product → Archive
+5. **App Store 업로드**: Distribute App → App Store Connect → Upload
+
+#### App Store Connect 설정
+- **번들 ID**: com.yeoidohanki.app
+- **연령 등급**: 4+ (전체)
+- **가격**: 무료
+- **카테고리**: 음식 및 음료
+
+#### 앱 아이콘 요구사항
+- 1024 x 1024 픽셀
+- PNG 형식
+- **투명 배경(alpha channel) 없음** (필수!)
+- 모서리는 사각형 (iOS가 자동으로 둥글게 처리)
+
+#### 스크린샷 요구사항
+- **iPhone 6.7인치**: 1290 x 2796 픽셀
+- **iPad 12.9인치**: 2048 x 2732 픽셀
+
+자세한 배포 가이드는 [app distribution.md](./app%20distribution.md) 참조

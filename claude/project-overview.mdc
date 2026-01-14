@@ -12,9 +12,10 @@ alwaysApply: true
 ## 프로젝트 정보
 
 - **이름**: 여의도 한끼
-- **URL**: https://yeouido-food.vercel.app
+- **웹 URL**: https://yeouido-food.vercel.app
+- **iOS 앱**: App Store 심사 중 (2026.01.15 제출)
 - **GitHub**: https://github.com/tobeapro74/yeouido-food-nextjs
-- **기술 스택**: Next.js 16, React 19, TypeScript, Tailwind CSS, Turso, Cloudinary
+- **기술 스택**: Next.js 16, React 19, TypeScript, Tailwind CSS, MongoDB, Cloudinary, Capacitor (iOS)
 
 ## 핵심 파일 구조
 
@@ -148,5 +149,6 @@ GOOGLE_PLACES_API_KEY
 
 - [아키텍처](../docs/architecture.md)
 - [트러블슈팅](../docs/troubleshooting.md)
+- [iOS 앱 배포 가이드](../docs/app%20distribution.md)
 - [PRD](./prd-instruction.md)
 - [실행 계획](./prd-execution.md)
