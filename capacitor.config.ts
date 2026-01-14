@@ -14,6 +14,11 @@ const config: CapacitorConfig = {
     url: 'https://yeouido-food.vercel.app',
     cleartext: false,
   },
+  plugins: {
+    CapacitorHttp: {
+      enabled: true,
+    },
+  },
 };
 
 export default config;
