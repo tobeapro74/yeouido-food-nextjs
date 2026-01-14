@@ -66,7 +66,10 @@ export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
 
     const fetchReviews = async () => {
       try {
-        const res = await fetch(`/api/google-reviews/${encodeURIComponent(restaurantName)}`);
+        const res = await fetch(`/api/google-reviews/${encodeURIComponent(restaurantName)}`, {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        });
         const data = await res.json();
 
         cache[restaurantName] = {
