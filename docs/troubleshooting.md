@@ -375,6 +375,102 @@ if (currentView === "detail" && selectedRestaurant) {
 
 ---
 
+### 11. 구글 리뷰가 최신순으로 표시되지 않는 문제
+
+**문제**
+- 구글맵에서는 2일 전 리뷰(손예주님)가 최신인데, 앱에서는 1주 전 리뷰(R H님)가 최신으로 표시
+- 리뷰가 자동으로 업데이트되지 않음
+
+**원인 1: Google Places API 기본 정렬**
+- Google Places API는 기본적으로 "관련성(most_relevant)" 기준으로 리뷰를 반환
+- 최신 리뷰가 아닌 "유용한" 리뷰를 우선 표시
+
+**해결 1: `reviews_sort=newest` 파라미터 추가**
+```typescript
+// Before
+const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&language=ko&key=${GOOGLE_API_KEY}`;
+
+// After
+const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&language=ko&reviews_sort=newest&key=${GOOGLE_API_KEY}`;
+```
+
+**원인 2: 리뷰 자동 업데이트 시스템 부재**
+- 정기 업데이트 기능이 없어서 캐시가 만료될 때까지 오래된 데이터 유지
+
+**해결 2: Vercel Cron Job으로 3시간마다 자동 업데이트**
+
+`vercel.json`:
+```json
+{
+  "crons": [
+    {
+      "path": "/api/cron/update-reviews",
+      "schedule": "0 */3 * * *"
+    }
+  ]
+}
+```
+
+Cron API (`src/app/api/cron/update-reviews/route.ts`):
+- 모든 식당의 구글 리뷰를 배치로 업데이트
+- 5개씩 처리, 2초 딜레이 (API 레이트 제한 방지)
+
+**원인 3: 다중 캐시 레이어 문제**
+- MongoDB 서버 캐시 (24시간 TTL)
+- 브라우저 메모리 캐시 (만료 없음)
+- Safari/PWA 웹뷰 캐시
+
+**해결 3: 캐시 정책 개선**
+
+MongoDB 캐시 TTL 변경 (24시간 → 3시간):
+```typescript
+const maxAge = 3 * 60 * 60 * 1000; // 3시간
+```
+
+브라우저 메모리 캐시에 만료시간 추가:
+```typescript
+const CACHE_TTL = 10 * 60 * 1000; // 10분
+
+const isCacheValid = (entry: CacheEntry | undefined): entry is CacheEntry => {
+  if (!entry) return false;
+  return Date.now() - entry.timestamp < CACHE_TTL;
+};
+```
+
+fetch 요청에 캐시 무효화 헤더:
+```typescript
+const res = await fetch(url, {
+  cache: 'no-store',
+  headers: { 'Cache-Control': 'no-cache' }
+});
+```
+
+**캐시 문제 발생 시 해결 순서**
+1. MongoDB 캐시 전체 삭제:
+   ```bash
+   curl -X POST "https://yeouido-food.vercel.app/api/google-reviews/clear-cache" \
+     -H "Content-Type: application/json" \
+     -d '{"clearAll": true}'
+   ```
+
+2. Vercel 강제 재배포:
+   ```bash
+   vercel --prod --force
+   ```
+
+3. Safari 캐시 삭제:
+   - iPhone 설정 → Safari → 방문 기록 및 웹 사이트 데이터 지우기
+
+4. PWA 홈화면 아이콘 삭제 후 재추가
+
+**파일**:
+- `src/app/api/google-reviews/[name]/route.ts`
+- `src/app/api/cron/update-reviews/route.ts`
+- `src/components/google-reviews.tsx`
+- `vercel.json`
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버
