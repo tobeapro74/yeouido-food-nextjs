@@ -33,10 +33,10 @@ async function getCachedReviews(restaurantName: string): Promise<ReviewCache | n
     const collection = db.collection<ReviewCache>("google_reviews_cache");
     const cached = await collection.findOne({ restaurantName });
 
-    // 캐시가 24시간 이상 오래된 경우 null 반환
+    // 캐시가 3시간 이상 오래된 경우 null 반환 (Cron이 3시간마다 업데이트하므로 여유있게 설정)
     if (cached) {
       const cacheAge = Date.now() - new Date(cached.updatedAt).getTime();
-      const maxAge = 24 * 60 * 60 * 1000; // 24시간
+      const maxAge = 3 * 60 * 60 * 1000; // 3시간
       if (cacheAge > maxAge) {
         return null;
       }
@@ -105,8 +105,8 @@ export async function GET(
 
     const placeId = searchData.candidates[0].place_id;
 
-    // 4. Place Details에서 리뷰 가져오기
-    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&language=ko&key=${GOOGLE_API_KEY}`;
+    // 4. Place Details에서 리뷰 가져오기 (최신순 정렬)
+    const detailUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=reviews,rating,user_ratings_total&language=ko&reviews_sort=newest&key=${GOOGLE_API_KEY}`;
     const detailRes = await fetch(detailUrl);
     const detailData = await detailRes.json();
 
