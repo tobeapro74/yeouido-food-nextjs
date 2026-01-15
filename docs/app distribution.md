@@ -5,6 +5,7 @@
 ---
 
 ## 목차
+
 1. [사전 준비물](#사전-준비물)
 2. [Part 1: Apple Developer Program 가입](#part-1-apple-developer-program-가입)
 3. [Part 2: Xcode 설정 및 빌드](#part-2-xcode-설정-및-빌드)
@@ -20,7 +21,7 @@
 
 - [ ] **Mac 컴퓨터** (macOS 최신 버전 권장)
 - [ ] **Xcode** 설치 (App Store에서 무료 다운로드)
-- [ ] **Apple ID** (없으면 새로 만들기)
+- [ ] **Apple ID** (없으면 새로 만들기) tobeapro@gmail.com / Ls@~
 - [ ] **신용카드 또는 체크카드** (개발자 등록비 결제용)
 - [ ] **연간 등록비 $99** (약 13만원)
 - [ ] **앱 아이콘** (1024x1024 픽셀, PNG, 투명 배경 없이)
@@ -92,6 +93,7 @@
 10. **1024x1024 픽셀 PNG 이미지** 드래그 앤 드롭
 
 > **중요:** 앱 아이콘은 반드시:
+>
 > - 1024 x 1024 픽셀
 > - PNG 형식
 > - **투명 배경 없음** (alpha channel 없음)
@@ -214,11 +216,13 @@
 25. **스크린샷** 섹션에서 기기별로 업로드:
 
 **iPhone 스크린샷 (필수)**
+
 - **6.7인치** (iPhone 14 Pro Max): 1290 x 2796 픽셀
 - **6.5인치** (iPhone 11 Pro Max): 1284 x 2778 픽셀
 - 최소 1장, 최대 10장
 
 **iPad 스크린샷 (iPad 지원 시 필수)**
+
 - **12.9인치** (iPad Pro): 2048 x 2732 픽셀
 - 최소 1장, 최대 10장
 
@@ -293,10 +297,12 @@
 ### 4-4. 심사 결과
 
 **승인됨 (Approved)**
+
 - 축하합니다! App Store에 앱이 출시됩니다.
 - "판매 준비됨" 상태로 변경
 
 **거부됨 (Rejected)**
+
 - 거부 사유가 이메일로 전달됨
 - Resolution Center에서 상세 내용 확인
 - 문제 수정 후 재제출
@@ -308,9 +314,11 @@
 ### 자주 발생하는 에러와 해결 방법
 
 #### 1. "Invalid app icon" 에러
+
 **원인:** 앱 아이콘에 투명 배경(alpha channel)이 있음
 
 **해결:**
+
 ```bash
 # Python으로 alpha 채널 제거
 python3 -c "
@@ -322,54 +330,70 @@ if img.mode == 'RGBA':
     background.save('AppIcon_fixed.png', 'PNG')
 "
 ```
+
 또는 포토샵/피그마에서 배경색을 흰색으로 채우고 PNG로 저장
 
 #### 2. "Bundle Identifier already exists" 에러
+
 **원인:** 다른 앱이 같은 Bundle ID를 사용 중
 
 **해결:**
+
 - Xcode에서 Bundle Identifier 변경
 - 예: `com.yourname.appname2`
 
 #### 3. 키체인 암호 팝업이 계속 뜸
+
 **원인:** 키체인 접근 권한 문제
 
 **해결:**
+
 1. 암호 입력 후 **"항상 허용"** 선택 (허용 X)
 2. 여러 번 뜨면 매번 "항상 허용" 선택
 3. 안 되면 Mac 재시작 후 다시 시도
 
 #### 4. "Unlock device to continue" 메시지
+
 **원인:** iPhone이 잠겨 있음
 
 **해결:**
+
 - iPhone 잠금 해제 (Face ID/암호)
 
 #### 5. iPhone이 Xcode에서 안 보임
+
 **해결:**
+
 1. USB 케이블 다시 연결
 2. 다른 USB 포트 사용
 3. iPhone에서 "이 컴퓨터를 신뢰" 선택
 4. iPhone 잠금 해제 상태 유지
 
 #### 6. Archive 메뉴가 비활성화
+
 **원인:** 시뮬레이터가 선택되어 있음
 
 **해결:**
+
 - 상단에서 **"Any iOS Device (arm64)"** 선택
 
 #### 7. 빌드가 App Store Connect에 안 보임
+
 **원인:** 처리 시간 필요
 
 **해결:**
+
 - 10~15분 대기 후 새로고침
 - 이메일로 처리 완료 알림 확인
 
 #### 8. iPad 스크린샷이 필요하다는 에러
+
 **해결 방법 1:** iPad 스크린샷 추가
+
 - iPhone 스크린샷을 2048x2732로 리사이즈
 
 **해결 방법 2:** iPhone 전용으로 설정
+
 - Xcode → General → Deployment Info → iPhone만 체크
 
 ---
@@ -408,14 +432,14 @@ if img.mode == 'RGBA':
 
 ## 예상 소요 시간
 
-| 단계 | 소요 시간 |
-|------|----------|
-| Developer Program 가입 | 30분 |
-| Developer Program 활성화 대기 | 24~48시간 |
-| Xcode 설정 및 빌드 | 30분 |
-| App Store Connect 앱 등록 | 1~2시간 |
-| 심사 대기 | 1~3일 |
-| **총 예상 시간** | **3~5일** |
+| 단계                          | 소요 시간       |
+| ----------------------------- | --------------- |
+| Developer Program 가입        | 30분            |
+| Developer Program 활성화 대기 | 24~48시간       |
+| Xcode 설정 및 빌드            | 30분            |
+| App Store Connect 앱 등록     | 1~2시간         |
+| 심사 대기                     | 1~3일           |
+| **총 예상 시간**        | **3~5일** |
 
 ---
 

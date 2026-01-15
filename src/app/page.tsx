@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { User, LogOut, Key, ChevronDown } from "lucide-react";
+import { User, LogOut, Key, ChevronDown, Trash2 } from "lucide-react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -14,6 +14,7 @@ import { CategorySheet } from "@/components/category-sheet";
 import { BuildingSheet } from "@/components/building-sheet";
 import { AuthModal } from "@/components/auth-modal";
 import { ChangePasswordModal } from "@/components/change-password-modal";
+import { DeleteAccountModal } from "@/components/delete-account-modal";
 import { RecommendationView } from "@/components/recommendation-view";
 import { SearchBar } from "@/components/search-bar";
 import { FortuneModal } from "@/components/fortune-modal";
@@ -59,6 +60,7 @@ export default function Home() {
   const [user, setUser] = useState<UserInfo | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false);
+  const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
@@ -471,8 +473,18 @@ export default function Home() {
                       비밀번호 변경
                     </button>
                     <button
-                      onClick={handleLogout}
+                      onClick={() => {
+                        setDeleteAccountModalOpen(true);
+                        setUserMenuOpen(false);
+                      }}
                       className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2 text-destructive"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      계정 삭제
+                    </button>
+                    <button
+                      onClick={handleLogout}
+                      className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
                     >
                       <LogOut className="w-4 h-4" />
                       로그아웃
@@ -606,6 +618,13 @@ export default function Home() {
       <ChangePasswordModal
         isOpen={changePasswordModalOpen}
         onClose={() => setChangePasswordModalOpen(false)}
+      />
+
+      {/* 계정 삭제 모달 */}
+      <DeleteAccountModal
+        isOpen={deleteAccountModalOpen}
+        onClose={() => setDeleteAccountModalOpen(false)}
+        onSuccess={() => setUser(null)}
       />
 
       {/* 운세 모달 */}
