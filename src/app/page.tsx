@@ -19,6 +19,7 @@ import { RecommendationView } from "@/components/recommendation-view";
 import { SearchBar } from "@/components/search-bar";
 import { FortuneModal } from "@/components/fortune-modal";
 import { FortuneResultView } from "@/components/fortune-result";
+import { PullToRefresh } from "@/components/pull-to-refresh";
 import { calculateFortune, FortuneResult, Gender, MaritalStatus } from "@/lib/fortune";
 import {
   Restaurant,
@@ -439,6 +440,7 @@ export default function Home() {
 
   return (
     <>
+      <PullToRefresh>
       <div className="min-h-screen pb-20">
         {/* 헤더 */}
         <header className="bg-gradient-to-r from-red-600 to-red-500 safe-area-top">
@@ -582,6 +584,7 @@ export default function Home() {
           </section>
         </div>
       </div>
+      </PullToRefresh>
 
       <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
 

@@ -93,10 +93,8 @@ export function FortuneResultView({ result, onReset, onSelectRestaurant }: Fortu
                 className={`rounded-xl p-2 border-2 ${cat.color} hover:opacity-80 active:scale-95 transition-all`}
               >
                 <p className="text-xs font-medium mb-1">{cat.label}</p>
-                <p className="text-[10px] leading-tight flex flex-wrap justify-center gap-0">
-                  {Array.from({ length: score }).map((_, i) => (
-                    <span key={i}>{cat.emoji}</span>
-                  ))}
+                <p className="text-base font-bold">
+                  {cat.emoji} {score}
                 </p>
               </button>
             );
