@@ -13,11 +13,6 @@ interface FortuneResultViewProps {
   onSelectRestaurant: (restaurant: Restaurant) => void;
 }
 
-// 운세 지수를 이모지로 변환
-function renderScoreEmoji(score: number, emoji: string): string {
-  return emoji.repeat(score);
-}
-
 // 운세 카테고리 정보
 const fortuneCategories = [
   { id: "overall", label: "종합운", emoji: "⭐", color: "bg-yellow-100 border-yellow-300 text-yellow-700" },
@@ -95,11 +90,13 @@ export function FortuneResultView({ result, onReset, onSelectRestaurant }: Fortu
               <button
                 key={cat.id}
                 onClick={() => handleCategoryClick(cat.id)}
-                className={`rounded-xl p-2 border-2 ${cat.color} hover:opacity-80 active:scale-95 transition-all overflow-hidden`}
+                className={`rounded-xl p-2 border-2 ${cat.color} hover:opacity-80 active:scale-95 transition-all`}
               >
                 <p className="text-xs font-medium mb-1">{cat.label}</p>
-                <p className="text-sm leading-tight tracking-tight">
-                  {renderScoreEmoji(score, cat.emoji)}
+                <p className="text-[10px] leading-tight flex flex-wrap justify-center gap-0">
+                  {Array.from({ length: score }).map((_, i) => (
+                    <span key={i}>{cat.emoji}</span>
+                  ))}
                 </p>
               </button>
             );
