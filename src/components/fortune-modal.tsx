@@ -41,7 +41,7 @@ export function FortuneModal({ open, onOpenChange, onSubmit }: FortuneModalProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md" onOpenAutoFocus={(e) => e.preventDefault()}>
         <DialogHeader>
           <DialogTitle className="text-center text-xl flex items-center justify-center gap-2">
             <span className="text-2xl">🔮</span>
