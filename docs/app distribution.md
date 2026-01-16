@@ -309,6 +309,373 @@
 
 ---
 
+## Part 5: 심사 거부 대응 (실제 사례)
+
+이 섹션은 실제로 앱 심사에서 거부당했을 때 어떻게 해결했는지를 순서대로 설명합니다.
+
+### 5-1. 거부 사유 확인하기
+
+1. **이메일 확인**: Apple에서 거부 사유가 담긴 이메일이 옵니다
+2. **App Store Connect 접속**: [appstoreconnect.apple.com](https://appstoreconnect.apple.com)
+3. **나의 앱 → 앱 선택 → Resolution Center** 클릭
+4. 거부 사유 상세 내용 확인
+
+---
+
+### 5-2. 거부 사유 1: iPad 스크린샷 누락
+
+#### 문제 상황
+```
+앱이 iPad를 지원하는데 iPad 스크린샷이 없습니다.
+```
+
+#### 원인
+- Xcode에서 앱이 **iPhone + iPad 모두 지원**하도록 설정되어 있음
+- 그런데 App Store Connect에 **iPad 스크린샷을 안 올림**
+
+#### 해결 방법
+
+**방법 1: iPad 스크린샷 추가하기 (권장)**
+
+1. **iPad 시뮬레이터 실행**
+   ```bash
+   open -a Simulator
+   ```
+
+2. **시뮬레이터에서 iPad Pro 13인치 선택**
+   - 메뉴: File → Open Simulator → iPad Pro (13-inch)
+
+3. **Safari로 웹앱 접속**
+   - 주소창에 `https://yeouido-food.vercel.app` 입력
+
+4. **스크린샷 촬영**
+   - 키보드: **Cmd + S**
+   - 스크린샷이 데스크톱에 저장됨
+
+5. **해상도 확인**
+   - iPad Pro 13인치: **2064 x 2752** 픽셀 (세로)
+   - 시뮬레이터 스케일이 100%인지 확인 (Cmd + 1)
+
+6. **App Store Connect에 업로드**
+   - 나의 앱 → 앱 선택 → iOS 앱 버전
+   - iPad Pro (6세대) 13인치 디스플레이 섹션에 스크린샷 드래그
+
+**방법 2: iPhone 전용으로 변경하기**
+
+iPad 지원이 필요 없다면:
+
+1. **Xcode 열기**
+2. **프로젝트 선택 → General 탭**
+3. **Deployment Info** 섹션
+4. **iPhone만 체크**, iPad 체크 해제
+5. **다시 Archive → 업로드**
+
+---
+
+### 5-3. 거부 사유 2: 회원탈퇴 기능 없음
+
+#### 문제 상황
+```
+Guideline 5.1.1 - Legal - Privacy - Data Collection and Storage
+
+앱에 계정 생성 기능이 있지만 계정 삭제(회원탈퇴) 기능이 없습니다.
+```
+
+#### 원인
+- Apple 정책상 **계정 생성이 가능한 앱**은 반드시 **계정 삭제 기능**도 제공해야 함
+- 2022년 6월 30일부터 필수 적용
+
+#### 해결 방법
+
+**1단계: 회원탈퇴 API 만들기**
+
+`src/app/api/auth/delete-account/route.ts` 파일 생성:
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import bcrypt from "bcryptjs";
+import { getDb } from "@/lib/mongodb";
+
+export async function POST(request: NextRequest) {
+  try {
+    // 로그인 확인
+    const cookieStore = await cookies();
+    const userCookie = cookieStore.get("user");
+
+    if (!userCookie) {
+      return NextResponse.json(
+        { success: false, error: "로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
+    const currentUser = JSON.parse(userCookie.value);
+    const { password } = await request.json();
+
+    // 비밀번호 확인
+    const db = await getDb();
+    const user = await db.collection("users").findOne({ id: currentUser.id });
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: "사용자를 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return NextResponse.json(
+        { success: false, error: "비밀번호가 일치하지 않습니다." },
+        { status: 400 }
+      );
+    }
+
+    // 계정 삭제
+    await db.collection("users").deleteOne({ id: currentUser.id });
+
+    // 쿠키 삭제 (로그아웃)
+    const response = NextResponse.json({
+      success: true,
+      message: "계정이 삭제되었습니다.",
+    });
+    response.cookies.delete("user");
+
+    return response;
+  } catch (error) {
+    console.error("Delete account error:", error);
+    return NextResponse.json(
+      { success: false, error: "계정 삭제 중 오류가 발생했습니다." },
+      { status: 500 }
+    );
+  }
+}
+```
+
+**2단계: 회원탈퇴 모달 컴포넌트 만들기**
+
+`src/components/delete-account-modal.tsx` 파일 생성:
+
+```typescript
+"use client";
+
+import { useState } from "react";
+
+interface DeleteAccountModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess: () => void;
+}
+
+export function DeleteAccountModal({ isOpen, onClose, onSuccess }: DeleteAccountModalProps) {
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handleDelete = async () => {
+    if (!password) {
+      setError("비밀번호를 입력해주세요.");
+      return;
+    }
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const res = await fetch("/api/auth/delete-account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert("계정이 삭제되었습니다.");
+        onSuccess();
+        onClose();
+      } else {
+        setError(data.error);
+      }
+    } catch (err) {
+      setError("오류가 발생했습니다.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-80">
+        <h2 className="text-lg font-bold text-red-600 mb-4">계정 삭제</h2>
+        <p className="text-sm text-gray-600 mb-4">
+          계정을 삭제하면 모든 데이터가 영구적으로 삭제됩니다.
+          계속하려면 비밀번호를 입력하세요.
+        </p>
+        <input
+          type="password"
+          placeholder="비밀번호 입력"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border rounded px-3 py-2 mb-2"
+        />
+        {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+        <div className="flex gap-2">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 border rounded"
+          >
+            취소
+          </button>
+          <button
+            onClick={handleDelete}
+            disabled={isLoading}
+            className="flex-1 py-2 bg-red-600 text-white rounded"
+          >
+            {isLoading ? "삭제 중..." : "삭제"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+**3단계: 메인 페이지에 탈퇴 버튼 추가**
+
+`src/app/page.tsx`에서 사용자 메뉴에 탈퇴 버튼 추가:
+
+```typescript
+// import 추가
+import { DeleteAccountModal } from "@/components/delete-account-modal";
+
+// state 추가
+const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
+
+// 사용자 메뉴에 버튼 추가
+<button
+  onClick={() => {
+    setDeleteAccountModalOpen(true);
+    setUserMenuOpen(false);
+  }}
+  className="w-full px-3 py-2 text-left text-sm hover:bg-muted text-red-600"
+>
+  계정 삭제
+</button>
+
+// 모달 컴포넌트 추가
+<DeleteAccountModal
+  isOpen={deleteAccountModalOpen}
+  onClose={() => setDeleteAccountModalOpen(false)}
+  onSuccess={() => setUser(null)}
+/>
+```
+
+**4단계: 배포하기**
+
+```bash
+git add .
+git commit -m "feat: 회원탈퇴 기능 추가"
+git push
+```
+
+**5단계: 재심사 제출**
+
+1. App Store Connect 접속
+2. 앱 선택 → iOS 앱 버전
+3. 빌드 새로 업로드 (Xcode에서 Archive → Distribute)
+4. "심사를 위해 제출" 클릭
+
+---
+
+### 5-4. 거부 사유 3: iPad에서 화면이 좁게 표시됨
+
+#### 문제 상황
+```
+앱이 iPad에서 화면을 제대로 활용하지 않고 좁게 표시됩니다.
+```
+
+#### 원인
+- CSS에서 `max-width`가 모바일 크기로 고정되어 있음
+- 예: `max-w-md` (448px 고정)
+
+#### 해결 방법
+
+**1단계: 레이아웃 파일 찾기**
+
+`src/app/layout.tsx` 파일 열기
+
+**2단계: 반응형으로 수정**
+
+```typescript
+// 수정 전 (모바일 고정)
+<div className="max-w-md mx-auto min-h-screen bg-background">
+
+// 수정 후 (반응형)
+<div className="max-w-md md:max-w-2xl lg:max-w-4xl xl:max-w-6xl mx-auto min-h-screen bg-background">
+```
+
+**Tailwind CSS 반응형 설명:**
+- `max-w-md`: 기본 (모바일) - 448px
+- `md:max-w-2xl`: 768px 이상 (태블릿) - 672px
+- `lg:max-w-4xl`: 1024px 이상 (데스크톱) - 896px
+- `xl:max-w-6xl`: 1280px 이상 (대형 화면) - 1152px
+
+**3단계: 배포 및 확인**
+
+```bash
+git add .
+git commit -m "fix: iPad 반응형 레이아웃 적용"
+git push
+```
+
+**4단계: iPad 시뮬레이터에서 확인**
+
+1. iPad 시뮬레이터 실행
+2. 배포 URL 접속 (예: https://yeouido-food.vercel.app)
+3. 화면이 넓게 표시되는지 확인
+4. 스크린샷 촬영 (Cmd + S)
+
+---
+
+### 5-5. 재심사 제출 체크리스트
+
+재심사 전 확인할 항목:
+
+- [ ] 거부 사유 모두 해결했는지 확인
+- [ ] 새 기능이 정상 작동하는지 테스트
+- [ ] 새 빌드를 Xcode에서 Archive → Upload
+- [ ] App Store Connect에서 새 빌드 선택
+- [ ] iPad 스크린샷 업로드 (필요시)
+- [ ] Resolution Center에서 거부 사유에 대한 답변 작성 (선택)
+
+### 5-6. 심사자에게 답변하기 (선택)
+
+Resolution Center에서 심사자에게 메시지를 보낼 수 있습니다:
+
+```
+안녕하세요,
+
+피드백 감사합니다. 다음과 같이 수정했습니다:
+
+1. 회원탈퇴 기능 추가
+   - 사용자 메뉴에 "계정 삭제" 버튼 추가
+   - 비밀번호 확인 후 계정 영구 삭제
+
+2. iPad 스크린샷 추가
+   - iPad Pro 13인치 스크린샷 업로드 완료
+
+3. iPad 반응형 레이아웃 적용
+   - 화면 크기에 맞게 콘텐츠 너비 조절
+
+감사합니다.
+```
+
+---
+
 ## 문제 해결 (Troubleshooting)
 
 ### 자주 발생하는 에러와 해결 방법

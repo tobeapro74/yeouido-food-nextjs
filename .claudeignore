@@ -1,0 +1,28 @@
+# 의존성 (수만 개 파일)
+node_modules/
+
+# 빌드 결과물
+.next/
+out/
+dist/
+
+# 네이티브 앱 (Capacitor 생성 파일)
+ios/
+android/
+
+# 캐시/임시 파일
+.vercel/
+.turbo/
+*.log
+*.tsbuildinfo
+
+# 버전 관리
+.git/
+
+# 테스트 커버리지
+coverage/
+
+# 환경 변수 (보안)
+.env
+.env.local
+.env.production.local
