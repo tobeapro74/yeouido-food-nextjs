@@ -156,7 +156,7 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
                     </div>
                   </div>
                 </div>
-                {user && user.id === review.user_id && (
+                {user && Number(user.id) === Number(review.user_id) && (
                   <div className="flex gap-1">
                     <Button
                       variant="ghost"
