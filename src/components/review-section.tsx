@@ -96,6 +96,10 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
 
   return (
     <div className="space-y-4">
+      {/* 디버그: 로그인 상태 표시 */}
+      <div className="text-xs text-red-500 bg-red-100 p-2 rounded">
+        DEBUG: user={user ? `id:${user.id}, name:${user.name}` : "null (로그인 안됨)"}
+      </div>
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold">리뷰 ({reviews.length})</h2>
         <Button
@@ -130,6 +134,10 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
         <div className="space-y-4">
           {reviews.map((review) => (
             <div key={review._id} className="bg-muted/30 rounded-xl p-4">
+              {/* 디버그: 리뷰 user_id 표시 */}
+              <div className="text-xs text-blue-500 mb-1">
+                review.user_id: {review.user_id} (type: {typeof review.user_id})
+              </div>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
                   <Avatar className="w-10 h-10">
