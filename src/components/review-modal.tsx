@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Star, X, Camera, Loader2 } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Star, X, Camera, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
+import { Camera as CapacitorCamera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { Capacitor } from "@capacitor/core";
+import { Review } from "@/lib/types";
 
 interface ReviewModalProps {
   isOpen: boolean;
@@ -13,6 +16,7 @@ interface ReviewModalProps {
   restaurantId: string;
   restaurantName: string;
   onSuccess: () => void;
+  editReview?: Review | null; // 수정할 리뷰 (없으면 새 리뷰 작성)
 }
 
 const mealTypes = ["아침/브런치", "점심 식사", "저녁 식사", "야식", "기타"];
@@ -23,6 +27,7 @@ export function ReviewModal({
   restaurantId,
   restaurantName,
   onSuccess,
+  editReview,
 }: ReviewModalProps) {
   const [rating, setRating] = useState(0);
   const [foodRating, setFoodRating] = useState(0);
@@ -33,6 +38,26 @@ export function ReviewModal({
   const [mealType, setMealType] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const isNative = Capacitor.isNativePlatform();
+  const isEditMode = !!editReview;
+
+  // 수정 모드일 때 기존 데이터로 폼 초기화
+  useEffect(() => {
+    if (isOpen && editReview) {
+      setRating(editReview.rating);
+      setFoodRating(editReview.food_rating || 0);
+      setServiceRating(editReview.service_rating || 0);
+      setAtmosphereRating(editReview.atmosphere_rating || 0);
+      setContent(editReview.content || "");
+      setPhotos(editReview.photos || []);
+      setMealType(editReview.meal_type || "");
+    } else if (isOpen && !editReview) {
+      resetForm();
+    }
+  }, [isOpen, editReview]);
 
   const resetForm = () => {
     setRating(0);
@@ -49,6 +74,111 @@ export function ReviewModal({
     onClose();
   };
 
+  // 카메라/갤러리 권한 확인 함수
+  const checkCameraPermissions = async (source: CameraSource): Promise<boolean> => {
+    try {
+      const permissions = await CapacitorCamera.checkPermissions();
+
+      if (source === CameraSource.Camera) {
+        if (permissions.camera === 'denied') {
+          alert("카메라 권한이 거부되었습니다. 설정에서 카메라 권한을 허용해주세요.");
+          return false;
+        }
+        if (permissions.camera === 'prompt' || permissions.camera === 'prompt-with-rationale') {
+          const requested = await CapacitorCamera.requestPermissions({ permissions: ['camera'] });
+          if (requested.camera === 'denied') {
+            alert("카메라 권한이 필요합니다. 설정에서 권한을 허용해주세요.");
+            return false;
+          }
+        }
+      } else if (source === CameraSource.Photos) {
+        if (permissions.photos === 'denied') {
+          alert("사진 라이브러리 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.");
+          return false;
+        }
+        if (permissions.photos === 'prompt' || permissions.photos === 'prompt-with-rationale') {
+          const requested = await CapacitorCamera.requestPermissions({ permissions: ['photos'] });
+          if (requested.photos === 'denied') {
+            alert("사진 라이브러리 권한이 필요합니다. 설정에서 권한을 허용해주세요.");
+            return false;
+          }
+        }
+      }
+      return true;
+    } catch (error) {
+      console.error("Permission check error:", error);
+      return true; // 권한 체크 실패 시 일단 진행 (getPhoto에서 처리)
+    }
+  };
+
+  // Capacitor Camera로 사진 촬영 또는 갤러리 선택
+  const handleNativePhoto = async (source: CameraSource) => {
+    if (photos.length >= 4) return;
+
+    setShowPhotoOptions(false);
+
+    // 먼저 권한 확인
+    const hasPermission = await checkCameraPermissions(source);
+    if (!hasPermission) {
+      return;
+    }
+
+    setIsUploading(true);
+
+    try {
+      const image = await CapacitorCamera.getPhoto({
+        quality: 60,
+        allowEditing: false,
+        resultType: CameraResultType.DataUrl,
+        source: source,
+        width: 800,
+        height: 800,
+        correctOrientation: true,
+        // iOS에서 카메라 사용 불가 시 자동으로 갤러리로 전환하지 않음
+        saveToGallery: false,
+      });
+
+      if (image.dataUrl) {
+        // Cloudinary에 업로드
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ image: image.dataUrl }),
+        });
+        const data = await res.json();
+
+        if (data.success && data.url) {
+          setPhotos((prev) => [...prev, data.url]);
+        } else {
+          alert("사진 업로드에 실패했습니다.");
+        }
+      }
+    } catch (error: unknown) {
+      // 사용자가 취소한 경우는 에러 메시지 표시하지 않음
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      const isCancelled =
+        errorMessage.toLowerCase().includes("cancel") ||
+        errorMessage.toLowerCase().includes("user denied") ||
+        errorMessage.toLowerCase().includes("no image picked") ||
+        errorMessage.includes("User cancelled");
+
+      if (!isCancelled) {
+        console.error("Camera error:", error);
+        // 카메라 사용 불가능한 경우 (예: 시뮬레이터)
+        if (errorMessage.includes("Camera not available") ||
+            errorMessage.includes("no camera") ||
+            errorMessage.includes("unavailable")) {
+          alert("이 기기에서는 카메라를 사용할 수 없습니다. 갤러리에서 사진을 선택해주세요.");
+        } else {
+          alert("사진을 가져오는 중 오류가 발생했습니다. 다시 시도해주세요.");
+        }
+      }
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // 웹용 파일 input 핸들러
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || photos.length >= 4) return;
@@ -78,6 +208,10 @@ export function ReviewModal({
     }
 
     setIsUploading(false);
+    // input 초기화 (같은 파일 다시 선택 가능하게)
+    if (e.target) {
+      e.target.value = "";
+    }
   };
 
   const resizeImage = (file: File, maxSize: number, quality: number): Promise<string> => {
@@ -145,8 +279,11 @@ export function ReviewModal({
     setIsSubmitting(true);
 
     try {
-      const res = await fetch("/api/reviews", {
-        method: "POST",
+      const url = isEditMode ? `/api/reviews/${editReview._id}` : "/api/reviews";
+      const method = isEditMode ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           restaurant_id: restaurantId,
@@ -166,10 +303,10 @@ export function ReviewModal({
         onSuccess();
         handleClose();
       } else {
-        alert(data.error || "리뷰 작성에 실패했습니다.");
+        alert(data.error || (isEditMode ? "리뷰 수정에 실패했습니다." : "리뷰 작성에 실패했습니다."));
       }
     } catch {
-      alert("리뷰 작성 중 오류가 발생했습니다.");
+      alert(isEditMode ? "리뷰 수정 중 오류가 발생했습니다." : "리뷰 작성 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -206,7 +343,7 @@ export function ReviewModal({
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-lg">리뷰 작성</DialogTitle>
+          <DialogTitle className="text-lg">{isEditMode ? "리뷰 수정" : "리뷰 작성"}</DialogTitle>
           <p className="text-sm text-muted-foreground">{restaurantName}</p>
         </DialogHeader>
 
@@ -268,21 +405,63 @@ export function ReviewModal({
                 </div>
               ))}
               {photos.length < 4 && (
-                <label className="w-20 h-20 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
-                  {isUploading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                <>
+                  {isNative ? (
+                    // iOS/Android 네이티브: 카메라/갤러리 선택 버튼
+                    <div className="relative">
+                      <button
+                        type="button"
+                        onClick={() => setShowPhotoOptions(!showPhotoOptions)}
+                        disabled={isUploading}
+                        className="w-20 h-20 border-2 border-dashed border-border rounded-lg flex items-center justify-center hover:border-primary transition-colors"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                        ) : (
+                          <Camera className="w-6 h-6 text-muted-foreground" />
+                        )}
+                      </button>
+                      {showPhotoOptions && !isUploading && (
+                        <div className="absolute top-full left-0 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => handleNativePhoto(CameraSource.Camera)}
+                            className="flex items-center gap-2 px-4 py-2 w-full hover:bg-muted text-sm"
+                          >
+                            <Camera className="w-4 h-4" />
+                            사진 촬영
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleNativePhoto(CameraSource.Photos)}
+                            className="flex items-center gap-2 px-4 py-2 w-full hover:bg-muted text-sm"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                            갤러리에서 선택
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <Camera className="w-6 h-6 text-muted-foreground" />
+                    // 웹: 기존 파일 input
+                    <label className="w-20 h-20 border-2 border-dashed border-border rounded-lg flex items-center justify-center cursor-pointer hover:border-primary transition-colors">
+                      {isUploading ? (
+                        <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
+                      ) : (
+                        <Camera className="w-6 h-6 text-muted-foreground" />
+                      )}
+                      <Input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        onChange={handlePhotoUpload}
+                        disabled={isUploading}
+                      />
+                    </label>
                   )}
-                  <Input
-                    type="file"
-                    accept="image/*"
-                    multiple
-                    className="hidden"
-                    onChange={handlePhotoUpload}
-                    disabled={isUploading}
-                  />
-                </label>
+                </>
               )}
             </div>
           </div>
@@ -314,10 +493,10 @@ export function ReviewModal({
             {isSubmitting ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                작성 중...
+                {isEditMode ? "수정 중..." : "작성 중..."}
               </>
             ) : (
-              "리뷰 등록"
+              isEditMode ? "리뷰 수정" : "리뷰 등록"
             )}
           </Button>
         </div>

@@ -6,6 +6,90 @@ import { JWTPayload } from "@/lib/types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "yeouido-food-secret-key";
 
+// 리뷰 수정
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params;
+
+    // 인증 확인
+    const token = request.cookies.get("auth_token")?.value;
+    if (!token) {
+      return NextResponse.json(
+        { success: false, error: "로그인이 필요합니다." },
+        { status: 401 }
+      );
+    }
+
+    let decoded: JWTPayload;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+    } catch {
+      return NextResponse.json(
+        { success: false, error: "인증이 만료되었습니다." },
+        { status: 401 }
+      );
+    }
+
+    const db = await getDb();
+    const reviewsCollection = db.collection("reviews");
+
+    // 리뷰 조회
+    const review = await reviewsCollection.findOne({ _id: new ObjectId(id) });
+    if (!review) {
+      return NextResponse.json(
+        { success: false, error: "리뷰를 찾을 수 없습니다." },
+        { status: 404 }
+      );
+    }
+
+    // 권한 확인 (본인만 수정 가능)
+    if (review.user_id !== decoded.userId) {
+      return NextResponse.json(
+        { success: false, error: "수정 권한이 없습니다." },
+        { status: 403 }
+      );
+    }
+
+    const body = await request.json();
+    const { rating, food_rating, service_rating, atmosphere_rating, content, photos, meal_type } = body;
+
+    if (!rating || rating < 1 || rating > 5) {
+      return NextResponse.json(
+        { success: false, error: "유효한 별점을 입력해주세요." },
+        { status: 400 }
+      );
+    }
+
+    // 업데이트
+    const updateData = {
+      rating,
+      food_rating: food_rating || null,
+      service_rating: service_rating || null,
+      atmosphere_rating: atmosphere_rating || null,
+      content: content || "",
+      photos: photos || [],
+      meal_type: meal_type || null,
+      updated_at: new Date(),
+    };
+
+    await reviewsCollection.updateOne(
+      { _id: new ObjectId(id) },
+      { $set: updateData }
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error("Update review error:", error);
+    return NextResponse.json(
+      { success: false, error: "리뷰 수정 중 오류가 발생했습니다." },
+      { status: 500 }
+    );
+  }
+}
+
 // 리뷰 삭제
 export async function DELETE(
   request: NextRequest,

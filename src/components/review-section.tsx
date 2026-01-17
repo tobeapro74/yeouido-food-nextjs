@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Star, Trash2, MessageSquarePlus } from "lucide-react";
+import { Star, Trash2, MessageSquarePlus, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ReviewModal } from "@/components/review-modal";
@@ -23,6 +23,7 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<UserInfo | null>(null);
   const [reviewModalOpen, setReviewModalOpen] = useState(false);
+  const [editingReview, setEditingReview] = useState<Review | null>(null);
 
   const fetchReviews = useCallback(async () => {
     try {
@@ -75,6 +76,17 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
   const handleReviewSubmitted = () => {
     fetchReviews();
     setReviewModalOpen(false);
+    setEditingReview(null);
+  };
+
+  const handleEditReview = (review: Review) => {
+    setEditingReview(review);
+    setReviewModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setReviewModalOpen(false);
+    setEditingReview(null);
   };
 
   const formatDate = (date: Date | string) => {
@@ -145,14 +157,24 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
                   </div>
                 </div>
                 {user && user.id === review.user_id && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="text-muted-foreground hover:text-destructive"
-                    onClick={() => handleDeleteReview(review._id!)}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-primary"
+                      onClick={() => handleEditReview(review)}
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-muted-foreground hover:text-destructive"
+                      onClick={() => handleDeleteReview(review._id!)}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </div>
                 )}
               </div>
               {review.content && (
@@ -193,10 +215,11 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
 
       <ReviewModal
         isOpen={reviewModalOpen}
-        onClose={() => setReviewModalOpen(false)}
+        onClose={handleCloseModal}
         restaurantId={restaurantId}
         restaurantName={restaurantName}
         onSuccess={handleReviewSubmitted}
+        editReview={editingReview}
       />
     </div>
   );
