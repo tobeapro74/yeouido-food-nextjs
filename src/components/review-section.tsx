@@ -128,10 +128,7 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
         </div>
       ) : reviews.length > 0 ? (
         <div className="space-y-4">
-          {reviews.map((review) => {
-            // 디버깅: 콘솔에서 user와 review.user_id 확인
-            console.log("DEBUG - user:", user, "review.user_id:", review.user_id, "match:", user && Number(user.id) === Number(review.user_id));
-            return (
+          {reviews.map((review) => (
             <div key={review._id} className="bg-muted/30 rounded-xl p-4">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-2">
@@ -208,8 +205,7 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
                 </p>
               )}
             </div>
-            );
-          })}
+          ))}
         </div>
       ) : (
         <div className="text-center py-8 text-muted-foreground">
