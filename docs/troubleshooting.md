@@ -471,6 +471,57 @@ const res = await fetch(url, {
 
 ---
 
+### 12. 운세 지수 카드 이모지 오버플로우 문제 (2025.01.16)
+
+**문제**
+- 운세 지수 카드에서 별 5개(⭐⭐⭐⭐⭐)가 카드 영역을 넘침
+- 모바일에서 3개만 보이고 나머지가 잘림
+
+**원인**
+- 좁은 카드 영역에 이모지 5개가 들어가면서 공간 부족
+- `grid-cols-4` 레이아웃에서 각 카드 너비가 제한됨
+
+**해결**
+이모지 개수 대신 "이모지 + 숫자" 형식으로 변경:
+```typescript
+// Before (오버플로우 발생)
+{Array.from({ length: score }).map((_, i) => (
+  <span key={i}>{cat.emoji}</span>
+))}
+
+// After (깔끔하게 표시)
+<p className="text-base font-bold">
+  {cat.emoji} {score}
+</p>
+```
+
+**파일**: `src/components/fortune-result.tsx`
+
+---
+
+### 13. 운세 모달 생년월일 select 자동 열림 문제 (2025.01.16)
+
+**문제**
+- 운세 모달 열 때 생년월일 select 드롭다운이 자동으로 열림
+- 모바일에서 특히 불편한 UX
+
+**원인**
+- Radix UI Dialog의 기본 동작으로 첫 번째 포커스 가능 요소에 자동 포커스
+- `<select>` 요소가 포커스되면서 드롭다운이 열림
+
+**해결**
+`DialogContent`에 `onOpenAutoFocus` 이벤트 핸들러 추가:
+```typescript
+<DialogContent
+  className="sm:max-w-md"
+  onOpenAutoFocus={(e) => e.preventDefault()}
+>
+```
+
+**파일**: `src/components/fortune-modal.tsx`
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버

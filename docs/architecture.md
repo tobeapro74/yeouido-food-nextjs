@@ -94,7 +94,9 @@ src/
 │   ├── roulette-wheel.tsx # 룰렛 휠 컴포넌트
 │   ├── search-bar.tsx    # 통합 검색 바
 │   ├── fortune-modal.tsx # 운세 입력 모달
-│   └── fortune-result.tsx # 운세 결과 화면
+│   ├── fortune-result.tsx # 운세 결과 화면
+│   ├── fortune-detail-modal.tsx # 운세 상세 해설 모달
+│   └── pull-to-refresh.tsx # Pull-to-Refresh 컴포넌트
 ├── data/
 │   └── yeouido-food.ts   # 맛집 정적 데이터 (195개 식당)
 ├── hooks/
@@ -309,8 +311,25 @@ MongoDB 캐시 저장 → 클라이언트 반환
 - **UI 특징**:
   - 오행별 색상 테마 (목-초록, 화-빨강, 토-노랑, 금-흰색, 수-파랑)
   - 밝은 배경(토/금)에서 어두운 텍스트로 가독성 확보
-- **컴포넌트**: `fortune-modal.tsx`, `fortune-result.tsx`
-- **로직**: `lib/fortune.ts` (오행 계산, 상생/상극 관계)
+- **운세 지수 시스템** (2025.01.16 추가):
+  - 종합운, 재물운, 가정운, 사회운 (각 1-5점)
+  - 이모지 + 숫자 표시 (예: ⭐ 5)
+  - 터치 시 상세 해설 모달 표시
+- **구체적 메뉴 추천**:
+  - 오행×성별×결혼여부별 맞춤 메뉴 추천
+  - 추천 이유, 키워드, 대상자 정보 표시
+- **컴포넌트**: `fortune-modal.tsx`, `fortune-result.tsx`, `fortune-detail-modal.tsx`
+- **로직**: `lib/fortune.ts` (오행 계산, 상생/상극 관계, 운세 지수, 상세 해설)
+
+### 10. Pull-to-Refresh (2025.01.16 추가)
+- **기능**: 모바일에서 화면 아래로 당겨서 새로고침
+- **구현**: Touch 이벤트 기반 (`touchstart`, `touchmove`, `touchend`)
+- **임계값**: 80px 이상 당기면 새로고침 트리거
+- **시각 피드백**:
+  - 당기는 동안 회전하는 아이콘
+  - "당겨서 새로고침" → "놓으면 새로고침" → "새로고침 중..." 메시지
+- **적용 화면**: 홈 화면
+- **컴포넌트**: `pull-to-refresh.tsx`
 
 ## 성능 최적화
 

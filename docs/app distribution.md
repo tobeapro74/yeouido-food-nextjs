@@ -591,7 +591,196 @@ git push
 
 ---
 
-### 5-4. 거부 사유 3: iPad에서 화면이 좁게 표시됨
+### 5-4. 거부 사유 3: 카메라 기능에서 앱 크래시 (Guideline 2.1)
+
+#### 문제 상황
+```
+Guideline 2.1.0 Performance: App Completeness
+
+The app still crashed during review. Apps that crash negatively impact users.
+
+Steps leading to crash:
+1. Tapped on "리뷰 작성".
+2. Selected "Take Photo" option for attachments.
+3. App crashed.
+```
+
+#### 원인
+- iOS 앱에서 HTML5 file input을 통해 카메라에 접근할 때 Capacitor WKWebView 환경에서 크래시 발생
+- `@capacitor/camera` 네이티브 플러그인을 사용하지 않고 웹 방식으로 카메라 접근 시도
+
+#### 해결 방법
+
+**1단계: Capacitor Camera 플러그인 설치**
+
+```bash
+npm install @capacitor/camera
+npx cap sync ios
+```
+
+**2단계: 리뷰 모달 컴포넌트 수정**
+
+`src/components/review-modal.tsx` 파일에서 Capacitor Camera API 사용:
+
+```typescript
+// import 추가
+import { Camera as CapacitorCamera, CameraResultType, CameraSource } from "@capacitor/camera";
+import { Capacitor } from "@capacitor/core";
+
+// 컴포넌트 내부에 추가
+const isNative = Capacitor.isNativePlatform();
+
+// 네이티브 카메라 함수 추가
+const handleNativePhoto = async (source: CameraSource) => {
+  if (photos.length >= 4) return;
+
+  setIsUploading(true);
+
+  try {
+    const image = await CapacitorCamera.getPhoto({
+      quality: 60,
+      allowEditing: false,
+      resultType: CameraResultType.DataUrl,
+      source: source,
+      width: 800,
+      height: 800,
+      correctOrientation: true,
+    });
+
+    if (image.dataUrl) {
+      // Cloudinary에 업로드
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: image.dataUrl }),
+      });
+      const data = await res.json();
+
+      if (data.success && data.url) {
+        setPhotos((prev) => [...prev, data.url]);
+      }
+    }
+  } catch (error) {
+    // 사용자가 취소한 경우는 에러 메시지 표시하지 않음
+    if (error instanceof Error && !error.message.includes("cancel")) {
+      console.error("Camera error:", error);
+      alert("카메라 접근에 실패했습니다. 설정에서 권한을 확인해주세요.");
+    }
+  } finally {
+    setIsUploading(false);
+  }
+};
+
+// UI에서 네이티브 환경 분기 처리
+{isNative ? (
+  // iOS/Android: 카메라/갤러리 선택 버튼
+  <div>
+    <button onClick={() => handleNativePhoto(CameraSource.Camera)}>
+      사진 촬영
+    </button>
+    <button onClick={() => handleNativePhoto(CameraSource.Photos)}>
+      갤러리에서 선택
+    </button>
+  </div>
+) : (
+  // 웹: 기존 file input
+  <input type="file" accept="image/*" onChange={handlePhotoUpload} />
+)}
+```
+
+**3단계: iOS 권한 설정 확인**
+
+`ios/App/App/Info.plist`에 카메라/갤러리 권한 설명 추가:
+
+```xml
+<key>NSCameraUsageDescription</key>
+<string>리뷰에 사진을 첨부하기 위해 카메라 접근 권한이 필요합니다.</string>
+<key>NSPhotoLibraryUsageDescription</key>
+<string>리뷰에 사진을 첨부하기 위해 사진 라이브러리 접근 권한이 필요합니다.</string>
+```
+
+**4단계: 빌드 및 테스트**
+
+```bash
+npm run build
+npx cap sync ios
+npx cap open ios
+# Xcode에서 실기기 테스트 후 Archive → 업로드
+```
+
+---
+
+### 5-5. 거부 사유 4: 스크린샷에 외부 웹사이트 표시 (Guideline 2.3.3)
+
+#### 문제 상황
+```
+Guideline 2.3.3 - Performance - Accurate Metadata
+
+The 13-inch iPad screenshots still do not show the actual app in use
+in the majority of the screenshots. Screenshots should highlight
+the app's core concept to help users understand the app's functionality and value.
+```
+
+#### 원인
+- 스크린샷 중 일부가 앱 내부 화면이 아닌 **외부 웹사이트(Google Maps 등)**로 연결된 화면
+- App Store 스크린샷은 **앱 자체의 기능**을 보여줘야 함
+
+#### 해결 방법
+
+**1단계: 문제 스크린샷 확인**
+
+App Store Connect에서:
+1. **앱 선택 → 미디어 관리** 또는 **버전 정보 → 스크린샷**
+2. iPhone과 iPad 스크린샷 모두 확인
+3. 외부 링크 화면(Google Maps, Safari 등) 스크린샷 삭제
+
+**2단계: 새 스크린샷 촬영**
+
+시뮬레이터에서 앱 내부 화면 스크린샷 촬영:
+
+```bash
+# iPhone 시뮬레이터
+open -a Simulator
+# 메뉴: File → Open Simulator → iPhone 17 Pro Max
+
+# iPad 시뮬레이터
+# 메뉴: File → Open Simulator → iPad Pro 13-inch (M5)
+```
+
+**권장 스크린샷 화면:**
+- 메인 화면 (맛집 목록)
+- 맛집 상세 페이지
+- 검색/필터 화면
+- 리뷰 화면
+- 운세/추천 기능 화면
+
+**스크린샷 촬영:**
+- 시뮬레이터에서 **Cmd + S** 또는 **File → Save Screen**
+
+**3단계: 스크린샷 해상도 확인**
+
+| 기기 | 해상도 (세로) |
+|------|---------------|
+| iPhone 17 Pro Max | 1320 x 2868 |
+| iPhone 16 Pro Max | 1290 x 2796 |
+| iPad Pro 13인치 (M5) | 2064 x 2752 |
+| iPad Pro 12.9인치 | 2048 x 2732 |
+
+**4단계: App Store Connect에 업로드**
+
+1. 앱 선택 → **버전 정보** 또는 **미디어 관리**
+2. 해당 기기 섹션에서 기존 문제 스크린샷 삭제
+3. 새 스크린샷 드래그 앤 드롭
+4. **저장** 클릭
+
+**주의사항:**
+- 스크린샷은 **앱 내부 UI만** 보여줘야 함
+- 외부 링크로 연결되는 화면은 사용하지 않음
+- 목업이나 마케팅 이미지가 아닌 **실제 앱 화면** 사용
+
+---
+
+### 5-6. 거부 사유 5: iPad에서 화면이 좁게 표시됨
 
 #### 문제 상황
 ```
@@ -641,7 +830,7 @@ git push
 
 ---
 
-### 5-5. 재심사 제출 체크리스트
+### 5-7. 재심사 제출 체크리스트
 
 재심사 전 확인할 항목:
 
@@ -652,7 +841,7 @@ git push
 - [ ] iPad 스크린샷 업로드 (필요시)
 - [ ] Resolution Center에서 거부 사유에 대한 답변 작성 (선택)
 
-### 5-6. 심사자에게 답변하기 (선택)
+### 5-8. 심사자에게 답변하기 (선택)
 
 Resolution Center에서 심사자에게 메시지를 보낼 수 있습니다:
 
