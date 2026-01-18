@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,11 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const [isVerifyingCode, setIsVerifyingCode] = useState(false);
   const [codeSentMessage, setCodeSentMessage] = useState("");
   const [countdown, setCountdown] = useState(0);
+
+  // 비밀번호 표시 상태
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showRegisterPassword, setShowRegisterPassword] = useState(false);
+  const [showRegisterPasswordConfirm, setShowRegisterPasswordConfirm] = useState(false);
 
   // 카운트다운 타이머
   useEffect(() => {
@@ -246,14 +251,22 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
                   required
                 />
               </div>
-              <div>
+              <div className="relative">
                 <Input
-                  type="password"
+                  type={showLoginPassword ? "text" : "password"}
                   placeholder="비밀번호"
                   value={loginPassword}
                   onChange={(e) => setLoginPassword(e.target.value)}
                   required
+                  className="pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showLoginPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
               {error && <p className="text-sm text-destructive">{error}</p>}
               <Button type="submit" disabled={isLoading} className="w-full">
@@ -363,24 +376,40 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
               </div>
 
               {/* 비밀번호 */}
-              <div>
+              <div className="relative">
                 <Input
-                  type="password"
+                  type={showRegisterPassword ? "text" : "password"}
                   placeholder="비밀번호 (6자 이상)"
                   value={registerPassword}
                   onChange={(e) => setRegisterPassword(e.target.value)}
                   required
                   minLength={6}
+                  className="pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPassword(!showRegisterPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showRegisterPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
-              <div>
+              <div className="relative">
                 <Input
-                  type="password"
+                  type={showRegisterPasswordConfirm ? "text" : "password"}
                   placeholder="비밀번호 확인"
                   value={registerPasswordConfirm}
                   onChange={(e) => setRegisterPasswordConfirm(e.target.value)}
                   required
+                  className="pr-10"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowRegisterPasswordConfirm(!showRegisterPasswordConfirm)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  {showRegisterPasswordConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
 
               {error && <p className="text-sm text-destructive">{error}</p>}
