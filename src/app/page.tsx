@@ -243,22 +243,81 @@ export default function Home() {
     setFortuneModalOpen(true);
   };
 
+  // 커스텀 맛집을 Restaurant 형식으로 변환
+  const convertCustomToRestaurant = (custom: {
+    name: string;
+    address: string;
+    category: string;
+    feature?: string;
+    region: string;
+    google_rating?: number;
+  }): Restaurant => ({
+    이름: custom.name,
+    카테고리: custom.category as Restaurant["카테고리"],
+    평점: custom.google_rating || 0,
+    특징: custom.feature || "",
+    지역: custom.region as Restaurant["지역"],
+    주소: custom.address,
+  });
+
+  // 커스텀 맛집 가져오기
+  const fetchCustomRestaurants = async (): Promise<Restaurant[]> => {
+    try {
+      const res = await fetch("/api/custom-restaurants");
+      const data = await res.json();
+      if (data.success && data.data) {
+        return data.data.map(convertCustomToRestaurant);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  };
+
   // 카테고리 선택 (실시간 평점 기준 정렬)
-  const handleCategorySelect = (categoryId: string) => {
+  const handleCategorySelect = async (categoryId: string) => {
     const category = categories.find((c) => c.id === categoryId);
     setListTitle(categoryId === "전체" ? "전체 맛집" : `${category?.name || categoryId} 맛집`);
-    const restaurants = getRestaurantsByCategory(categoryId);
-    setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
+
+    // 기존 데이터
+    const staticRestaurants = getRestaurantsByCategory(categoryId);
+
+    // 커스텀 맛집 가져오기
+    const customRestaurants = await fetchCustomRestaurants();
+    const filteredCustom = categoryId === "전체"
+      ? customRestaurants
+      : customRestaurants.filter((r) => r.카테고리 === categoryId);
+
+    // 중복 제거 (이름 기준)
+    const existingNames = new Set(staticRestaurants.map((r) => r.이름));
+    const uniqueCustom = filteredCustom.filter((r) => !existingNames.has(r.이름));
+
+    const combined = [...staticRestaurants, ...uniqueCustom];
+    setListItems(sortByRealTimeRating(combined, realTimeRatings));
     setCurrentView("list");
     setActiveTab("category");
   };
 
   // 지역 선택 (실시간 평점 기준 정렬)
-  const handleRegionSelect = (regionId: string) => {
+  const handleRegionSelect = async (regionId: string) => {
     const region = regions.find((r) => r.id === regionId);
     setListTitle(regionId === "전체" ? "전체 지역" : `${region?.name || regionId} 맛집`);
-    const restaurants = getRestaurantsByRegion(regionId);
-    setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
+
+    // 기존 데이터
+    const staticRestaurants = getRestaurantsByRegion(regionId);
+
+    // 커스텀 맛집 가져오기
+    const customRestaurants = await fetchCustomRestaurants();
+    const filteredCustom = regionId === "전체"
+      ? customRestaurants
+      : customRestaurants.filter((r) => r.지역 === regionId);
+
+    // 중복 제거 (이름 기준)
+    const existingNames = new Set(staticRestaurants.map((r) => r.이름));
+    const uniqueCustom = filteredCustom.filter((r) => !existingNames.has(r.이름));
+
+    const combined = [...staticRestaurants, ...uniqueCustom];
+    setListItems(sortByRealTimeRating(combined, realTimeRatings));
     setCurrentView("list");
     setActiveTab("region");
   };
@@ -306,7 +365,7 @@ export default function Home() {
   if (currentView === "detail" && selectedRestaurant) {
     return (
       <>
-        <RestaurantDetail restaurant={selectedRestaurant} onBack={handleBack} />
+        <RestaurantDetail restaurant={selectedRestaurant} onBack={handleBack} user={user} />
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         <CategorySheet
           open={categorySheetOpen}

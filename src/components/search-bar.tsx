@@ -1,12 +1,36 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, X, MapPin, Building2, UtensilsCrossed } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Restaurant, searchRestaurants } from "@/data/yeouido-food";
 
 interface SearchBarProps {
   onSelect: (restaurant: Restaurant) => void;
+}
+
+// 커스텀 맛집을 Restaurant 형식으로 변환
+interface CustomRestaurant {
+  place_id: string;
+  name: string;
+  address: string;
+  category: string;
+  feature?: string;
+  region: string;
+  coordinates?: { lat: number; lng: number };
+  google_rating?: number;
+  photos?: string[];
+}
+
+function convertCustomToRestaurant(custom: CustomRestaurant): Restaurant {
+  return {
+    이름: custom.name,
+    카테고리: custom.category as Restaurant["카테고리"],
+    평점: custom.google_rating || 0,
+    특징: custom.feature || "",
+    지역: custom.region as Restaurant["지역"],
+    주소: custom.address,
+  };
 }
 
 export function SearchBar({ onSelect }: SearchBarProps) {
@@ -17,16 +41,48 @@ export function SearchBar({ onSelect }: SearchBarProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // 커스텀 맛집 검색 함수
+  const searchCustomRestaurants = useCallback(async (searchQuery: string): Promise<Restaurant[]> => {
+    try {
+      const res = await fetch("/api/custom-restaurants");
+      const data = await res.json();
+      if (data.success && data.data) {
+        const customRestaurants = data.data as CustomRestaurant[];
+        const filtered = customRestaurants.filter((r) =>
+          r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          r.address.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          r.category.includes(searchQuery) ||
+          (r.feature && r.feature.toLowerCase().includes(searchQuery.toLowerCase()))
+        );
+        return filtered.map(convertCustomToRestaurant);
+      }
+      return [];
+    } catch {
+      return [];
+    }
+  }, []);
+
   useEffect(() => {
     if (query.trim().length >= 1) {
-      const searchResults = searchRestaurants(query);
-      setResults(searchResults.slice(0, 10)); // 최대 10개 결과
-      setIsOpen(true);
+      // 기존 데이터 검색
+      const localResults = searchRestaurants(query);
+
+      // 커스텀 맛집 검색 (비동기)
+      searchCustomRestaurants(query).then((customResults) => {
+        // 중복 제거 (이름 기준)
+        const existingNames = new Set(localResults.map((r) => r.이름));
+        const uniqueCustom = customResults.filter((r) => !existingNames.has(r.이름));
+
+        // 합쳐서 결과 설정
+        const combined = [...localResults, ...uniqueCustom];
+        setResults(combined.slice(0, 10));
+        setIsOpen(true);
+      });
     } else {
       setResults([]);
       setIsOpen(false);
     }
-  }, [query]);
+  }, [query, searchCustomRestaurants]);
 
   // 외부 클릭 시 닫기
   useEffect(() => {

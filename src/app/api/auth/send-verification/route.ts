@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { Resend } from "resend";
 import { getDb } from "@/lib/mongodb";
 
+// 개발 모드 확인 (로컬 테스트용)
+const isDev = process.env.NODE_ENV === "development";
+
 // Resend 인스턴스는 API 키가 있을 때만 생성
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -64,6 +67,18 @@ export async function POST(request: NextRequest) {
       verified: false,
       createdAt: new Date(),
     });
+
+    // 개발 모드에서는 이메일 발송 건너뛰고 콘솔에 코드 출력
+    if (isDev) {
+      console.log(`\n========================================`);
+      console.log(`[DEV] 이메일 인증 코드: ${code}`);
+      console.log(`[DEV] 수신자: ${email}`);
+      console.log(`========================================\n`);
+      return NextResponse.json({
+        success: true,
+        message: "인증 코드가 발송되었습니다. (개발 모드: 콘솔 확인)",
+      });
+    }
 
     // 이메일 발송
     const { error: sendError } = await resend.emails.send({

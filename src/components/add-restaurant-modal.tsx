@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Image from "next/image";
 
 interface AddRestaurantModalProps {
@@ -217,7 +216,7 @@ export function AddRestaurantModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto overflow-x-hidden">
         <DialogHeader>
           <div className="flex items-center gap-2">
             {step === "details" && (
@@ -297,27 +296,17 @@ export function AddRestaurantModal({
         {/* Step 2: 상세 정보 */}
         {step === "details" && selectedPlace && (
           <div className="space-y-4">
-            {/* 사진 갤러리 */}
+            {/* 대표 이미지 */}
             {selectedPlace.photos.length > 0 && (
-              <ScrollArea className="w-full">
-                <div className="flex gap-2 pb-2">
-                  {selectedPlace.photos.map((photo, idx) => (
-                    <div
-                      key={idx}
-                      className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden"
-                    >
-                      <Image
-                        src={photo}
-                        alt={`${selectedPlace.name} ${idx + 1}`}
-                        fill
-                        className="object-cover"
-                        unoptimized
-                      />
-                    </div>
-                  ))}
-                </div>
-                <ScrollBar orientation="horizontal" />
-              </ScrollArea>
+              <div className="relative w-full h-48 rounded-lg overflow-hidden">
+                <Image
+                  src={selectedPlace.photos[0]}
+                  alt={selectedPlace.name}
+                  fill
+                  className="object-cover"
+                  unoptimized
+                />
+              </div>
             )}
 
             {/* 기본 정보 */}

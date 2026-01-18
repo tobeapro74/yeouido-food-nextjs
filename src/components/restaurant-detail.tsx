@@ -1,18 +1,35 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2 } from "lucide-react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Edit3, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Restaurant, getGoogleMapsLink, getGoogleSearchLink } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
+import { CategoryEditModal } from "@/components/category-edit-modal";
 import Image from "next/image";
+
+interface UserInfo {
+  id: number;
+  name: string;
+  is_admin: boolean;
+}
+
+interface CustomRestaurantInfo {
+  place_id: string;
+  category: string;
+  registered_by: number;
+  phone_number?: string;
+  price_level?: number;
+  photos?: string[];
+}
 
 interface RestaurantDetailProps {
   restaurant: Restaurant;
   onBack: () => void;
+  user?: UserInfo | null;
 }
 
 const categoryIcons: Record<string, string> = {
@@ -45,7 +62,7 @@ const getRestaurantInfoCache = (): Record<string, { priceRange: string | null; p
   return {};
 };
 
-export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) {
+export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailProps) {
   const cacheKey = restaurant.이름;
   const imageCache = getImageCache();
   const infoCache = getRestaurantInfoCache();
@@ -54,6 +71,70 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
   const [priceRange, setPriceRange] = useState<string | null>(infoCache[cacheKey]?.priceRange ?? null);
   const [phoneNumber, setPhoneNumber] = useState<string | null>(infoCache[cacheKey]?.phoneNumber ?? null);
   const [infoLoaded, setInfoLoaded] = useState(cacheKey in infoCache);
+
+  // 커스텀 맛집 관련 상태
+  const [customInfo, setCustomInfo] = useState<CustomRestaurantInfo | null>(null);
+  const [currentCategory, setCurrentCategory] = useState<string>(restaurant.카테고리);
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+
+  // 커스텀 맛집 여부 확인
+  const isCustomRestaurant = !!customInfo;
+  const canEdit = user && isCustomRestaurant && (user.is_admin || customInfo.registered_by === user.id);
+
+  // 가격대 변환 함수
+  const priceLevelToRange = (level: number | undefined): string | null => {
+    if (!level) return null;
+    const ranges: Record<number, string> = {
+      1: "₩ (저렴)",
+      2: "₩₩ (보통)",
+      3: "₩₩₩ (비쌈)",
+      4: "₩₩₩₩ (매우 비쌈)",
+    };
+    return ranges[level] || null;
+  };
+
+  // 커스텀 맛집 정보 조회
+  useEffect(() => {
+    const fetchCustomInfo = async () => {
+      try {
+        const res = await fetch("/api/custom-restaurants");
+        const data = await res.json();
+        if (data.success && data.data) {
+          const found = data.data.find((r: { name: string }) => r.name === restaurant.이름);
+          if (found) {
+            setCustomInfo({
+              place_id: found.place_id,
+              category: found.category,
+              registered_by: found.registered_by,
+              phone_number: found.phone_number,
+              price_level: found.price_level,
+              photos: found.photos,
+            });
+            setCurrentCategory(found.category);
+
+            // 커스텀 맛집의 전화번호, 가격대 설정
+            if (found.phone_number) {
+              setPhoneNumber(found.phone_number);
+            }
+            if (found.price_level) {
+              setPriceRange(priceLevelToRange(found.price_level));
+            }
+
+            // 커스텀 맛집의 사진 설정
+            if (found.photos && found.photos.length > 0) {
+              setImageUrl(found.photos[0]);
+              setIsLoading(false);
+            }
+
+            setInfoLoaded(true);
+          }
+        }
+      } catch {
+        // 조회 실패 시 무시
+      }
+    };
+    fetchCustomInfo();
+  }, [restaurant.이름]);
 
   useEffect(() => {
     // 이미 캐시된 경우
@@ -166,9 +247,22 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
             <div>
               <h1 className="text-2xl font-bold">{restaurant.이름}</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                <Badge variant="secondary">
-                  {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
-                </Badge>
+                {/* 커스텀 맛집이면 수정 가능한 카테고리 배지 */}
+                {isCustomRestaurant ? (
+                  <Badge
+                    variant="secondary"
+                    className={canEdit ? "cursor-pointer hover:bg-primary/20 transition-colors" : ""}
+                    onClick={() => canEdit && setCategoryModalOpen(true)}
+                  >
+                    <Tag className="h-3 w-3 mr-1" />
+                    {categoryIcons[currentCategory]} {currentCategory}
+                    {canEdit && <Edit3 className="h-3 w-3 ml-1" />}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary">
+                    {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
+                  </Badge>
+                )}
                 <Badge variant="outline">{restaurant.지역}</Badge>
                 {restaurant.빌딩 && (
                   <Badge variant="outline" className="text-blue-600 border-blue-200 bg-blue-50">
@@ -268,6 +362,17 @@ export function RestaurantDetail({ restaurant, onBack }: RestaurantDetailProps) 
         {/* 사용자 리뷰 섹션 */}
         <ReviewSection restaurantId={restaurant.이름} restaurantName={restaurant.이름} />
       </div>
+
+      {/* 카테고리 수정 모달 */}
+      {customInfo && (
+        <CategoryEditModal
+          isOpen={categoryModalOpen}
+          onClose={() => setCategoryModalOpen(false)}
+          placeId={customInfo.place_id}
+          currentCategory={currentCategory}
+          onSuccess={(newCategory) => setCurrentCategory(newCategory)}
+        />
+      )}
     </div>
   );
 }
