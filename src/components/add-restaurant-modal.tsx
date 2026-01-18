@@ -11,7 +11,6 @@ import {
   ExternalLink,
   ChevronLeft,
   Check,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import Image from "next/image";
 
 interface AddRestaurantModalProps {
@@ -299,22 +299,25 @@ export function AddRestaurantModal({
           <div className="space-y-4">
             {/* 사진 갤러리 */}
             {selectedPlace.photos.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2">
-                {selectedPlace.photos.map((photo, idx) => (
-                  <div
-                    key={idx}
-                    className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden"
-                  >
-                    <Image
-                      src={photo}
-                      alt={`${selectedPlace.name} ${idx + 1}`}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                ))}
-              </div>
+              <ScrollArea className="w-full">
+                <div className="flex gap-2 pb-2">
+                  {selectedPlace.photos.map((photo, idx) => (
+                    <div
+                      key={idx}
+                      className="relative w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden"
+                    >
+                      <Image
+                        src={photo}
+                        alt={`${selectedPlace.name} ${idx + 1}`}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+                  ))}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
             )}
 
             {/* 기본 정보 */}
