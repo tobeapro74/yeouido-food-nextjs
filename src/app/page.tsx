@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { User, LogOut, Key, ChevronDown, Trash2 } from "lucide-react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
+import { useRealTimeRatings, sortByRealTimeRating } from "@/hooks/useRealTimeRatings";
 import { Button } from "@/components/ui/button";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { BottomNav } from "@/components/bottom-nav";
@@ -68,6 +69,9 @@ export default function Home() {
   // 운세 상태
   const [fortuneModalOpen, setFortuneModalOpen] = useState(false);
   const [fortuneResult, setFortuneResult] = useState<FortuneResult | null>(null);
+
+  // 실시간 평점
+  const { ratings: realTimeRatings } = useRealTimeRatings();
 
   // 스와이프 뒤로가기 (홈이 아닌 화면에서만 활성화)
   const handleSwipeBack = useCallback(() => {
@@ -168,10 +172,11 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, []);
 
-  // 지역별 맛집
+  // 지역별 맛집 (실시간 평점 기준 정렬)
   const regionRestaurants = useMemo(() => {
-    return getRestaurantsByRegion(selectedRegion).slice(0, 6);
-  }, [selectedRegion]);
+    const restaurants = getRestaurantsByRegion(selectedRegion);
+    return sortByRealTimeRating(restaurants, realTimeRatings).slice(0, 6);
+  }, [selectedRegion, realTimeRatings]);
 
   // 운세 모달 상태 변경 핸들러
   const handleFortuneModalChange = (open: boolean) => {
@@ -234,29 +239,32 @@ export default function Home() {
     setFortuneModalOpen(true);
   };
 
-  // 카테고리 선택
+  // 카테고리 선택 (실시간 평점 기준 정렬)
   const handleCategorySelect = (categoryId: string) => {
     const category = categories.find((c) => c.id === categoryId);
     setListTitle(categoryId === "전체" ? "전체 맛집" : `${category?.name || categoryId} 맛집`);
-    setListItems(getRestaurantsByCategory(categoryId));
+    const restaurants = getRestaurantsByCategory(categoryId);
+    setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
     setCurrentView("list");
     setActiveTab("category");
   };
 
-  // 지역 선택
+  // 지역 선택 (실시간 평점 기준 정렬)
   const handleRegionSelect = (regionId: string) => {
     const region = regions.find((r) => r.id === regionId);
     setListTitle(regionId === "전체" ? "전체 지역" : `${region?.name || regionId} 맛집`);
-    setListItems(getRestaurantsByRegion(regionId));
+    const restaurants = getRestaurantsByRegion(regionId);
+    setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
     setCurrentView("list");
     setActiveTab("region");
   };
 
-  // 빌딩 선택
+  // 빌딩 선택 (실시간 평점 기준 정렬)
   const handleBuildingSelect = (buildingId: string) => {
     const building = buildings.find((b) => b.id === buildingId);
     setListTitle(buildingId === "전체" ? "전체 빌딩" : `${building?.name || buildingId} 맛집`);
-    setListItems(getRestaurantsByBuilding(buildingId));
+    const restaurants = getRestaurantsByBuilding(buildingId);
+    setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
     setCurrentView("list");
     setActiveTab("building");
   };
@@ -421,6 +429,7 @@ export default function Home() {
           restaurants={listItems}
           onBack={handleBack}
           onSelect={handleRestaurantSelect}
+          realTimeRatings={realTimeRatings}
         />
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         <CategorySheet
@@ -541,10 +550,11 @@ export default function Home() {
             </ScrollArea>
           </section>
 
-          {/* 인기 맛집 - 배치 로딩 적용 */}
+          {/* 인기 맛집 - 배치 로딩 적용 (실시간 평점 표시) */}
           <PopularRestaurants
             restaurants={popularRestaurants}
             onSelect={handleRestaurantSelect}
+            realTimeRatings={realTimeRatings}
           />
 
           {/* 지역별 맛집 */}
@@ -573,6 +583,7 @@ export default function Home() {
                     key={`${restaurant.이름}-${index}`}
                     restaurant={restaurant}
                     onClick={() => handleRestaurantSelect(restaurant)}
+                    realTimeRating={realTimeRatings[restaurant.이름]}
                   />
                 ))
               ) : (

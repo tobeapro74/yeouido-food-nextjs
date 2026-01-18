@@ -57,11 +57,17 @@ const categoryIcons: Record<string, string> = {
   동남아식: "🍜",
 };
 
+interface RealTimeRating {
+  rating: number | null;
+  reviewCount: number | null;
+}
+
 interface RestaurantCardProps {
   restaurant: Restaurant;
   onClick?: () => void;
   variant?: "horizontal" | "vertical";
   showCategory?: boolean;
+  realTimeRating?: RealTimeRating;
 }
 
 export function RestaurantCard({
@@ -69,7 +75,11 @@ export function RestaurantCard({
   onClick,
   variant = "vertical",
   showCategory = false,
+  realTimeRating,
 }: RestaurantCardProps) {
+  // 실시간 평점 우선, 없으면 정적 평점 사용
+  const displayRating = realTimeRating?.rating ?? restaurant.평점;
+  const displayReviewCount = realTimeRating?.reviewCount ?? restaurant.리뷰수;
   const cacheKey = restaurant.이름;
   // 캐시에 이미지가 있으면 바로 사용, 없으면 빈 문자열로 시작
   const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
@@ -180,13 +190,13 @@ export function RestaurantCard({
         </div>
         <CardContent className="p-3">
           <h3 className="font-semibold text-sm truncate">{restaurant.이름}</h3>
-          {restaurant.평점 && (
+          {displayRating && (
             <p className="text-xs flex items-center gap-1 mt-1">
               <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-              <span className="font-medium">{restaurant.평점}</span>
-              {restaurant.리뷰수 && (
+              <span className="font-medium">{displayRating}</span>
+              {displayReviewCount && (
                 <span className="text-muted-foreground">
-                  ({formatReviewCount(restaurant.리뷰수)})
+                  ({formatReviewCount(displayReviewCount)})
                 </span>
               )}
             </p>
@@ -234,10 +244,10 @@ export function RestaurantCard({
           <div className="flex-1 p-3 min-w-0">
             <div className="flex items-center justify-between gap-2">
               <h3 className="font-semibold truncate">{restaurant.이름}</h3>
-              {restaurant.평점 && (
+              {displayRating && (
                 <span className="text-xs flex items-center gap-0.5 flex-shrink-0">
                   <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                  <span className="font-medium">{restaurant.평점}</span>
+                  <span className="font-medium">{displayRating}</span>
                 </span>
               )}
             </div>
@@ -263,9 +273,9 @@ export function RestaurantCard({
                   {buildingName}
                 </Badge>
               )}
-              {restaurant.리뷰수 && (
+              {displayReviewCount && (
                 <span className="text-xs text-muted-foreground">
-                  리뷰 {formatReviewCount(restaurant.리뷰수)}
+                  리뷰 {formatReviewCount(displayReviewCount)}
                 </span>
               )}
             </div>

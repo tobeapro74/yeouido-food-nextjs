@@ -52,12 +52,20 @@ interface ImageData {
   isClosed?: boolean;
 }
 
+interface RatingsMap {
+  [restaurantName: string]: {
+    rating: number | null;
+    reviewCount: number | null;
+  };
+}
+
 interface PopularRestaurantsProps {
   restaurants: PopularRestaurant[];
   onSelect: (restaurant: PopularRestaurant) => void;
+  realTimeRatings?: RatingsMap;
 }
 
-export function PopularRestaurants({ restaurants, onSelect }: PopularRestaurantsProps) {
+export function PopularRestaurants({ restaurants, onSelect, realTimeRatings = {} }: PopularRestaurantsProps) {
   const [imagesMap, setImagesMap] = useState<Map<string, ImageData>>(new Map());
   const [loadingSet, setLoadingSet] = useState<Set<string>>(new Set());
 
@@ -148,6 +156,11 @@ export function PopularRestaurants({ restaurants, onSelect }: PopularRestaurants
             const imageUrl = imageData?.photoUrl || categoryPlaceholders[restaurant.카테고리] || "/images/placeholder-food.svg";
             const buildingName = restaurant.빌딩 || imageData?.buildingName;
 
+            // 실시간 평점 우선, 없으면 정적 평점 사용
+            const rtRating = realTimeRatings[restaurant.이름];
+            const displayRating = rtRating?.rating ?? restaurant.평점;
+            const displayReviewCount = rtRating?.reviewCount ?? restaurant.리뷰수;
+
             return (
               <Card
                 key={`${restaurant.이름}-${index}`}
@@ -174,13 +187,13 @@ export function PopularRestaurants({ restaurants, onSelect }: PopularRestaurants
                 </div>
                 <CardContent className="p-3">
                   <h3 className="font-semibold text-sm truncate">{restaurant.이름}</h3>
-                  {restaurant.평점 && (
+                  {displayRating && (
                     <p className="text-xs flex items-center gap-1 mt-1">
                       <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      <span className="font-medium">{restaurant.평점}</span>
-                      {restaurant.리뷰수 && (
+                      <span className="font-medium">{displayRating}</span>
+                      {displayReviewCount && (
                         <span className="text-muted-foreground">
-                          ({restaurant.리뷰수 >= 1000 ? `${(restaurant.리뷰수 / 1000).toFixed(1)}K` : restaurant.리뷰수})
+                          ({displayReviewCount >= 1000 ? `${(displayReviewCount / 1000).toFixed(1)}K` : displayReviewCount})
                         </span>
                       )}
                     </p>

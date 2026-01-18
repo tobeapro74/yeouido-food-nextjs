@@ -5,11 +5,19 @@ import { Button } from "@/components/ui/button";
 import { RestaurantCard } from "@/components/restaurant-card";
 import { Restaurant } from "@/data/yeouido-food";
 
+interface RatingsMap {
+  [restaurantName: string]: {
+    rating: number | null;
+    reviewCount: number | null;
+  };
+}
+
 interface RestaurantListProps {
   title: string;
   restaurants: Restaurant[];
   onBack: () => void;
   onSelect: (restaurant: Restaurant) => void;
+  realTimeRatings?: RatingsMap;
 }
 
 export function RestaurantList({
@@ -17,6 +25,7 @@ export function RestaurantList({
   restaurants,
   onBack,
   onSelect,
+  realTimeRatings = {},
 }: RestaurantListProps) {
   return (
     <div className="min-h-screen pb-20">
@@ -45,6 +54,7 @@ export function RestaurantList({
               key={`${restaurant.이름}-${index}`}
               restaurant={restaurant}
               onClick={() => onSelect(restaurant)}
+              realTimeRating={realTimeRatings[restaurant.이름]}
             />
           ))
         ) : (
