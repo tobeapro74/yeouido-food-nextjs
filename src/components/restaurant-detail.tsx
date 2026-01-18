@@ -24,6 +24,7 @@ interface CustomRestaurantInfo {
   phone_number?: string;
   price_level?: number;
   photos?: string[];
+  opening_hours?: string[];
 }
 
 interface RestaurantDetailProps {
@@ -76,6 +77,7 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
   const [customInfo, setCustomInfo] = useState<CustomRestaurantInfo | null>(null);
   const [currentCategory, setCurrentCategory] = useState<string>(restaurant.카테고리);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [openingHours, setOpeningHours] = useState<string[] | null>(null);
 
   // 커스텀 맛집 여부 확인
   const isCustomRestaurant = !!customInfo;
@@ -109,15 +111,19 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
               phone_number: found.phone_number,
               price_level: found.price_level,
               photos: found.photos,
+              opening_hours: found.opening_hours,
             });
             setCurrentCategory(found.category);
 
-            // 커스텀 맛집의 전화번호, 가격대 설정
+            // 커스텀 맛집의 전화번호, 가격대, 영업시간 설정
             if (found.phone_number) {
               setPhoneNumber(found.phone_number);
             }
             if (found.price_level) {
               setPriceRange(priceLevelToRange(found.price_level));
+            }
+            if (found.opening_hours && found.opening_hours.length > 0) {
+              setOpeningHours(found.opening_hours);
             }
 
             // 커스텀 맛집의 사진 설정
@@ -178,8 +184,13 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
     fetchImage();
   }, [restaurant.이름, restaurant.주소, restaurant.카테고리, cacheKey, imageCache]);
 
-  // 가격대/전화번호 정보 가져오기
+  // 가격대/전화번호 정보 가져오기 (커스텀 맛집이 아닌 경우에만)
   useEffect(() => {
+    // 커스텀 맛집인 경우 이미 fetchCustomInfo에서 처리하므로 스킵
+    if (customInfo) {
+      return;
+    }
+
     // 이미 캐시된 경우
     if (cacheKey in infoCache) {
       setPriceRange(infoCache[cacheKey].priceRange);
@@ -206,7 +217,7 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
     };
 
     fetchRestaurantInfo();
-  }, [restaurant.이름, cacheKey, infoCache]);
+  }, [restaurant.이름, cacheKey, infoCache, customInfo]);
 
   const mapsLink = getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
@@ -299,10 +310,20 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
           </div>
 
           {/* 영업시간 */}
-          {restaurant.영업시간 && (
-            <div className="flex items-center gap-3">
-              <Clock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
-              <span className="text-sm">{restaurant.영업시간}</span>
+          {(openingHours || restaurant.영업시간) && (
+            <div className="flex items-start gap-3">
+              <Clock className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                {openingHours ? (
+                  <div className="space-y-0.5">
+                    {openingHours.map((hour, idx) => (
+                      <div key={idx}>{hour}</div>
+                    ))}
+                  </div>
+                ) : (
+                  <span>{restaurant.영업시간}</span>
+                )}
+              </div>
             </div>
           )}
 
