@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { User, LogOut, Key, ChevronDown, Trash2 } from "lucide-react";
+import { User, LogOut, Key, ChevronDown, Trash2, Plus } from "lucide-react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useRealTimeRatings, sortByRealTimeRating } from "@/hooks/useRealTimeRatings";
 import { Button } from "@/components/ui/button";
@@ -20,6 +20,7 @@ import { RecommendationView } from "@/components/recommendation-view";
 import { SearchBar } from "@/components/search-bar";
 import { FortuneModal } from "@/components/fortune-modal";
 import { FortuneResultView } from "@/components/fortune-result";
+import { AddRestaurantModal } from "@/components/add-restaurant-modal";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { calculateFortune, FortuneResult, Gender, MaritalStatus } from "@/lib/fortune";
 import {
@@ -69,6 +70,9 @@ export default function Home() {
   // 운세 상태
   const [fortuneModalOpen, setFortuneModalOpen] = useState(false);
   const [fortuneResult, setFortuneResult] = useState<FortuneResult | null>(null);
+
+  // 맛집 등록 모달 상태
+  const [addRestaurantModalOpen, setAddRestaurantModalOpen] = useState(false);
 
   // 실시간 평점
   const { ratings: realTimeRatings } = useRealTimeRatings();
@@ -656,6 +660,26 @@ export default function Home() {
         onOpenChange={handleFortuneModalChange}
         onSubmit={handleFortuneSubmit}
       />
+
+      {/* 맛집 등록 모달 */}
+      <AddRestaurantModal
+        isOpen={addRestaurantModalOpen}
+        onClose={() => setAddRestaurantModalOpen(false)}
+        onSuccess={() => {
+          // 등록 성공 시 처리 (필요하면 목록 새로고침 등)
+        }}
+      />
+
+      {/* 맛집 등록 플로팅 버튼 (로그인 사용자만) */}
+      {user && (
+        <button
+          onClick={() => setAddRestaurantModalOpen(true)}
+          className="fixed bottom-24 right-4 w-14 h-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
+          title="맛집 등록"
+        >
+          <Plus className="w-6 h-6" />
+        </button>
+      )}
     </>
   );
 }

@@ -40,3 +40,41 @@ export interface JWTPayload {
   name: string;
   is_admin: boolean;
 }
+
+// 사용자 등록 맛집 타입
+export interface CustomRestaurant {
+  _id?: string;
+  place_id: string;
+  name: string;
+  address: string;
+  category: "한식" | "양식" | "중식" | "일식" | "동남아식";
+  feature?: string;
+  region: "서여의도" | "동여의도";
+  coordinates: {
+    lat: number;
+    lng: number;
+  };
+  google_rating?: number;
+  google_reviews_count?: number;
+  price_level?: number;
+  phone_number?: string;
+  opening_hours?: string[];
+  photos?: string[];
+  website?: string;
+  google_map_url?: string;
+  registered_by: number;
+  registered_by_name: string;
+  created_at: string;
+  updated_at?: string;
+}
+
+// 이메일 인증 타입
+export interface EmailVerification {
+  _id?: string;
+  email: string;
+  code: string;
+  expiresAt: Date;
+  verified: boolean;
+  verifiedAt?: Date;
+  createdAt: Date;
+}

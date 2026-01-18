@@ -22,12 +22,25 @@ export async function POST(request: NextRequest) {
 
     const db = await getDb();
     const usersCollection = db.collection("users");
+    const verificationCollection = db.collection("email_verifications");
 
     // 이메일 중복 확인
     const existingUser = await usersCollection.findOne({ email });
     if (existingUser) {
       return NextResponse.json(
         { success: false, error: "이미 사용 중인 이메일입니다." },
+        { status: 400 }
+      );
+    }
+
+    // 이메일 인증 확인
+    const verification = await verificationCollection.findOne({
+      email,
+      verified: true,
+    });
+    if (!verification) {
+      return NextResponse.json(
+        { success: false, error: "이메일 인증이 필요합니다." },
         { status: 400 }
       );
     }
@@ -50,6 +63,9 @@ export async function POST(request: NextRequest) {
     };
 
     await usersCollection.insertOne(newUser);
+
+    // 인증 정보 삭제
+    await verificationCollection.deleteMany({ email });
 
     return NextResponse.json({
       success: true,
