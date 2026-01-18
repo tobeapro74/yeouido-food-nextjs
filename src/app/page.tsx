@@ -173,6 +173,15 @@ export default function Home() {
     return getRestaurantsByRegion(selectedRegion).slice(0, 6);
   }, [selectedRegion]);
 
+  // 운세 모달 상태 변경 핸들러
+  const handleFortuneModalChange = (open: boolean) => {
+    setFortuneModalOpen(open);
+    // 모달이 닫힐 때 (X 버튼 클릭) 운세 화면으로 전환
+    if (!open && activeTab === "fortune") {
+      setCurrentView("fortune");
+    }
+  };
+
   // 탭 변경 처리
   const handleTabChange = (tab: TabType) => {
     if (tab === "home") {
@@ -309,7 +318,7 @@ export default function Home() {
         />
         <FortuneModal
           open={fortuneModalOpen}
-          onOpenChange={setFortuneModalOpen}
+          onOpenChange={handleFortuneModalChange}
           onSubmit={handleFortuneSubmit}
         />
       </>
@@ -343,7 +352,7 @@ export default function Home() {
         />
         <FortuneModal
           open={fortuneModalOpen}
-          onOpenChange={setFortuneModalOpen}
+          onOpenChange={handleFortuneModalChange}
           onSubmit={handleFortuneSubmit}
         />
       </>
@@ -384,7 +393,7 @@ export default function Home() {
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         <FortuneModal
           open={fortuneModalOpen}
-          onOpenChange={setFortuneModalOpen}
+          onOpenChange={handleFortuneModalChange}
           onSubmit={handleFortuneSubmit}
         />
         <CategorySheet
@@ -633,7 +642,7 @@ export default function Home() {
       {/* 운세 모달 */}
       <FortuneModal
         open={fortuneModalOpen}
-        onOpenChange={setFortuneModalOpen}
+        onOpenChange={handleFortuneModalChange}
         onSubmit={handleFortuneSubmit}
       />
     </>
