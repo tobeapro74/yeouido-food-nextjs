@@ -205,7 +205,9 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ photoUrl: optimizedUrl, cached: false, uploaded: true, buildingName });
     } catch (uploadError) {
-      const errorMessage = uploadError instanceof Error ? uploadError.message : String(uploadError);
+      const errorMessage = uploadError instanceof Error
+        ? uploadError.message
+        : JSON.stringify(uploadError);
       console.error("Cloudinary upload error:", errorMessage);
       // 업로드 실패해도 Google 원본 URL 반환
       const buildingName = await buildingPromise;
