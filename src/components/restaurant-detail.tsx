@@ -244,7 +244,7 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
         <Button
           variant="ghost"
           onClick={onBack}
-          className="absolute top-4 left-4 h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-black/50 text-white rounded-full safe-area-top"
+          className="absolute top-4 left-4 h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-black/50 text-white rounded-full safe-area-top flex items-center justify-center p-0"
         >
           <ChevronLeft className="w-6 h-6" />
         </Button>
