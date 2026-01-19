@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
 
     // 이메일 발송
     const { error: sendError } = await resend.emails.send({
-      from: "여의도한끼 <onboarding@resend.dev>",
+      from: "여의도한끼 <noreply@yeouido-food.com>",
       to: email,
       subject: "[여의도한끼] 이메일 인증 코드",
       html: `
