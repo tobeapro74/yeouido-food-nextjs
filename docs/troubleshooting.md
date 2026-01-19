@@ -522,6 +522,76 @@ const res = await fetch(url, {
 
 ---
 
+### 14. 커스텀 맛집 상세페이지에서 가격대/전화번호가 안 보이는 문제 (2026.01.19)
+
+**문제**
+- 커스텀 맛집(예: 왕산) 상세페이지에서 가격대, 전화번호, 영업시간이 표시되지 않음
+- MongoDB에는 데이터가 정상적으로 저장되어 있음
+
+**원인**
+- `restaurant-detail.tsx`에서 두 개의 `useEffect`가 충돌
+- 첫 번째 `useEffect`: 커스텀 맛집 정보를 `/api/custom-restaurants`에서 가져와 `priceRange`, `phoneNumber` 설정
+- 두 번째 `useEffect`: `/api/restaurant-prices/` API를 호출하여 값을 덮어씀
+- 커스텀 맛집의 경우 두 번째 API에서 해당 식당을 찾지 못해 `null`로 덮어씌워짐
+
+**해결**
+두 번째 `useEffect`에서 커스텀 맛집인 경우 스킵하도록 조건 추가:
+
+```typescript
+// 가격대/전화번호 정보 가져오기 (커스텀 맛집이 아닌 경우에만)
+useEffect(() => {
+  // 커스텀 맛집인 경우 이미 fetchCustomInfo에서 처리하므로 스킵
+  if (customInfo) {
+    return;
+  }
+
+  // 이미 캐시된 경우
+  if (cacheKey in infoCache) {
+    setPriceRange(infoCache[cacheKey].priceRange);
+    setPhoneNumber(infoCache[cacheKey].phoneNumber);
+    setInfoLoaded(true);
+    return;
+  }
+
+  const fetchRestaurantInfo = async () => {
+    // ... API 호출
+  };
+
+  fetchRestaurantInfo();
+}, [restaurant.이름, cacheKey, infoCache, customInfo]); // customInfo 의존성 추가
+```
+
+**추가 수정사항**
+- `CustomRestaurantInfo` 인터페이스에 `opening_hours?: string[]` 필드 추가
+- 첫 번째 `useEffect`에서 `setOpeningHours(found.opening_hours)` 호출
+- UI에서 영업시간을 배열로 표시 (요일별 한 줄씩)
+
+**파일**: `src/components/restaurant-detail.tsx`
+
+---
+
+### 15. Next.js Turbopack 캐시 손상으로 개발 서버 시작 실패 (2026.01.19)
+
+**문제**
+- `npm run dev` 실행 시 Turbopack panic 에러 발생
+- 에러 메시지: `range start index 18446744073709551543 out of range for slice of length 79`
+
+**원인**
+- `.next` 폴더의 Turbopack 캐시 파일 손상
+- 비정상 종료 등으로 인해 캐시 데이터가 깨짐
+
+**해결**
+`.next` 캐시 폴더 삭제 후 재시작:
+
+```bash
+rm -rf .next
+npm run dev
+```
+
+**파일**: `.next/` (캐시 폴더)
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버

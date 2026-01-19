@@ -205,11 +205,12 @@ export async function GET(request: NextRequest) {
 
       return NextResponse.json({ photoUrl: optimizedUrl, cached: false, uploaded: true, buildingName });
     } catch (uploadError) {
-      console.error("Cloudinary upload error:", uploadError);
+      const errorMessage = uploadError instanceof Error ? uploadError.message : String(uploadError);
+      console.error("Cloudinary upload error:", errorMessage);
       // 업로드 실패해도 Google 원본 URL 반환
       const buildingName = await buildingPromise;
 
-      // MongoDB에 캐시 저장 (Google URL)
+      // MongoDB에 캐시 저장 (Google URL) - 실패해도 캐시는 저장
       if (restaurantName) {
         await saveImageCache({
           restaurantName,
@@ -218,7 +219,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      return NextResponse.json({ photoUrl: googlePhotoUrl, cached: false, buildingName });
+      return NextResponse.json({ photoUrl: googlePhotoUrl, cached: false, buildingName, cloudinaryError: errorMessage });
     }
   } catch (error) {
     console.error("Google Places API error:", error);

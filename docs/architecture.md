@@ -61,7 +61,14 @@ rsvg-convert -w 32 -h 32 icon.svg -o favicon-32x32.png
 src/
 ├── app/                    # Next.js App Router
 │   ├── api/               # API 라우트
-│   │   ├── auth/          # 인증 API (login, logout, register, me, change-password)
+│   │   ├── auth/          # 인증 API
+│   │   │   ├── login/         # 로그인
+│   │   │   ├── logout/        # 로그아웃
+│   │   │   ├── register/      # 회원가입
+│   │   │   ├── me/            # 현재 사용자 조회
+│   │   │   ├── change-password/ # 비밀번호 변경
+│   │   │   ├── send-verification/ # 이메일 인증 코드 발송
+│   │   │   └── verify-code/   # 이메일 인증 코드 확인
 │   │   ├── reviews/       # 리뷰 CRUD API
 │   │   ├── place-photo/   # Google Places 사진 API (개별 조회)
 │   │   ├── place-photos/  # 배치 이미지 API (여러 개 한 번에)
@@ -71,6 +78,7 @@ src/
 │   │   ├── restaurant-buildings/ # 건물 정보 조회/관리 API
 │   │   ├── restaurant-prices/   # 가격대/전화번호 조회 API
 │   │   ├── restaurants/sync/  # 정적 데이터 → MongoDB 동기화 API
+│   │   ├── custom-restaurants/ # 커스텀 맛집 CRUD API (GET/POST/PATCH/DELETE)
 │   │   └── upload/        # Cloudinary 이미지 업로드
 │   ├── layout.tsx         # 루트 레이아웃
 │   ├── page.tsx           # 메인 페이지
@@ -96,7 +104,9 @@ src/
 │   ├── fortune-modal.tsx # 운세 입력 모달
 │   ├── fortune-result.tsx # 운세 결과 화면
 │   ├── fortune-detail-modal.tsx # 운세 상세 해설 모달
-│   └── pull-to-refresh.tsx # Pull-to-Refresh 컴포넌트
+│   ├── pull-to-refresh.tsx # Pull-to-Refresh 컴포넌트
+│   ├── custom-restaurant-modal.tsx # 커스텀 맛집 등록 모달
+│   └── category-edit-modal.tsx # 카테고리 수정 모달 (커스텀 맛집용)
 ├── data/
 │   └── yeouido-food.ts   # 맛집 정적 데이터 (195개 식당)
 ├── hooks/
@@ -159,9 +169,30 @@ RestaurantDetail (리뷰 표시)
 ```
 AuthModal (로그인/회원가입)
     ↓
-/api/auth/* (JWT 쿠키 기반)
+[회원가입 시] /api/auth/send-verification (이메일 인증 코드 발송)
+    ↓
+[회원가입 시] /api/auth/verify-code (인증 코드 확인)
+    ↓
+/api/auth/register 또는 /api/auth/login (JWT 쿠키 기반)
     ↓
 /api/auth/me (인증 상태 확인)
+```
+
+### 커스텀 맛집 데이터 흐름
+```
+CustomRestaurantModal (Google Places 검색)
+    ↓
+Google Places Text Search API (맛집 검색)
+    ↓
+Google Places Details API (상세 정보 조회)
+    ↓
+/api/custom-restaurants POST (MongoDB 저장)
+    ↓
+RestaurantDetail (커스텀 맛집 상세 표시)
+    ↓
+[가격대/전화번호/영업시간 표시]
+    - 커스텀 맛집: custom_restaurants 컬렉션에서 직접 조회
+    - 일반 맛집: /api/restaurant-prices API 호출
 ```
 
 ### 비밀번호 변경 흐름
@@ -463,6 +494,46 @@ MongoDB 캐시 저장 → 클라이언트 반환
 }
 ```
 
+#### custom_restaurants (2026.01.19 추가)
+```javascript
+{
+  place_id: String,          // Google Place ID (유니크)
+  name: String,              // 식당명
+  address: String,           // 주소
+  category: String,          // 카테고리 (한식/양식/중식/일식/동남아식)
+  feature: String,           // 특징/설명
+  region: String,            // 지역 (서여의도/동여의도)
+  coordinates: {             // 좌표
+    lat: Number,
+    lng: Number
+  },
+  google_rating: Number,     // Google 평점
+  google_reviews_count: Number, // Google 리뷰 수
+  price_level: Number,       // 가격대 (1-4)
+  phone_number: String,      // 전화번호
+  opening_hours: [String],   // 영업시간 배열
+  photos: [String],          // 사진 URL 배열
+  website: String,           // 웹사이트 URL
+  google_map_url: String,    // Google Maps URL
+  registered_by: Number,     // 등록자 ID
+  registered_by_name: String, // 등록자 이름
+  created_at: Date,
+  updated_at: Date
+}
+```
+
+#### email_verifications (2026.01.19 추가)
+```javascript
+{
+  email: String,             // 이메일 주소
+  code: String,              // 6자리 인증 코드
+  expiresAt: Date,           // 만료 시간 (5분)
+  verified: Boolean,         // 인증 완료 여부
+  verifiedAt: Date,          // 인증 완료 시간
+  createdAt: Date
+}
+```
+
 ## 환경 변수
 
 ```env
@@ -481,6 +552,9 @@ NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=
 # Auth
 JWT_SECRET=
 ADMIN_SECRET_KEY=
+
+# Email (Resend)
+RESEND_API_KEY=
 ```
 
 ## 배포

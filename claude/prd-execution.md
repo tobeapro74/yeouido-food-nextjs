@@ -21,12 +21,16 @@
 - [x] `/api/auth/register` - 회원가입
 - [x] `/api/auth/me` - 현재 사용자 조회
 - [x] `/api/auth/change-password` - 비밀번호 변경
+- [x] `/api/auth/send-verification` - 이메일 인증 코드 발송
+- [x] `/api/auth/verify-code` - 이메일 인증 코드 확인
 - [x] `/api/reviews` - 리뷰 CRUD
 - [x] `/api/place-photo` - Google Places 사진 (개별)
 - [x] `/api/place-photos` - 배치 이미지 조회 (여러 개)
 - [x] `/api/upload` - Cloudinary 이미지 업로드
 - [x] `/api/restaurant-buildings` - 빌딩별 식당 조회
+- [x] `/api/restaurant-prices/[name]` - 가격대/전화번호 조회
 - [x] `/api/restaurants/sync` - 정적 데이터 → MongoDB 동기화
+- [x] `/api/custom-restaurants` - 커스텀 맛집 CRUD (GET/POST/PATCH/DELETE)
 
 ### UI 컴포넌트
 - [x] 메인 페이지 레이아웃
@@ -41,12 +45,14 @@
 - [x] 비밀번호 변경 모달
 - [x] 한끼추천 뷰
 - [x] 취향 설정
-- [x] 통합 검색 바 (식당, 빌딩, 음식, 도로명)
+- [x] 통합 검색 바 (식당, 빌딩, 음식, 도로명, 커스텀 맛집 포함)
 - [x] 운세맛집 모달 (오행 + 띠 기반)
 - [x] 운세 결과 화면
 - [x] 운세 상세 해설 모달 (2025.01.16)
 - [x] 인기 맛집 컴포넌트 (배치 이미지 로딩)
 - [x] Pull-to-Refresh 컴포넌트 (2025.01.16)
+- [x] 커스텀 맛집 등록 모달 (Google Places 검색)
+- [x] 카테고리 수정 모달 (커스텀 맛집용)
 
 ### 커스텀 훅
 - [x] useImageBatch - 배치 이미지 로딩 + 글로벌 캐시
@@ -70,6 +76,14 @@
 - [x] 운세 지수 시스템 (종합/재물/가정/사회운, 2025.01.16)
 - [x] 운세 상세 해설 (각 운세 터치 시 상세 설명, 2025.01.16)
 - [x] 구체적 메뉴 추천 (오행×성별×결혼여부별 맞춤 추천, 2025.01.16)
+- [x] 커스텀 맛집 시스템 (2026.01.19)
+  - Google Places API로 맛집 검색/등록
+  - 등록자/관리자만 카테고리 수정 가능
+  - 가격대, 전화번호, 영업시간 표시
+  - 통합 검색에서 커스텀 맛집 검색 지원
+- [x] 이메일 인증 회원가입 (2026.01.19)
+  - 6자리 인증 코드 발송 (Resend API)
+  - 5분 유효기간, 개발 환경 콘솔 로그
 
 ### 성능 최적화
 - [x] MongoDB 이미지 URL 캐시 (image_cache 컬렉션)
@@ -92,6 +106,7 @@
 - [x] 상세화면에서 운세맛집 탭 이동 안됨
 - [x] 운세 지수 카드 이모지 오버플로우 (이모지+숫자 표시로 변경)
 - [x] 운세 모달 생년월일 select 자동 열림 (onOpenAutoFocus 방지)
+- [x] 커스텀 맛집 상세페이지 가격대/전화번호/영업시간 미표시 (2026.01.19)
 
 ### iOS 앱 배포 (2026.01.15 완료)
 - [x] Capacitor iOS 프로젝트 설정
