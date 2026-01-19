@@ -60,11 +60,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // 쿠키에 토큰 저장
+    // 쿠키에 토큰 저장 (iOS WebView 호환성을 위해 sameSite: "lax" 사용)
     response.cookies.set("auth_token", token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "lax",
       maxAge: 7 * 24 * 60 * 60, // 7일
       path: "/",
     });

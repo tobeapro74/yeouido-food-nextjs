@@ -46,6 +46,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // App Store 심사용: 테스트 이메일은 고정 코드 사용 (실제 이메일 발송 안함)
+    const isTestEmail = email.endsWith("@test.com") || email.endsWith("@example.com");
+    if (isTestEmail) {
+      const testCode = "123456";
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1시간
+
+      await verificationCollection.deleteMany({ email });
+      await verificationCollection.insertOne({
+        email,
+        code: testCode,
+        expiresAt,
+        verified: false,
+        createdAt: new Date(),
+      });
+
+      return NextResponse.json({
+        success: true,
+        message: "인증 코드가 발송되었습니다.",
+      });
+    }
+
     // 인증 코드 생성
     const code = generateVerificationCode();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10분 후 만료

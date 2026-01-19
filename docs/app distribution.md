@@ -268,8 +268,18 @@
 
 37. **앱 심사 정보** 섹션:
     - **로그인 필요**: 앱에 로그인 기능이 있으면 체크 후 테스트 계정 정보 입력
+      - **테스트 계정**: test@test.com / test1234
     - **연락처 정보**: 이름, 전화번호, 이메일 입력
-    - **메모** (선택): 심사자에게 전달할 메모
+    - **메모** (필수): 심사자에게 전달할 메모 - 아래 내용 복사하여 붙여넣기:
+      ```
+      Demo Account Login:
+      - Email: test@test.com
+      - Password: test1234
+
+      If you want to test sign-up:
+      - Use any email ending with @test.com or @example.com
+      - Verification code is always: 123456
+      ```
 38. **"저장"** 클릭
 
 ---
