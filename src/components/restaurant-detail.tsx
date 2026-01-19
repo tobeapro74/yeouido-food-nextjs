@@ -52,13 +52,13 @@ const getImageCache = (): Record<string, string> => {
   return {};
 };
 
-// 가격대/전화번호 캐시
-const getRestaurantInfoCache = (): Record<string, { priceRange: string | null; phoneNumber: string | null }> => {
+// 가격대/전화번호/영업상태 캐시
+const getRestaurantInfoCache = (): Record<string, { priceRange: string | null; phoneNumber: string | null; businessStatusKr: string | null }> => {
   if (typeof window !== "undefined") {
-    if (!(window as unknown as { __restaurantInfoCache?: Record<string, { priceRange: string | null; phoneNumber: string | null }> }).__restaurantInfoCache) {
-      (window as unknown as { __restaurantInfoCache: Record<string, { priceRange: string | null; phoneNumber: string | null }> }).__restaurantInfoCache = {};
+    if (!(window as unknown as { __restaurantInfoCache?: Record<string, { priceRange: string | null; phoneNumber: string | null; businessStatusKr: string | null }> }).__restaurantInfoCache) {
+      (window as unknown as { __restaurantInfoCache: Record<string, { priceRange: string | null; phoneNumber: string | null; businessStatusKr: string | null }> }).__restaurantInfoCache = {};
     }
-    return (window as unknown as { __restaurantInfoCache: Record<string, { priceRange: string | null; phoneNumber: string | null }> }).__restaurantInfoCache;
+    return (window as unknown as { __restaurantInfoCache: Record<string, { priceRange: string | null; phoneNumber: string | null; businessStatusKr: string | null }> }).__restaurantInfoCache;
   }
   return {};
 };
@@ -71,6 +71,7 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
   const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
   const [priceRange, setPriceRange] = useState<string | null>(infoCache[cacheKey]?.priceRange ?? null);
   const [phoneNumber, setPhoneNumber] = useState<string | null>(infoCache[cacheKey]?.phoneNumber ?? null);
+  const [businessStatusKr, setBusinessStatusKr] = useState<string | null>(infoCache[cacheKey]?.businessStatusKr ?? null);
   const [infoLoaded, setInfoLoaded] = useState(cacheKey in infoCache);
 
   // 커스텀 맛집 관련 상태
@@ -94,6 +95,11 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
     };
     return ranges[level] || null;
   };
+
+  // 컴포넌트 마운트 시 스크롤 상단으로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // 커스텀 맛집 정보 조회
   useEffect(() => {
@@ -195,6 +201,7 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
     if (cacheKey in infoCache) {
       setPriceRange(infoCache[cacheKey].priceRange);
       setPhoneNumber(infoCache[cacheKey].phoneNumber);
+      setBusinessStatusKr(infoCache[cacheKey].businessStatusKr);
       setInfoLoaded(true);
       return;
     }
@@ -205,12 +212,14 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
         const data = await res.json();
         const fetchedPrice = data.priceRange || null;
         const fetchedPhone = data.phoneNumber || null;
-        infoCache[cacheKey] = { priceRange: fetchedPrice, phoneNumber: fetchedPhone };
+        const fetchedStatus = data.businessStatusKr || null;
+        infoCache[cacheKey] = { priceRange: fetchedPrice, phoneNumber: fetchedPhone, businessStatusKr: fetchedStatus };
         setPriceRange(fetchedPrice);
         setPhoneNumber(fetchedPhone);
+        setBusinessStatusKr(fetchedStatus);
       } catch (error) {
         console.error("Error fetching restaurant info:", error);
-        infoCache[cacheKey] = { priceRange: null, phoneNumber: null };
+        infoCache[cacheKey] = { priceRange: null, phoneNumber: null, businessStatusKr: null };
       } finally {
         setInfoLoaded(true);
       }
@@ -343,6 +352,20 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
             <div className="flex items-center gap-3">
               <Banknote className="w-5 h-5 text-muted-foreground flex-shrink-0" />
               <span className="text-sm">{priceRange}</span>
+            </div>
+          )}
+
+          {/* 영업상태 - DB에서 가져온 영업상태 표시 */}
+          {businessStatusKr && (
+            <div className="flex items-center gap-3">
+              <Clock className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+              <span className={`text-sm font-medium ${
+                businessStatusKr === '영업중' ? 'text-green-600' :
+                businessStatusKr === '임시휴업' ? 'text-orange-500' :
+                businessStatusKr === '폐업' ? 'text-red-500' : ''
+              }`}>
+                {businessStatusKr}
+              </span>
             </div>
           )}
         </div>
