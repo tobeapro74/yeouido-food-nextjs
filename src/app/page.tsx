@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
-import { User, LogOut, Key, ChevronDown, Trash2, Plus } from "lucide-react";
+import { User, LogOut, Key, ChevronDown, Trash2, Plus, History } from "lucide-react";
 import { useSwipeBack } from "@/hooks/useSwipeBack";
 import { useRealTimeRatings, sortByRealTimeRating } from "@/hooks/useRealTimeRatings";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,7 @@ import { SearchBar } from "@/components/search-bar";
 import { FortuneModal } from "@/components/fortune-modal";
 import { FortuneResultView } from "@/components/fortune-result";
 import { AddRestaurantModal } from "@/components/add-restaurant-modal";
+import { RestaurantHistoryList } from "@/components/restaurant-history";
 import { PullToRefresh } from "@/components/pull-to-refresh";
 import { calculateFortune, FortuneResult, Gender, MaritalStatus } from "@/lib/fortune";
 import {
@@ -34,7 +35,7 @@ import {
   getPopularRestaurants,
 } from "@/data/yeouido-food";
 
-type View = "home" | "list" | "detail" | "recommend" | "fortune";
+type View = "home" | "list" | "detail" | "recommend" | "fortune" | "history";
 type TabType = "home" | "recommend" | "category" | "region" | "building" | "fortune";
 
 interface UserInfo {
@@ -431,6 +432,18 @@ export default function Home() {
     );
   }
 
+  // 히스토리 뷰
+  if (currentView === "history") {
+    return (
+      <RestaurantHistoryList
+        onBack={() => {
+          setCurrentView("home");
+          setActiveTab("home");
+        }}
+      />
+    );
+  }
+
   if (currentView === "fortune") {
     return (
       <>
@@ -556,6 +569,19 @@ export default function Home() {
                       <Key className="w-4 h-4" />
                       비밀번호 변경
                     </button>
+                    {/* 관리자 전용: 등록 히스토리 */}
+                    {user.is_admin && (
+                      <button
+                        onClick={() => {
+                          setCurrentView("history");
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-sm hover:bg-muted transition-colors flex items-center gap-2"
+                      >
+                        <History className="w-4 h-4" />
+                        등록 히스토리
+                      </button>
+                    )}
                     <button
                       onClick={() => {
                         setDeleteAccountModalOpen(true);

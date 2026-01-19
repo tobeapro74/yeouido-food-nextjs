@@ -1,9 +1,62 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { getDb } from "@/lib/mongodb";
-import { JWTPayload } from "@/lib/types";
+import { JWTPayload, RestaurantHistory } from "@/lib/types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "yeouido-food-secret-key";
+
+// 주소에서 간단한 지역 정보 추출 (구/동)
+function extractShortAddress(address: string): string {
+  // "대한민국 서울특별시 영등포구 여의도동 ..." 에서 "영등포구 여의도동" 추출
+  const match = address.match(/([가-힣]+구)\s*([가-힣]+동)?/);
+  if (match) {
+    return match[2] ? `${match[1]} ${match[2]}` : match[1];
+  }
+  return address.substring(0, 20);
+}
+
+// 히스토리 기록 함수
+async function recordHistory(data: {
+  place_id: string;
+  name: string;
+  address: string;
+  category: string;
+  registered_by: number;
+  registered_by_name: string;
+  action: "register" | "delete" | "update";
+  memo?: string;
+}): Promise<void> {
+  try {
+    const db = await getDb();
+    const historyCollection = db.collection<RestaurantHistory>("restaurant_history");
+
+    // 다음 순번 가져오기
+    const lastRecord = await historyCollection
+      .find()
+      .sort({ seq: -1 })
+      .limit(1)
+      .toArray();
+    const seq = lastRecord.length > 0 ? lastRecord[0].seq + 1 : 1;
+
+    const historyRecord: RestaurantHistory = {
+      seq,
+      place_id: data.place_id,
+      name: data.name,
+      short_address: extractShortAddress(data.address),
+      category: data.category,
+      registered_by: data.registered_by,
+      registered_by_name: data.registered_by_name,
+      registered_at: new Date().toISOString(),
+      action: data.action,
+      memo: data.memo,
+    };
+
+    await historyCollection.insertOne(historyRecord);
+  } catch (error) {
+    console.error("히스토리 기록 오류:", error);
+    // 히스토리 기록 실패해도 메인 작업에 영향 없도록 에러를 던지지 않음
+  }
+}
 
 // GET: 맛집 목록 조회 (인증 불필요)
 export async function GET(request: NextRequest) {
@@ -143,6 +196,17 @@ export async function POST(request: NextRequest) {
     };
 
     await collection.insertOne(newRestaurant);
+
+    // 히스토리 기록
+    await recordHistory({
+      place_id,
+      name,
+      address,
+      category,
+      registered_by: decoded.userId,
+      registered_by_name: decoded.name,
+      action: "register",
+    });
 
     return NextResponse.json({
       success: true,
@@ -289,6 +353,17 @@ export async function DELETE(request: NextRequest) {
     }
 
     await collection.deleteOne({ place_id });
+
+    // 히스토리 기록
+    await recordHistory({
+      place_id,
+      name: restaurant.name,
+      address: restaurant.address,
+      category: restaurant.category,
+      registered_by: decoded.userId,
+      registered_by_name: decoded.name,
+      action: "delete",
+    });
 
     return NextResponse.json({
       success: true,
