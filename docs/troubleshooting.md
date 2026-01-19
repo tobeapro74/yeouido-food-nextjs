@@ -592,6 +592,179 @@ npm run dev
 
 ---
 
+### 16. 운영 환경에서 모든 맛집 카드 이미지 로딩 실패 (2026.01.19)
+
+**문제**
+- 운영 환경(Vercel)에서 모든 맛집 카드의 이미지가 표시되지 않음
+- API 응답: `{"photoUrl":null,"buildingName":null}`
+- 로컬 환경에서는 정상 작동
+
+**원인 분석**
+
+이 문제는 여러 가지 원인이 복합적으로 작용한 결과였습니다:
+
+#### 1차 원인: Google Cloud 결제 계정 해지
+- Google Places API 호출 시 `REQUEST_DENIED` 에러 반환
+- 에러 메시지: `"You must enable Billing on the Google Cloud Project"`
+- 결제 계정이 해지되어 API 사용이 차단됨
+
+```json
+{
+  "candidates": [],
+  "error_message": "You must enable Billing on the Google Cloud Project...",
+  "status": "REQUEST_DENIED"
+}
+```
+
+#### 2차 원인: Vercel 환경변수에 `\n` 문자 포함
+- Vercel CLI로 환경변수를 pull했을 때 `.env.production.local` 파일에 잘못된 형식으로 저장됨
+- 모든 값에 따옴표(`"`)와 줄바꿈 문자(`\n`)가 포함됨
+
+```bash
+# 잘못된 형식 (Vercel CLI가 생성)
+CLOUDINARY_API_KEY="694492762215652\n"
+NEXT_PUBLIC_GOOGLE_PLACES_API_KEY="AIzaSyAP4-...\n"
+
+# 올바른 형식
+CLOUDINARY_API_KEY=694492762215652
+NEXT_PUBLIC_GOOGLE_PLACES_API_KEY=AIzaSyAP4-...
+```
+
+- Cloudinary 업로드 실패 에러: `"Unknown API key 694492762215652\n"`
+- `\n`이 API 키의 일부로 인식되어 인증 실패
+
+#### 3차 원인: MongoDB 데이터베이스 이름 불일치
+- 코드(`src/lib/mongodb.ts`): `client.db("yeouido-food")` (하이픈)
+- 실제 MongoDB URI: `yeouido_food` (언더스코어)
+- 다른 데이터베이스에 접근하여 캐시가 저장/조회되지 않음
+
+**해결 방안 제시**
+
+1. Google Cloud 결제 활성화
+2. Vercel 환경변수에서 `\n` 문자 제거 후 재배포
+3. MongoDB 데이터베이스 이름 통일
+
+**해결하기 위해 한 일련의 활동들**
+
+#### Step 1: API 응답 분석
+```bash
+# 운영 API 테스트
+curl "https://yeouido-food.vercel.app/api/place-photo?query=스시코우지&name=스시코우지"
+# 응답: {"photoUrl":null,"buildingName":null}
+```
+- `photoUrl: null` → Google Places API 검색 결과 없음 또는 에러
+
+#### Step 2: Google Places API 직접 테스트
+```bash
+curl "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?input=스시코우지&key=AIzaSyAP4-..."
+# 응답: REQUEST_DENIED, "You must enable Billing..."
+```
+- **결론**: Google Cloud 결제 문제 확인
+
+#### Step 3: Google Cloud Console에서 결제 활성화
+- Google Cloud Console → 결제 → 결제 계정 활성화
+- API 키가 연결된 "Place API" 프로젝트에 결제 계정 연결
+
+#### Step 4: API 재테스트 - 성공
+```bash
+curl "https://maps.googleapis.com/maps/api/place/findplacefromtext/json?..."
+# 응답: {"candidates":[...], "status":"OK"}
+```
+
+#### Step 5: 운영 환경 재테스트 - 여전히 실패
+```bash
+curl "https://yeouido-food.vercel.app/api/place-photo?..."
+# 응답: {"photoUrl":"https://maps.googleapis.com/...", "cloudinaryError":"..."}
+```
+- Google API는 성공했지만 Cloudinary 업로드 실패
+- `cloudinaryError` 필드 추가하여 에러 메시지 확인
+
+#### Step 6: Cloudinary 에러 분석
+```json
+{"cloudinaryError": "{\"message\":\"Unknown API key 694492762215652\\n\"}"}
+```
+- API 키 끝에 `\n` 문자가 포함되어 인증 실패
+- Vercel 환경변수 확인 필요
+
+#### Step 7: Vercel 환경변수 수정
+- Vercel Dashboard → Settings → Environment Variables
+- `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`, `CLOUDINARY_CLOUD_NAME` 값 재입력
+- 값을 전체 선택 → 삭제 → 새로 입력 (복사/붙여넣기 시 공백 주의)
+
+#### Step 8: 재배포 후 테스트 - Cloudinary 성공
+```bash
+curl "https://yeouido-food.vercel.app/api/place-photo?..."
+# 응답: {"photoUrl":"https://res.cloudinary.com/...", "uploaded":true}
+```
+
+#### Step 9: MongoDB 캐시 확인 - 저장 안됨
+```javascript
+// MongoDB 캐시 확인
+db.collection('image_cache').countDocuments()
+// 결과: 0
+```
+- Cloudinary 업로드는 성공했지만 MongoDB에 캐시가 저장되지 않음
+
+#### Step 10: MongoDB 연결 코드 분석
+```typescript
+// src/lib/mongodb.ts
+const db = client.db("yeouido-food");  // 잘못된 이름
+
+// MongoDB URI
+mongodb+srv://...@cluster0.../yeouido_food  // 실제 DB 이름
+```
+- 데이터베이스 이름 불일치 발견
+
+#### Step 11: 코드 수정 및 배포
+```typescript
+// Before
+const db = client.db("yeouido-food");
+
+// After
+const db = client.db("yeouido_food");
+```
+
+#### Step 12: 최종 확인 - 완전 해결
+```javascript
+db.collection('image_cache').countDocuments()
+// 결과: 9 (캐시 정상 저장)
+```
+
+**최종적으로 해결한 방법**
+
+| 문제 | 해결 방법 |
+|------|----------|
+| Google Cloud 결제 해지 | Google Cloud Console에서 결제 계정 재활성화 |
+| Vercel 환경변수 `\n` 포함 | Dashboard에서 값 재입력 후 Redeploy |
+| MongoDB DB 이름 불일치 | `yeouido-food` → `yeouido_food`로 수정 |
+
+**수정된 파일**
+- `src/lib/mongodb.ts`: 데이터베이스 이름 수정
+- `src/app/api/place-photo/route.ts`: 에러 메시지 상세화 (디버깅용)
+
+**관련 커밋**
+```
+3507c2e fix: MongoDB 데이터베이스 이름 수정 (yeouido-food → yeouido_food)
+59504a7 fix: Cloudinary 에러 메시지 JSON 직렬화
+3fe7ff6 fix: Cloudinary 에러 메시지 디버깅 추가
+```
+
+**교훈 및 예방책**
+
+1. **Vercel CLI 환경변수 주의**: `vercel env pull` 명령 사용 시 생성되는 파일 형식 확인 필요
+2. **환경변수 검증**: API 키 설정 후 실제 API 호출로 검증
+3. **데이터베이스 이름 일관성**: URI와 코드의 DB 이름 일치 여부 확인
+4. **에러 로깅 강화**: catch 블록에서 상세한 에러 메시지 반환
+5. **결제 계정 모니터링**: Google Cloud 결제 상태 정기 확인
+
+**비용 관련 참고**
+- Google Places API 무료 크레딧: $200/월
+- Find Place: $17/1,000건 (약 11,700건 가능)
+- Place Photo: $7/1,000건 (약 28,500건 가능)
+- 캐싱 시스템이 정상 작동하면 크레딧 사용량 대폭 감소
+
+---
+
 ## 일반적인 디버깅 팁
 
 ### 로컬 개발 서버
