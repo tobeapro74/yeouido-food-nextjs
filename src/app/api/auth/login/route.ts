@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
       data: {
         id: user.id,
         name: user.name,
+        email: user.email,
         profile_image: user.profile_image || null,
         is_admin: user.is_admin,
       },

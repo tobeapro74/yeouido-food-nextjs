@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
       data: {
         id: decoded.userId,
         name: decoded.name,
+        email: decoded.email,
         is_admin: decoded.is_admin,
       },
     });

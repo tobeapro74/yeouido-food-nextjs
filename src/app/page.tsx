@@ -40,6 +40,7 @@ type TabType = "home" | "recommend" | "category" | "region" | "building" | "fort
 interface UserInfo {
   id: number;
   name: string;
+  email: string;
   is_admin: boolean;
 }
 
@@ -729,8 +730,8 @@ export default function Home() {
         }}
       />
 
-      {/* 맛집 등록 플로팅 버튼 (로그인 사용자만) */}
-      {user && (
+      {/* 맛집 등록 플로팅 버튼 (관리자 또는 테스트 계정만) */}
+      {user && (user.is_admin || user.email === "test@test.com") && (
         <button
           onClick={() => setAddRestaurantModalOpen(true)}
           className="fixed bottom-24 right-4 w-14 h-14 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 z-40"
