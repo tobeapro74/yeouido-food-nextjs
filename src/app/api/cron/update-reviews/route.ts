@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
 import { getAllRestaurants } from "@/data/yeouido-food";
 
-const GOOGLE_API_KEY = process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
+const GOOGLE_API_KEY = process.env.GOOGLE_PLACES_API_NEW_KEY || process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
 // Google 리뷰 타입
 interface GoogleReview {

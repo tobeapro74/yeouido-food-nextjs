@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY;
+const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_NEW_KEY || process.env.GOOGLE_PLACES_API_KEY;
 
 // 여의도 중심 좌표
 const YEOUIDO_CENTER = {
