@@ -99,8 +99,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       } else {
         setError(data.error || "인증 코드 발송에 실패했습니다.");
       }
-    } catch {
-      setError("인증 코드 발송 중 오류가 발생했습니다.");
+    } catch (err) {
+      console.error("Send verification error:", err);
+      setError(`인증 코드 발송 중 오류가 발생했습니다. ${err instanceof Error ? err.message : ""}`);
     } finally {
       setIsSendingCode(false);
     }
@@ -131,8 +132,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       } else {
         setError(data.error || "인증 코드 확인에 실패했습니다.");
       }
-    } catch {
-      setError("인증 확인 중 오류가 발생했습니다.");
+    } catch (err) {
+      console.error("Verify code error:", err);
+      setError(`인증 확인 중 오류가 발생했습니다. ${err instanceof Error ? err.message : ""}`);
     } finally {
       setIsVerifyingCode(false);
     }
@@ -158,8 +160,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       } else {
         setError(data.error || "로그인에 실패했습니다.");
       }
-    } catch {
-      setError("로그인 중 오류가 발생했습니다.");
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(`로그인 중 오류가 발생했습니다. ${err instanceof Error ? err.message : ""}`);
     } finally {
       setIsLoading(false);
     }
@@ -219,8 +222,9 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
       } else {
         setError(data.error || "회원가입에 실패했습니다.");
       }
-    } catch {
-      setError("회원가입 중 오류가 발생했습니다.");
+    } catch (err) {
+      console.error("Register error:", err);
+      setError(`회원가입 중 오류가 발생했습니다. ${err instanceof Error ? err.message : ""}`);
     } finally {
       setIsLoading(false);
     }
