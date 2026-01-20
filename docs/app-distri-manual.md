@@ -35,6 +35,7 @@
 | Google Cloud | console.cloud.google.com | `tobeapro@gmail.com` | (Google 계정) |
 | Cloudinary | cloudinary.com | `tobeapro@gmail.com` | - |
 | Resend | resend.com | `tobeapro@gmail.com` | - |
+| Namecheap | namecheap.com | `tobeapro@gmail.com` | - |
 | GitHub | github.com | `tobeapro74` | - |
 
 ### 주요 API 키 (Vercel 환경 변수용)
