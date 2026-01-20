@@ -45,6 +45,8 @@
 | Vercel 배포 URL | `https://yeouido-food.vercel.app` | 무료 |
 | 커스텀 도메인 | `https://yeouido-food.com` (Namecheap) | 연 $10.98 |
 
+> ⚠️ **도메인 구매 이유**: Resend 무료 플랜은 발신자 이메일이 `onboarding@resend.dev` 또는 본인 계정 이메일(`tobeapro@gmail.com`)만 가능합니다. 외부 사용자가 회원가입 인증 이메일을 받으려면 커스텀 도메인을 Resend에 등록해야 합니다. 그래서 `yeouido-food.com`을 구매하여 Resend에 연결했습니다.
+
 ### 주요 API 키 (Vercel 환경 변수용)
 
 | 키 이름 | 값 | 설명 |
