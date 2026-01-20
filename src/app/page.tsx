@@ -277,6 +277,7 @@ export default function Home() {
     feature?: string;
     region: string;
     google_rating?: number;
+    building?: string;
   }): Restaurant => ({
     이름: custom.name,
     카테고리: custom.category as Restaurant["카테고리"],
@@ -284,6 +285,7 @@ export default function Home() {
     특징: custom.feature || "",
     지역: custom.region as Restaurant["지역"],
     주소: custom.address,
+    빌딩: custom.building,
   });
 
   // 커스텀 맛집 가져오기
@@ -353,11 +355,25 @@ export default function Home() {
   };
 
   // 빌딩 선택 (실시간 평점 기준 정렬)
-  const handleBuildingSelect = (buildingId: string) => {
+  const handleBuildingSelect = async (buildingId: string) => {
     const building = buildings.find((b) => b.id === buildingId);
     setListTitle(buildingId === "전체" ? "전체 빌딩" : `${building?.name || buildingId} 맛집`);
-    const restaurants = getRestaurantsByBuilding(buildingId);
-    setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
+
+    // 기존 데이터
+    const staticRestaurants = getRestaurantsByBuilding(buildingId);
+
+    // 커스텀 맛집 가져오기
+    const customRestaurants = await fetchCustomRestaurants();
+    const filteredCustom = buildingId === "전체"
+      ? customRestaurants
+      : customRestaurants.filter((r) => r.빌딩 === building?.name);
+
+    // 중복 제거 (이름 기준)
+    const existingNames = new Set(staticRestaurants.map((r) => r.이름));
+    const uniqueCustom = filteredCustom.filter((r) => !existingNames.has(r.이름));
+
+    const combined = [...staticRestaurants, ...uniqueCustom];
+    setListItems(sortByRealTimeRating(combined, realTimeRatings));
     setListType("building");
     setBuildingRegion(building?.지역);
     setCurrentView("list");
