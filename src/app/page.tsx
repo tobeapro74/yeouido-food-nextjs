@@ -269,7 +269,7 @@ export default function Home() {
     setFortuneModalOpen(true);
   };
 
-  // 주소에서 빌딩명 추출
+  // 주소에서 빌딩명 추출 (공백 제거 후 비교)
   const extractBuildingFromAddress = (address: string): string | undefined => {
     const buildingNames = [
       "IFC몰", "더현대서울", "63빌딩", "파이낸스타워", "원센티널",
@@ -278,8 +278,11 @@ export default function Home() {
       "BNK금융타워", "씨티플라자", "유성빌딩", "미원빌딩", "신송빌딩",
       "경호빌딩", "익스콘벤처타워", "율촌빌딩", "삼도오피스텔"
     ];
+    // 주소에서 공백 제거하여 비교 (Google Places 주소에 "BNK 금융타워"처럼 공백이 들어가는 경우 대응)
+    const normalizedAddress = address.replace(/\s/g, "");
     for (const building of buildingNames) {
-      if (address.includes(building)) {
+      const normalizedBuilding = building.replace(/\s/g, "");
+      if (normalizedAddress.includes(normalizedBuilding)) {
         return building;
       }
     }
