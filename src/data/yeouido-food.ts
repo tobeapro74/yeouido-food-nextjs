@@ -2223,6 +2223,60 @@ export function getPopularRestaurants(): PopularRestaurant[] {
   return topByCategory;
 }
 
+// 빌딩별 평점 랭킹 타입
+export interface BuildingRanking {
+  buildingId: string;
+  buildingName: string;
+  icon: string;
+  지역: string;
+  avgRating: number;
+  restaurantCount: number;
+  topRestaurant: Restaurant | null;
+}
+
+// 빌딩별 평점 평균 랭킹 계산
+// customRestaurants: 사용자 등록 맛집 (MongoDB에서 불러온 데이터)
+export function getBuildingRankings(customRestaurants: Restaurant[] = []): BuildingRanking[] {
+  const all = [...getAllRestaurants(), ...customRestaurants];
+  const buildingStats: Map<string, { total: number; count: number; restaurants: Restaurant[] }> = new Map();
+
+  // 빌딩별 평점 합계와 맛집 수 계산
+  for (const r of all) {
+    if (r.빌딩 && r.평점) {
+      const stats = buildingStats.get(r.빌딩) || { total: 0, count: 0, restaurants: [] };
+      stats.total += r.평점;
+      stats.count += 1;
+      stats.restaurants.push(r);
+      buildingStats.set(r.빌딩, stats);
+    }
+  }
+
+  // 빌딩 정보와 결합하여 랭킹 생성
+  const rankings: BuildingRanking[] = [];
+  for (const building of buildings) {
+    const stats = buildingStats.get(building.id);
+    if (stats && stats.count >= 2) { // 최소 2개 이상의 맛집이 있는 빌딩만
+      const avgRating = Math.round((stats.total / stats.count) * 100) / 100;
+      // 해당 빌딩에서 평점 가장 높은 맛집
+      const sortedRestaurants = [...stats.restaurants].sort((a, b) => (b.평점 || 0) - (a.평점 || 0));
+      rankings.push({
+        buildingId: building.id,
+        buildingName: building.name,
+        icon: building.icon,
+        지역: building.지역 || "동여의도",
+        avgRating,
+        restaurantCount: stats.count,
+        topRestaurant: sortedRestaurants[0] || null,
+      });
+    }
+  }
+
+  // 평점 평균 높은 순으로 정렬
+  rankings.sort((a, b) => b.avgRating - a.avgRating);
+
+  return rankings;
+}
+
 // 이미지 URL 생성 (Lorem Picsum 사용)
 export function getPlaceholderImage(name: string): string {
   const seed = name.split("").reduce((a, c) => a + c.charCodeAt(0), 0);

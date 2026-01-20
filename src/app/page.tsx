@@ -23,6 +23,9 @@ import { FortuneResultView } from "@/components/fortune-result";
 import { AddRestaurantModal } from "@/components/add-restaurant-modal";
 import { RestaurantHistoryList } from "@/components/restaurant-history";
 import { PullToRefresh } from "@/components/pull-to-refresh";
+import { TopBuildings } from "@/components/top-buildings";
+import { BuildingRankingList } from "@/components/building-ranking-list";
+import { PopularRestaurantsList } from "@/components/popular-restaurants-list";
 import { calculateFortune, FortuneResult, Gender, MaritalStatus } from "@/lib/fortune";
 import {
   Restaurant,
@@ -35,7 +38,7 @@ import {
   getPopularRestaurants,
 } from "@/data/yeouido-food";
 
-type View = "home" | "list" | "detail" | "recommend" | "fortune" | "history";
+type View = "home" | "list" | "detail" | "recommend" | "fortune" | "history" | "popular" | "buildingRanking";
 type TabType = "home" | "recommend" | "category" | "region" | "building" | "fortune";
 
 interface UserInfo {
@@ -52,6 +55,11 @@ export default function Home() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [listTitle, setListTitle] = useState("");
   const [listItems, setListItems] = useState<Restaurant[]>([]);
+  const [listType, setListType] = useState<"category" | "building" | "region">("category");
+  const [buildingRegion, setBuildingRegion] = useState<string | undefined>(undefined);
+
+  // 커스텀 맛집 (빌딩 랭킹용)
+  const [customRestaurantsForRanking, setCustomRestaurantsForRanking] = useState<Restaurant[]>([]);
 
   // 시트 상태
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
@@ -122,6 +130,22 @@ export default function Home() {
       }
     };
     checkAuth();
+  }, []);
+
+  // 빌딩 랭킹용 커스텀 맛집 로드
+  useEffect(() => {
+    const loadCustomRestaurants = async () => {
+      try {
+        const res = await fetch("/api/custom-restaurants");
+        const data = await res.json();
+        if (data.success && data.data) {
+          setCustomRestaurantsForRanking(data.data.map(convertCustomToRestaurant));
+        }
+      } catch (error) {
+        console.error("Failed to load custom restaurants for ranking:", error);
+      }
+    };
+    loadCustomRestaurants();
   }, []);
 
   // 사용자 메뉴 외부 클릭 시 닫기
@@ -296,6 +320,8 @@ export default function Home() {
 
     const combined = [...staticRestaurants, ...uniqueCustom];
     setListItems(sortByRealTimeRating(combined, realTimeRatings));
+    setListType("category");
+    setBuildingRegion(undefined);
     setCurrentView("list");
     setActiveTab("category");
   };
@@ -320,6 +346,8 @@ export default function Home() {
 
     const combined = [...staticRestaurants, ...uniqueCustom];
     setListItems(sortByRealTimeRating(combined, realTimeRatings));
+    setListType("region");
+    setBuildingRegion(undefined);
     setCurrentView("list");
     setActiveTab("region");
   };
@@ -330,6 +358,8 @@ export default function Home() {
     setListTitle(buildingId === "전체" ? "전체 빌딩" : `${building?.name || buildingId} 맛집`);
     const restaurants = getRestaurantsByBuilding(buildingId);
     setListItems(sortByRealTimeRating(restaurants, realTimeRatings));
+    setListType("building");
+    setBuildingRegion(building?.지역);
     setCurrentView("list");
     setActiveTab("building");
   };
@@ -339,6 +369,16 @@ export default function Home() {
     setPreviousView(currentView);
     setSelectedRestaurant(restaurant);
     setCurrentView("detail");
+  };
+
+  // 인기맛집 전체보기
+  const handleShowAllPopular = () => {
+    setCurrentView("popular");
+  };
+
+  // 맛빌딩 전체보기
+  const handleShowAllBuildings = () => {
+    setCurrentView("buildingRanking");
   };
 
   // 뒤로가기
@@ -353,6 +393,10 @@ export default function Home() {
       } else if (previousView === "fortune") {
         setCurrentView("fortune");
         setActiveTab("fortune");
+      } else if (previousView === "popular") {
+        setCurrentView("popular");
+      } else if (previousView === "buildingRanking") {
+        setCurrentView("buildingRanking");
       } else {
         setCurrentView("list");
       }
@@ -432,6 +476,34 @@ export default function Home() {
     );
   }
 
+  // 히스토리에서 맛집 선택 시 상세화면으로 이동
+  const handleHistoryRestaurantSelect = async (placeId: string) => {
+    try {
+      // 커스텀 맛집 조회
+      const res = await fetch("/api/custom-restaurants");
+      const data = await res.json();
+      if (data.success && data.data) {
+        const found = data.data.find((r: { place_id: string }) => r.place_id === placeId);
+        if (found) {
+          // Restaurant 형태로 변환
+          const restaurant: Restaurant = {
+            이름: found.name,
+            카테고리: found.category,
+            지역: found.region || "서여의도",
+            주소: found.address,
+            특징: found.feature || "",
+            평점: found.google_rating || undefined,
+          };
+          setPreviousView("history");
+          setSelectedRestaurant(restaurant);
+          setCurrentView("detail");
+        }
+      }
+    } catch (error) {
+      console.error("맛집 조회 실패:", error);
+    }
+  };
+
   // 히스토리 뷰
   if (currentView === "history") {
     return (
@@ -440,7 +512,46 @@ export default function Home() {
           setCurrentView("home");
           setActiveTab("home");
         }}
+        onSelectRestaurant={handleHistoryRestaurantSelect}
       />
+    );
+  }
+
+  // 인기맛집 전체 리스트 뷰
+  if (currentView === "popular") {
+    return (
+      <>
+        <PopularRestaurantsList
+          onBack={() => {
+            setCurrentView("home");
+            setActiveTab("home");
+          }}
+          onSelect={(restaurant) => {
+            setPreviousView("popular");
+            setSelectedRestaurant(restaurant);
+            setCurrentView("detail");
+          }}
+          realTimeRatings={realTimeRatings}
+        />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      </>
+    );
+  }
+
+  // 맛빌딩 랭킹 전체 리스트 뷰
+  if (currentView === "buildingRanking") {
+    return (
+      <>
+        <BuildingRankingList
+          onBack={() => {
+            setCurrentView("home");
+            setActiveTab("home");
+          }}
+          onSelectBuilding={handleBuildingSelect}
+          customRestaurants={customRestaurantsForRanking}
+        />
+        <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
+      </>
     );
   }
 
@@ -507,6 +618,8 @@ export default function Home() {
           onBack={handleBack}
           onSelect={handleRestaurantSelect}
           realTimeRatings={realTimeRatings}
+          listType={listType}
+          buildingRegion={buildingRegion}
         />
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         <CategorySheet
@@ -644,8 +757,12 @@ export default function Home() {
           <PopularRestaurants
             restaurants={popularRestaurants}
             onSelect={handleRestaurantSelect}
+            onShowAll={handleShowAllPopular}
             realTimeRatings={realTimeRatings}
           />
+
+          {/* 오늘의 맛빌딩 */}
+          <TopBuildings onSelect={handleBuildingSelect} onShowAll={handleShowAllBuildings} customRestaurants={customRestaurantsForRanking} />
 
           {/* 지역별 맛집 */}
           <section className="bg-card rounded-xl p-4 shadow-sm">

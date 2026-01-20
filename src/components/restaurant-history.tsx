@@ -3,14 +3,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, Loader2, ChevronLeft, ChevronRight, ExternalLink, Info } from "lucide-react";
 import { RestaurantHistory } from "@/lib/types";
 
 interface RestaurantHistoryListProps {
   onBack: () => void;
+  onSelectRestaurant?: (placeId: string) => void;
 }
 
-export function RestaurantHistoryList({ onBack }: RestaurantHistoryListProps) {
+export function RestaurantHistoryList({ onBack, onSelectRestaurant }: RestaurantHistoryListProps) {
   const [history, setHistory] = useState<RestaurantHistory[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -80,15 +81,15 @@ export function RestaurantHistoryList({ onBack }: RestaurantHistoryListProps) {
         </div>
       </div>
 
-      {/* 테이블 헤더 */}
-      <div className="sticky top-[60px] z-10 bg-muted/50 border-b border-border">
+      {/* 테이블 헤더 - 데스크탑에서만 표시 */}
+      <div className="sticky top-[60px] z-10 bg-muted/50 border-b border-border hidden md:block overflow-hidden">
         <div className="grid grid-cols-12 gap-2 px-4 py-2 text-xs font-medium text-muted-foreground">
-          <div className="col-span-1 text-center">#</div>
-          <div className="col-span-2">날짜</div>
-          <div className="col-span-3">맛집명</div>
-          <div className="col-span-3">지역</div>
-          <div className="col-span-2">카테고리</div>
-          <div className="col-span-1 text-center">상태</div>
+          <div className="col-span-1 text-center overflow-hidden">#</div>
+          <div className="col-span-2 overflow-hidden">날짜</div>
+          <div className="col-span-3 overflow-hidden">맛집명</div>
+          <div className="col-span-3 overflow-hidden">지역</div>
+          <div className="col-span-2 overflow-hidden">카테고리</div>
+          <div className="col-span-1 text-center overflow-hidden">상태</div>
         </div>
       </div>
 
@@ -105,27 +106,94 @@ export function RestaurantHistoryList({ onBack }: RestaurantHistoryListProps) {
               history.map((item) => (
                 <div
                   key={item._id || item.seq}
-                  className="grid grid-cols-12 gap-2 px-4 py-3 items-center hover:bg-muted/30 transition-colors"
+                  className="px-4 py-3 hover:bg-muted/30 transition-colors"
                 >
-                  <div className="col-span-1 text-center text-sm font-medium text-muted-foreground">
-                    {item.seq}
+                  {/* 모바일 레이아웃 (카드 형식) */}
+                  <div className="md:hidden">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-xs text-muted-foreground">#{item.seq}</span>
+                          {getActionBadge(item.action)}
+                          <Badge variant="outline" className="text-xs">
+                            {item.category}
+                          </Badge>
+                        </div>
+                        {item.action !== "delete" ? (
+                          <button
+                            onClick={() => onSelectRestaurant?.(item.place_id)}
+                            className="text-sm font-medium text-primary hover:underline flex items-center gap-1"
+                            title={`${item.name} 상세보기`}
+                          >
+                            <span className="truncate">{item.name}</span>
+                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                          </button>
+                        ) : (
+                          <span className="text-sm font-medium text-muted-foreground line-through truncate block">
+                            {item.name}
+                          </span>
+                        )}
+                        {item.short_address && (
+                          <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                            {item.short_address}
+                          </p>
+                        )}
+                      </div>
+                      <span className="text-xs text-muted-foreground whitespace-nowrap">
+                        {formatDate(item.registered_at)}
+                      </span>
+                    </div>
+                    {item.memo && (
+                      <div className="mt-2 flex items-start gap-1 text-xs text-muted-foreground">
+                        <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{item.memo}</span>
+                      </div>
+                    )}
                   </div>
-                  <div className="col-span-2 text-xs text-muted-foreground">
-                    {formatDate(item.registered_at)}
-                  </div>
-                  <div className="col-span-3 text-sm font-medium truncate" title={item.name}>
-                    {item.name}
-                  </div>
-                  <div className="col-span-3 text-xs text-muted-foreground truncate" title={item.short_address}>
-                    {item.short_address || "-"}
-                  </div>
-                  <div className="col-span-2">
-                    <Badge variant="outline" className="text-xs">
-                      {item.category}
-                    </Badge>
-                  </div>
-                  <div className="col-span-1 flex justify-center">
-                    {getActionBadge(item.action)}
+
+                  {/* 데스크탑 레이아웃 (테이블 형식) */}
+                  <div className="hidden md:block overflow-hidden">
+                    <div className="grid grid-cols-12 gap-2 items-center">
+                      <div className="col-span-1 text-center text-sm font-medium text-muted-foreground overflow-hidden">
+                        {item.seq}
+                      </div>
+                      <div className="col-span-2 text-xs text-muted-foreground overflow-hidden whitespace-nowrap">
+                        {formatDate(item.registered_at)}
+                      </div>
+                      <div className="col-span-3 min-w-0 overflow-hidden">
+                        {item.action !== "delete" ? (
+                          <button
+                            onClick={() => onSelectRestaurant?.(item.place_id)}
+                            className="text-sm font-medium text-primary hover:underline flex items-center gap-1 max-w-full overflow-hidden"
+                            title={`${item.name} 상세보기`}
+                          >
+                            <span className="truncate">{item.name}</span>
+                            <ExternalLink className="h-3 w-3 flex-shrink-0" />
+                          </button>
+                        ) : (
+                          <span className="text-sm font-medium text-muted-foreground line-through truncate block" title={item.name}>
+                            {item.name}
+                          </span>
+                        )}
+                      </div>
+                      <div className="col-span-3 text-xs text-muted-foreground truncate overflow-hidden" title={item.short_address}>
+                        {item.short_address || "-"}
+                      </div>
+                      <div className="col-span-2 overflow-hidden">
+                        <Badge variant="outline" className="text-xs truncate max-w-full">
+                          {item.category}
+                        </Badge>
+                      </div>
+                      <div className="col-span-1 flex justify-center overflow-hidden">
+                        {getActionBadge(item.action)}
+                      </div>
+                    </div>
+                    {item.memo && (
+                      <div className="mt-1 ml-[calc(8.33%+0.5rem)] flex items-start gap-1 text-xs text-muted-foreground">
+                        <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                        <span>{item.memo}</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

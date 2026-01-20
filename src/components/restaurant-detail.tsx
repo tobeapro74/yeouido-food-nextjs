@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Edit3, Tag } from "lucide-react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -9,6 +9,7 @@ import { Restaurant, getGoogleMapsLink, getGoogleSearchLink } from "@/data/yeoui
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
 import { CategoryEditModal } from "@/components/category-edit-modal";
+import { RestaurantEditModal } from "@/components/restaurant-edit-modal";
 import Image from "next/image";
 
 interface UserInfo {
@@ -21,16 +22,25 @@ interface CustomRestaurantInfo {
   place_id: string;
   category: string;
   registered_by: number;
+  feature?: string;
   phone_number?: string;
   price_level?: number;
   photos?: string[];
   opening_hours?: string[];
+  address?: string;
+  google_rating?: number;
+  google_reviews_count?: number;
+  google_map_url?: string;
+  coordinates?: { lat: number; lng: number };
 }
 
 interface RestaurantDetailProps {
   restaurant: Restaurant;
   onBack: () => void;
   user?: UserInfo | null;
+  onCategoryChange?: (newCategory: string) => void;
+  onDelete?: () => void;
+  onUpdate?: (updatedData: Partial<CustomRestaurantInfo>) => void;
 }
 
 const categoryIcons: Record<string, string> = {
@@ -63,7 +73,7 @@ const getRestaurantInfoCache = (): Record<string, { priceRange: string | null; p
   return {};
 };
 
-export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailProps) {
+export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, onDelete, onUpdate }: RestaurantDetailProps) {
   const cacheKey = restaurant.이름;
   const imageCache = getImageCache();
   const infoCache = getRestaurantInfoCache();
@@ -77,12 +87,41 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
   // 커스텀 맛집 관련 상태
   const [customInfo, setCustomInfo] = useState<CustomRestaurantInfo | null>(null);
   const [currentCategory, setCurrentCategory] = useState<string>(restaurant.카테고리);
+  const [currentFeature, setCurrentFeature] = useState<string>(restaurant.특징 || "");
+  const [currentPhoneNumber, setCurrentPhoneNumber] = useState<string | null>(null);
   const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [openingHours, setOpeningHours] = useState<string[] | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // 커스텀 맛집 여부 확인
   const isCustomRestaurant = !!customInfo;
   const canEdit = user && isCustomRestaurant && (user.is_admin || customInfo.registered_by === user.id);
+
+  // 맛집 삭제 핸들러
+  const handleDelete = async () => {
+    if (!customInfo?.place_id) return;
+    if (!confirm(`"${restaurant.이름}"을(를) 삭제하시겠습니까?\n\n삭제된 맛집은 복구할 수 없습니다.`)) return;
+
+    setIsDeleting(true);
+    try {
+      const res = await fetch(`/api/custom-restaurants?placeId=${encodeURIComponent(customInfo.place_id)}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert("맛집이 삭제되었습니다.");
+        onDelete?.();
+        onBack();
+      } else {
+        alert(data.error || "삭제에 실패했습니다.");
+      }
+    } catch {
+      alert("삭제 중 오류가 발생했습니다.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   // 가격대 변환 함수
   const priceLevelToRange = (level: number | undefined): string | null => {
@@ -114,16 +153,26 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
               place_id: found.place_id,
               category: found.category,
               registered_by: found.registered_by,
+              feature: found.feature,
               phone_number: found.phone_number,
               price_level: found.price_level,
               photos: found.photos,
               opening_hours: found.opening_hours,
+              address: found.address,
+              google_rating: found.google_rating,
+              google_reviews_count: found.google_reviews_count,
+              google_map_url: found.google_map_url,
+              coordinates: found.coordinates,
             });
             setCurrentCategory(found.category);
+            if (found.feature) {
+              setCurrentFeature(found.feature);
+            }
 
             // 커스텀 맛집의 전화번호, 가격대, 영업시간 설정
             if (found.phone_number) {
               setPhoneNumber(found.phone_number);
+              setCurrentPhoneNumber(found.phone_number);
             }
             if (found.price_level) {
               setPriceRange(priceLevelToRange(found.price_level));
@@ -228,7 +277,11 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
     fetchRestaurantInfo();
   }, [restaurant.이름, cacheKey, infoCache, customInfo]);
 
-  const mapsLink = getGoogleMapsLink(restaurant.이름, restaurant.주소);
+  // 구글 지도 URL 생성: 사용자 등록 맛집은 google_map_url 또는 address 사용
+  const googleMapsUrl = isCustomRestaurant && customInfo
+    ? customInfo.google_map_url ||
+      `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customInfo.address || restaurant.이름)}`
+    : getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
 
   return (
@@ -257,6 +310,28 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
         >
           <ChevronLeft className="w-6 h-6" />
         </Button>
+        {/* 수정/삭제 버튼 (사용자 등록 맛집 + 권한 있는 경우) */}
+        {canEdit && (
+          <div className="absolute top-4 right-4 flex gap-2 safe-area-top">
+            <Button
+              variant="ghost"
+              onClick={() => setEditModalOpen(true)}
+              className="h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center p-0"
+              title="맛집 정보 수정"
+            >
+              <Settings className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              onClick={handleDelete}
+              disabled={isDeleting}
+              className="h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-red-500/70 text-white rounded-full flex items-center justify-center p-0"
+              title="맛집 삭제"
+            >
+              <Trash2 className="w-5 h-5" />
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* 상세 정보 */}
@@ -267,16 +342,11 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
             <div>
               <h1 className="text-2xl font-bold">{restaurant.이름}</h1>
               <div className="flex items-center gap-2 mt-2 flex-wrap">
-                {/* 커스텀 맛집이면 수정 가능한 카테고리 배지 */}
+                {/* 커스텀 맛집이면 카테고리 배지 */}
                 {isCustomRestaurant ? (
-                  <Badge
-                    variant="secondary"
-                    className={canEdit ? "cursor-pointer hover:bg-primary/20 transition-colors" : ""}
-                    onClick={() => canEdit && setCategoryModalOpen(true)}
-                  >
+                  <Badge variant="secondary">
                     <Tag className="h-3 w-3 mr-1" />
                     {categoryIcons[currentCategory]} {currentCategory}
-                    {canEdit && <Edit3 className="h-3 w-3 ml-1" />}
                   </Badge>
                 ) : (
                   <Badge variant="secondary">
@@ -304,19 +374,35 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
         <Separator />
 
         {/* 특징 */}
-        {restaurant.특징 && (
-          <div>
-            <p className="text-muted-foreground">{restaurant.특징}</p>
+        {(currentFeature || restaurant.특징) && (
+          <div className="flex items-start gap-2">
+            <Info className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
+            <p className="text-muted-foreground">{currentFeature || restaurant.특징}</p>
           </div>
         )}
 
         {/* 상세 정보 목록 */}
         <div className="space-y-3 bg-muted/30 rounded-xl p-4">
-          {/* 주소 */}
+          {/* 주소 - 사용자 등록 맛집은 address 사용 */}
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 text-muted-foreground flex-shrink-0 mt-0.5" />
-            <span className="text-sm">{restaurant.주소}</span>
+            <span className="text-sm">{isCustomRestaurant && customInfo?.address ? customInfo.address : restaurant.주소}</span>
           </div>
+
+          {/* Google 평점 (사용자 등록 맛집) */}
+          {isCustomRestaurant && customInfo?.google_rating && (
+            <div className="flex items-center gap-3">
+              <Star className="w-5 h-5 text-yellow-500 flex-shrink-0 fill-yellow-500" />
+              <span className="text-sm">
+                {customInfo.google_rating.toFixed(1)}
+                {customInfo.google_reviews_count && (
+                  <span className="text-muted-foreground ml-1">
+                    ({customInfo.google_reviews_count.toLocaleString()}개 리뷰)
+                  </span>
+                )}
+              </span>
+            </div>
+          )}
 
           {/* 영업시간 */}
           {(openingHours || restaurant.영업시간) && (
@@ -373,7 +459,7 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
         {/* 외부 링크 */}
         <div className="flex gap-3">
           <a
-            href={mapsLink}
+            href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1"
@@ -414,7 +500,53 @@ export function RestaurantDetail({ restaurant, onBack, user }: RestaurantDetailP
           onClose={() => setCategoryModalOpen(false)}
           placeId={customInfo.place_id}
           currentCategory={currentCategory}
-          onSuccess={(newCategory) => setCurrentCategory(newCategory)}
+          onSuccess={(newCategory) => {
+            setCurrentCategory(newCategory);
+            onCategoryChange?.(newCategory);
+          }}
+        />
+      )}
+
+      {/* 상세 정보 수정 모달 */}
+      {customInfo && (
+        <RestaurantEditModal
+          isOpen={editModalOpen}
+          onClose={() => setEditModalOpen(false)}
+          restaurant={{
+            place_id: customInfo.place_id,
+            name: restaurant.이름,
+            address: customInfo.address || restaurant.주소 || "",
+            category: currentCategory,
+            feature: currentFeature,
+            phone_number: currentPhoneNumber || "",
+            opening_hours: openingHours || undefined,
+            google_map_url: customInfo.google_map_url,
+            coordinates: customInfo.coordinates,
+          }}
+          onSuccess={(updatedData: Partial<{ category: string; feature: string; phone_number: string; opening_hours: string[]; address: string; coordinates: { lat: number; lng: number } }>) => {
+            if (updatedData.category) {
+              setCurrentCategory(updatedData.category);
+              onCategoryChange?.(updatedData.category);
+            }
+            if (updatedData.feature !== undefined) {
+              setCurrentFeature(updatedData.feature || "");
+            }
+            if (updatedData.phone_number !== undefined) {
+              setCurrentPhoneNumber(updatedData.phone_number || null);
+              setPhoneNumber(updatedData.phone_number || null);
+            }
+            if (updatedData.opening_hours !== undefined) {
+              setOpeningHours(updatedData.opening_hours || null);
+            }
+            if (updatedData.address !== undefined && customInfo) {
+              setCustomInfo({
+                ...customInfo,
+                address: updatedData.address,
+                coordinates: updatedData.coordinates || customInfo.coordinates,
+              });
+            }
+            onUpdate?.(updatedData);
+          }}
         />
       )}
     </div>

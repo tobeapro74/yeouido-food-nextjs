@@ -3,32 +3,11 @@
 import { useState, useEffect, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Star, Building2 } from "lucide-react";
+import { Star, Building2, ChevronRight } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { PopularRestaurant } from "@/data/yeouido-food";
 import Image from "next/image";
 import { fetchSingleImage } from "@/hooks/useImageBatch";
-
-// 주소에서 층수 정보 추출
-function extractFloor(address: string): string | null {
-  const patterns = [
-    /(\d+)\s*층/,
-    /(\d+)F/i,
-    /(B\d+)/i,
-    /지하\s*(\d+)\s*층?/,
-  ];
-
-  for (const pattern of patterns) {
-    const match = address.match(pattern);
-    if (match) {
-      const value = match[1] || match[0];
-      if (/^B\d+$/i.test(value)) return value.toUpperCase();
-      if (address.includes("지하")) return `B${value}`;
-      if (/^\d+$/.test(value)) return `${value}층`;
-    }
-  }
-  return null;
-}
 
 const categoryIcons: Record<string, string> = {
   한식: "🍚",
@@ -62,10 +41,11 @@ interface RatingsMap {
 interface PopularRestaurantsProps {
   restaurants: PopularRestaurant[];
   onSelect: (restaurant: PopularRestaurant) => void;
+  onShowAll?: () => void;
   realTimeRatings?: RatingsMap;
 }
 
-export function PopularRestaurants({ restaurants, onSelect, realTimeRatings = {} }: PopularRestaurantsProps) {
+export function PopularRestaurants({ restaurants, onSelect, onShowAll, realTimeRatings = {} }: PopularRestaurantsProps) {
   const [imagesMap, setImagesMap] = useState<Map<string, ImageData>>(new Map());
   const [loadingSet, setLoadingSet] = useState<Set<string>>(new Set());
 
@@ -147,7 +127,18 @@ export function PopularRestaurants({ restaurants, onSelect, realTimeRatings = {}
 
   return (
     <section className="bg-card rounded-xl p-4 shadow-sm">
-      <h2 className="text-base font-semibold mb-3 text-foreground">인기 맛집</h2>
+      <div className="flex items-center justify-between mb-3">
+        <h2 className="text-base font-semibold text-foreground">인기 맛집</h2>
+        {onShowAll && (
+          <button
+            onClick={onShowAll}
+            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <span>전체보기</span>
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        )}
+      </div>
       <ScrollArea className="w-full">
         <div className="flex gap-3 pb-2">
           {activeRestaurants.map((restaurant, index) => {
@@ -164,10 +155,10 @@ export function PopularRestaurants({ restaurants, onSelect, realTimeRatings = {}
             return (
               <Card
                 key={`${restaurant.이름}-${index}`}
-                className="flex-shrink-0 w-44 cursor-pointer transition-all hover:scale-[1.05] hover:shadow-lg active:scale-[0.98] overflow-hidden shadow-sm"
+                className="flex-shrink-0 w-36 cursor-pointer transition-all hover:scale-[1.05] hover:shadow-lg active:scale-[0.98] overflow-hidden shadow-sm"
                 onClick={() => onSelect(restaurant)}
               >
-                <div className="h-28 relative overflow-hidden bg-muted">
+                <div className="h-20 relative overflow-hidden bg-muted">
                   {isLoading && (
                     <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted" />
                   )}
@@ -178,36 +169,31 @@ export function PopularRestaurants({ restaurants, onSelect, realTimeRatings = {}
                     className={`object-cover transition-opacity duration-300 ${
                       isLoading ? "opacity-0" : "opacity-100"
                     }`}
-                    sizes="176px"
+                    sizes="144px"
                     unoptimized
                   />
-                  <Badge className="absolute top-2 left-2 text-xs bg-black/60 text-white border-0">
+                  <Badge className="absolute top-1.5 left-1.5 text-[10px] bg-black/60 text-white border-0 py-0.5 px-1.5">
                     {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
                   </Badge>
                 </div>
-                <CardContent className="p-3">
-                  <h3 className="font-semibold text-sm truncate">{restaurant.이름}</h3>
-                  {displayRating && (
-                    <p className="text-xs flex items-center gap-1 mt-1">
-                      <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                      <span className="font-medium">{displayRating}</span>
-                      {displayReviewCount && (
-                        <span className="text-muted-foreground">
-                          ({displayReviewCount >= 1000 ? `${(displayReviewCount / 1000).toFixed(1)}K` : displayReviewCount})
-                        </span>
-                      )}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
-                    <MapPin className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">
-                      {restaurant.지역}
-                      {extractFloor(restaurant.주소) && ` · ${extractFloor(restaurant.주소)}`}
-                    </span>
-                  </p>
+                <CardContent className="p-2">
+                  <h3 className="font-semibold text-xs truncate">{restaurant.이름}</h3>
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {displayRating && (
+                      <span className="text-[10px] flex items-center gap-0.5">
+                        <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+                        <span className="font-medium">{displayRating}</span>
+                      </span>
+                    )}
+                    {displayReviewCount && (
+                      <span className="text-[10px] text-muted-foreground">
+                        ({displayReviewCount})
+                      </span>
+                    )}
+                  </div>
                   {buildingName && (
-                    <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
-                      <Building2 className="h-3 w-3 flex-shrink-0" />
+                    <p className="text-[10px] text-blue-600 flex items-center gap-0.5 mt-0.5 truncate">
+                      <Building2 className="h-2.5 w-2.5 flex-shrink-0" />
                       <span className="truncate">{buildingName}</span>
                     </p>
                   )}
