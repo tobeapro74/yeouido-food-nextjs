@@ -964,6 +964,91 @@ if img.mode == 'RGBA':
 
 ---
 
+### 5-9. 거부 사유 6: iPad에서 이메일 인증 오류 (Guideline 2.1)
+
+#### 문제 상황
+```
+Guideline 2.1.0 - Performance: App Completeness
+
+Tried to sign up and verify with email, but the app displayed an
+error message and prevented from signing up.
+
+Device: iPad Air 11-inch (M3)
+OS: iPadOS 26.2
+```
+
+#### 원인
+- iPad 가로 모드에서 회원가입 Dialog가 화면을 넘어 스크롤이 안 됨
+- Dialog 컴포넌트에 `max-height`와 `overflow-y: auto`가 없어서 내용이 잘림
+
+#### 해결 방법
+
+**1단계: Dialog 컴포넌트 수정**
+
+`src/components/ui/dialog.tsx` 파일에서 DialogContent 스타일 수정:
+
+```typescript
+// 수정 전
+className={cn(
+  "bg-background ... fixed ... sm:max-w-lg",
+  className
+)}
+
+// 수정 후 - max-h-[90vh] overflow-y-auto 추가
+className={cn(
+  "bg-background ... fixed ... sm:max-w-lg max-h-[90vh] overflow-y-auto",
+  className
+)}
+```
+
+**2단계: 에러 메시지 상세화 (디버깅용)**
+
+`src/components/auth-modal.tsx`에서 모든 catch 블록에 상세 에러 표시:
+
+```typescript
+// 수정 전
+} catch {
+  setError("인증 코드 발송 중 오류가 발생했습니다.");
+}
+
+// 수정 후
+} catch (err) {
+  console.error("Send verification error:", err);
+  setError(`인증 코드 발송 중 오류가 발생했습니다. ${err instanceof Error ? err.message : ""}`);
+}
+```
+
+**3단계: 빌드 및 배포**
+
+```bash
+npm run build
+git add .
+git commit -m "fix: iPad 회원가입 오류 수정"
+git push
+npx cap sync ios
+npx cap open ios
+# Xcode에서 Archive → App Store Connect 업로드
+```
+
+**4단계: 심사 재제출**
+
+App Store Connect에서:
+1. 새 빌드 선택 (예: 1.0 빌드 5)
+2. 심사용 메모에 수정 내용 추가:
+   ```
+   수정 사항:
+   - iPad 회원가입 화면 스크롤 문제 수정
+   - 이메일 인증 오류 처리 개선
+
+   테스트 계정:
+   - 이메일: test@test.com
+   - 비밀번호: test1234
+   - 인증코드: 123456 (@test.com, @example.com 이메일 자동 적용)
+   ```
+3. 심사 제출
+
+---
+
 ## 체크리스트
 
 ### 제출 전 최종 확인
@@ -1009,4 +1094,16 @@ if img.mode == 'RGBA':
 
 ---
 
-*마지막 업데이트: 2026년 1월*
+*마지막 업데이트: 2026년 1월 20일*
+
+---
+
+## 버전 히스토리
+
+| 버전 | 빌드 | 날짜 | 상태 | 비고 |
+|------|------|------|------|------|
+| 1.0 | 1 | 2026-01-15 | 거부 | iPad 스크린샷 누락 |
+| 1.0 | 2 | 2026-01-16 | 거부 | 회원탈퇴 기능 없음 |
+| 1.0 | 3 | 2026-01-17 | 거부 | 카메라 크래시 |
+| 1.0 | 4 | 2026-01-18 | 거부 | iPad 이메일 인증 오류, 테스트 계정 로그인 실패 |
+| 1.0 | 5 | 2026-01-20 | 심사중 | iPad Dialog 스크롤 수정, 에러 핸들링 개선 |
