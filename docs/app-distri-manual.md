@@ -45,6 +45,7 @@
 | `JWT_SECRET` | `yeouido-food-jwt-secret-key-2024` | JWT 암호화 키 |
 | `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | `AIzaSyAP4-MpGNRYObV4vbPMjXdWYSUCLoux1s4` | Google Places API (클라이언트용) |
 | `GOOGLE_PLACES_API_KEY` | `AIzaSyAP4-MpGNRYObV4vbPMjXdWYSUCLoux1s4` | Google Places API (서버용) |
+| `GOOGLE_PLACES_API_NEW_KEY` | `AIzaSyCIt74LXHiWsgscQvJICXMIYrXskEMKv9w` | Google Places API (New) 키 |
 | `CLOUDINARY_CLOUD_NAME` | `dedlpr1kx` | Cloudinary 클라우드 이름 |
 | `CLOUDINARY_API_KEY` | `694492762215652` | Cloudinary API 키 |
 | `CLOUDINARY_API_SECRET` | `1pT8JWxKkciZGDUuvtg4bftbBHw` | Cloudinary API 시크릿 |
