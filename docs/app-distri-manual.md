@@ -40,10 +40,10 @@
 
 ### 도메인 및 배포 URL
 
-| 구분 | URL |
-|------|-----|
-| Vercel 배포 URL | `https://yeouido-food.vercel.app` |
-| 커스텀 도메인 | `https://yeouido-food.com` (Namecheap) |
+| 구분 | URL | 비용 |
+|------|-----|------|
+| Vercel 배포 URL | `https://yeouido-food.vercel.app` | 무료 |
+| 커스텀 도메인 | `https://yeouido-food.com` (Namecheap) | 연 $10.98 |
 
 ### 주요 API 키 (Vercel 환경 변수용)
 
