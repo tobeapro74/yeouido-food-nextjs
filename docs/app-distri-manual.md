@@ -43,7 +43,7 @@
 | 구분 | URL |
 |------|-----|
 | Vercel 배포 URL | `https://yeouido-food.vercel.app` |
-| 커스텀 도메인 | (미등록) |
+| 커스텀 도메인 | `https://yeouido-food.com` (Namecheap) |
 
 ### 주요 API 키 (Vercel 환경 변수용)
 
