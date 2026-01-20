@@ -433,13 +433,15 @@ mongodb+srv://admin:<password>@cluster0.xxxxx.mongodb.net/yeouido_food?retryWrit
 | 이름                                  | 값                    | 설명                        |
 | ------------------------------------- | --------------------- | --------------------------- |
 | `MONGODB_URI`                       | `mongodb+srv://...` | MongoDB 연결 문자열         |
-| `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | `AIzaSy...`         | Google Places API 키        |
-| `GOOGLE_PLACES_API_KEY`             | `AIzaSy...`         | (서버용) 동일한 키          |
+| `JWT_SECRET`                        | `random-string`     | JWT 암호화 키 (아무 문자열) |
+| `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | `AIzaSy...`         | Google Places API 키 (클라이언트용) |
+| `GOOGLE_PLACES_API_KEY`             | `AIzaSy...`         | Google Places API 키 (서버용) |
+| `GOOGLE_PLACES_API_NEW_KEY`         | `AIzaSy...`         | Google Places API (New) 키  |
 | `CLOUDINARY_CLOUD_NAME`             | `your-cloud`        | Cloudinary 클라우드 이름    |
 | `CLOUDINARY_API_KEY`                | `12345...`          | Cloudinary API 키           |
 | `CLOUDINARY_API_SECRET`             | `abc123...`         | Cloudinary 시크릿           |
 | `RESEND_API_KEY`                    | `re_...`            | Resend API 키               |
-| `JWT_SECRET`                        | `random-string`     | JWT 암호화 키 (아무 문자열) |
+| `ADMIN_SECRET_KEY`                  | `your-admin-key`    | 관리자 인증 키              |
 
 #### Step 3: 변수 추가 방법
 
@@ -465,10 +467,11 @@ mongodb+srv://admin:<password>@cluster0.xxxxx.mongodb.net/yeouido_food?retryWrit
 ### ✅ 체크리스트
 
 - [ ] MONGODB_URI 설정 완료
-- [ ] GOOGLE_PLACES_API_KEY 설정 완료
+- [ ] JWT_SECRET 설정 완료
+- [ ] GOOGLE_PLACES_API_KEY 관련 3개 설정 완료
 - [ ] CLOUDINARY 관련 3개 설정 완료
 - [ ] RESEND_API_KEY 설정 완료
-- [ ] JWT_SECRET 설정 완료
+- [ ] ADMIN_SECRET_KEY 설정 완료
 - [ ] 재배포 완료
 
 ---
