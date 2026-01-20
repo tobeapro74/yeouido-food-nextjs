@@ -37,13 +37,19 @@
 | Resend | resend.com | `tobeapro@gmail.com` | - |
 | GitHub | github.com | `tobeapro74` | - |
 
-### 주요 API 키 (환경 변수용)
+### 주요 API 키 (Vercel 환경 변수용)
 
-| 키 이름 | 값 |
-|---------|-----|
-| `MONGODB_URI` | `mongodb+srv://tobeapro:1023@cluster0.ppfoisv.mongodb.net/yeouido_food` |
-| `GOOGLE_PLACES_API_KEY` | `AIzaSyAP4-MpGNRYObV4vbPMjXdWYSUCLoux1s4` |
-| `CLOUDINARY_API_KEY` | `694492762215652` |
+| 키 이름 | 값 | 설명 |
+|---------|-----|------|
+| `MONGODB_URI` | `mongodb+srv://tobeapro:1023@cluster0.ppfoisv.mongodb.net/yeouido_food?retryWrites=true&w=majority` | MongoDB 연결 문자열 |
+| `JWT_SECRET` | `yeouido-food-jwt-secret-key-2024` | JWT 암호화 키 |
+| `NEXT_PUBLIC_GOOGLE_PLACES_API_KEY` | `AIzaSyAP4-MpGNRYObV4vbPMjXdWYSUCLoux1s4` | Google Places API (클라이언트용) |
+| `GOOGLE_PLACES_API_KEY` | `AIzaSyAP4-MpGNRYObV4vbPMjXdWYSUCLoux1s4` | Google Places API (서버용) |
+| `CLOUDINARY_CLOUD_NAME` | `dedlpr1kx` | Cloudinary 클라우드 이름 |
+| `CLOUDINARY_API_KEY` | `694492762215652` | Cloudinary API 키 |
+| `CLOUDINARY_API_SECRET` | `1pT8JWxKkciZGDUuvtg4bftbBHw` | Cloudinary API 시크릿 |
+| `RESEND_API_KEY` | `re_g4nbDxSs_LpZMV4jf8T7AQShHsjrHtY5G` | Resend 이메일 API 키 |
+| `ADMIN_SECRET_KEY` | `yeouido-admin-2024` | 관리자 인증 키 |
 
 ### 테스트 계정 (앱 심사용)
 
