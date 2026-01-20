@@ -269,6 +269,23 @@ export default function Home() {
     setFortuneModalOpen(true);
   };
 
+  // 주소에서 빌딩명 추출
+  const extractBuildingFromAddress = (address: string): string | undefined => {
+    const buildingNames = [
+      "IFC몰", "더현대서울", "63빌딩", "파이낸스타워", "원센티널",
+      "브라이튼여의도", "더샵아일랜드파크", "CCMM빌딩", "홍우빌딩", "백상빌딩",
+      "아일렉스빌딩", "국회대로상가", "여의도백화점", "오륜빌딩", "정우빌딩",
+      "BNK금융타워", "씨티플라자", "유성빌딩", "미원빌딩", "신송빌딩",
+      "경호빌딩", "익스콘벤처타워", "율촌빌딩", "삼도오피스텔"
+    ];
+    for (const building of buildingNames) {
+      if (address.includes(building)) {
+        return building;
+      }
+    }
+    return undefined;
+  };
+
   // 커스텀 맛집을 Restaurant 형식으로 변환
   const convertCustomToRestaurant = (custom: {
     name: string;
@@ -285,7 +302,7 @@ export default function Home() {
     특징: custom.feature || "",
     지역: custom.region as Restaurant["지역"],
     주소: custom.address,
-    빌딩: custom.building,
+    빌딩: custom.building || extractBuildingFromAddress(custom.address),
   });
 
   // 커스텀 맛집 가져오기
