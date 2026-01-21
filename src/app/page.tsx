@@ -434,6 +434,8 @@ export default function Home() {
         setCurrentView("popular");
       } else if (previousView === "buildingRanking") {
         setCurrentView("buildingRanking");
+      } else if (previousView === "history") {
+        setCurrentView("history");
       } else {
         setCurrentView("list");
       }
