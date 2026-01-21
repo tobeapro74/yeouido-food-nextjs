@@ -538,11 +538,16 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
             if (updatedData.opening_hours !== undefined) {
               setOpeningHours(updatedData.opening_hours || null);
             }
-            if (updatedData.address !== undefined && customInfo) {
+            // customInfo 전체 업데이트
+            if (customInfo) {
               setCustomInfo({
                 ...customInfo,
-                address: updatedData.address,
-                coordinates: updatedData.coordinates || customInfo.coordinates,
+                ...(updatedData.category && { category: updatedData.category }),
+                ...(updatedData.feature !== undefined && { feature: updatedData.feature }),
+                ...(updatedData.phone_number !== undefined && { phone_number: updatedData.phone_number }),
+                ...(updatedData.opening_hours !== undefined && { opening_hours: updatedData.opening_hours }),
+                ...(updatedData.address !== undefined && { address: updatedData.address }),
+                ...(updatedData.coordinates && { coordinates: updatedData.coordinates }),
               });
             }
             onUpdate?.(updatedData);

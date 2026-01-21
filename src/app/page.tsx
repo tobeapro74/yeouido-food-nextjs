@@ -448,7 +448,15 @@ export default function Home() {
   if (currentView === "detail" && selectedRestaurant) {
     return (
       <>
-        <RestaurantDetail restaurant={selectedRestaurant} onBack={handleBack} user={user} />
+        <RestaurantDetail
+          restaurant={selectedRestaurant}
+          onBack={handleBack}
+          user={user}
+          onUpdate={(updatedData) => {
+            // 수정된 데이터를 selectedRestaurant에 반영
+            setSelectedRestaurant((prev) => prev ? { ...prev, ...updatedData } : prev);
+          }}
+        />
         <BottomNav activeTab={activeTab} onTabChange={handleTabChange} />
         <CategorySheet
           open={categorySheetOpen}
