@@ -211,16 +211,16 @@ export function RestaurantEditModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/50 flex items-start justify-center p-4 pt-20 pb-24 overflow-y-auto">
-      <div className="bg-background w-full max-w-md rounded-2xl overflow-hidden animate-scale-in max-h-[calc(100vh-120px)] flex flex-col">
+    <div className="fixed inset-0 z-[100] bg-black/50 flex items-center justify-center p-4">
+      <div className="bg-background w-full max-w-md rounded-2xl overflow-hidden animate-scale-in max-h-[80vh] flex flex-col">
         {/* 헤더 */}
-        <div className="bg-primary px-4 py-4 flex items-center justify-between flex-shrink-0">
+        <div className="bg-primary px-4 py-4 flex items-center justify-between flex-shrink-0 relative z-10">
           <h2 className="text-lg font-semibold text-primary-foreground">
             맛집 정보 수정
           </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded-full hover:bg-white/20 text-primary-foreground"
+            className="p-2 rounded-full hover:bg-white/20 text-primary-foreground min-w-[44px] min-h-[44px] flex items-center justify-center"
           >
             <X className="w-5 h-5" />
           </button>
@@ -336,18 +336,18 @@ export function RestaurantEditModal({
         </div>
 
         {/* 버튼 - 하단 고정 */}
-        <div className="flex gap-3 p-4 border-t bg-background flex-shrink-0">
+        <div className="flex gap-3 p-4 border-t bg-background flex-shrink-0 relative z-10">
           <Button
             variant="outline"
             onClick={onClose}
-            className="flex-1"
+            className="flex-1 min-h-[44px]"
             disabled={isLoading}
           >
             취소
           </Button>
           <Button
             onClick={handleSaveClick}
-            className="flex-1"
+            className="flex-1 min-h-[44px]"
             disabled={isLoading}
           >
             {isLoading ? (
