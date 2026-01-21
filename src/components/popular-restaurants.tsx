@@ -158,7 +158,7 @@ export function PopularRestaurants({ restaurants, onSelect, onShowAll, realTimeR
                 className="flex-shrink-0 w-36 cursor-pointer transition-all hover:scale-[1.05] hover:shadow-lg active:scale-[0.98] overflow-hidden shadow-sm"
                 onClick={() => onSelect(restaurant)}
               >
-                <div className="h-20 relative overflow-hidden bg-muted">
+                <div className="h-24 relative overflow-hidden bg-muted">
                   {isLoading && (
                     <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted" />
                   )}
@@ -176,7 +176,7 @@ export function PopularRestaurants({ restaurants, onSelect, onShowAll, realTimeR
                     {categoryIcons[restaurant.카테고리]} {restaurant.카테고리}
                   </Badge>
                 </div>
-                <CardContent className="p-2">
+                <CardContent className="p-1.5">
                   <h3 className="font-semibold text-xs truncate">{restaurant.이름}</h3>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {displayRating && (
