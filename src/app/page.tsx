@@ -398,6 +398,7 @@ export default function Home() {
     setBuildingRegion(building?.지역);
     setCurrentView("list");
     setActiveTab("building");
+    window.scrollTo(0, 0);
   };
 
   // 맛집 선택
