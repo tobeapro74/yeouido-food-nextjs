@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Star, X, Camera, Loader2, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { Camera as CapacitorCamera, CameraResultType, CameraSource } from "@capacitor/camera";
@@ -44,19 +43,28 @@ export function ReviewModal({
   const isNative = Capacitor.isNativePlatform();
   const isEditMode = !!editReview;
 
-  // 수정 모드일 때 기존 데이터로 폼 초기화
+  // 수정 모드일 때 기존 데이터로 폼 초기화 및 배경 스크롤 방지
   useEffect(() => {
-    if (isOpen && editReview) {
-      setRating(editReview.rating);
-      setFoodRating(editReview.food_rating || 0);
-      setServiceRating(editReview.service_rating || 0);
-      setAtmosphereRating(editReview.atmosphere_rating || 0);
-      setContent(editReview.content || "");
-      setPhotos(editReview.photos || []);
-      setMealType(editReview.meal_type || "");
-    } else if (isOpen && !editReview) {
-      resetForm();
+    if (isOpen) {
+      if (editReview) {
+        setRating(editReview.rating);
+        setFoodRating(editReview.food_rating || 0);
+        setServiceRating(editReview.service_rating || 0);
+        setAtmosphereRating(editReview.atmosphere_rating || 0);
+        setContent(editReview.content || "");
+        setPhotos(editReview.photos || []);
+        setMealType(editReview.meal_type || "");
+      } else {
+        resetForm();
+      }
+      // 배경 스크롤 방지
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [isOpen, editReview]);
 
   const resetForm = () => {
@@ -339,15 +347,39 @@ export function ReviewModal({
     </div>
   );
 
-  return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-lg">{isEditMode ? "리뷰 수정" : "리뷰 작성"}</DialogTitle>
-          <p className="text-sm text-muted-foreground">{restaurantName}</p>
-        </DialogHeader>
+  if (!isOpen) return null;
 
-        <div className="space-y-6 py-4">
+  return (
+    <div className="fixed inset-0 z-[100] flex items-end justify-center">
+      {/* 배경 오버레이 */}
+      <div
+        className="absolute inset-0 bg-black/50 animate-fade-in"
+        onClick={handleClose}
+      />
+
+      {/* 바텀시트 */}
+      <div className="relative bg-background w-full max-w-lg rounded-t-3xl overflow-hidden animate-slide-up max-h-[90vh] flex flex-col pb-[env(safe-area-inset-bottom)]">
+        {/* 드래그 핸들 */}
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-10 h-1 bg-muted-foreground/30 rounded-full" />
+        </div>
+
+        {/* 헤더 */}
+        <div className="px-5 pb-3 flex items-center justify-between border-b">
+          <div>
+            <h2 className="text-lg font-semibold">{isEditMode ? "리뷰 수정" : "리뷰 작성"}</h2>
+            <p className="text-sm text-muted-foreground">{restaurantName}</p>
+          </div>
+          <button
+            onClick={handleClose}
+            className="p-2 rounded-full hover:bg-muted transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* 내용 - 스크롤 가능 */}
+        <div className="p-5 space-y-5 overflow-y-auto flex-1">
           {/* 전체 별점 */}
           <div className="text-center">
             <p className="text-sm font-medium mb-2">전체 평점 *</p>
@@ -377,7 +409,7 @@ export function ReviewModal({
               value={content}
               onChange={(e) => setContent(e.target.value)}
               placeholder="음식, 서비스, 분위기 등에 대한 솔직한 리뷰를 남겨주세요."
-              className="w-full h-24 px-3 py-2 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary"
+              className="w-full h-24 px-3 py-2 border border-border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary text-sm"
             />
           </div>
 
@@ -483,12 +515,14 @@ export function ReviewModal({
               ))}
             </div>
           </div>
+        </div>
 
-          {/* 제출 버튼 */}
+        {/* 제출 버튼 - 하단 고정 */}
+        <div className="p-4 border-t bg-background flex-shrink-0">
           <Button
             onClick={handleSubmit}
             disabled={isSubmitting || rating === 0}
-            className="w-full"
+            className="w-full h-12"
           >
             {isSubmitting ? (
               <>
@@ -500,7 +534,30 @@ export function ReviewModal({
             )}
           </Button>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      <style jsx>{`
+        @keyframes fade-in {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.2s ease-out;
+        }
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out;
+        }
+      `}</style>
+    </div>
   );
 }

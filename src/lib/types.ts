@@ -66,6 +66,9 @@ export interface CustomRestaurant {
   registered_by_name: string;
   created_at: string;
   updated_at?: string;
+  building?: string;
+  deleted?: boolean;
+  deleted_at?: string;
 }
 
 // 이메일 인증 타입

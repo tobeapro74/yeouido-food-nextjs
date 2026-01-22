@@ -2353,3 +2353,24 @@ export function searchRestaurants(query: string): Restaurant[] {
     })
     .map((item) => item.restaurant);
 }
+
+// 정적 데이터용 place_id 생성
+export function generateStaticPlaceId(name: string, category: string): string {
+  return `static_${name}_${category}`;
+}
+
+// 정적 데이터에서 맛집 찾기
+export function findStaticRestaurant(placeId: string): { restaurant: Restaurant; category: string } | null {
+  const categories = ["한식", "양식", "중식", "일식", "동남아식"] as const;
+
+  for (const cat of categories) {
+    const restaurants = yeouidoFoodMap[cat] || [];
+    for (const r of restaurants) {
+      if (generateStaticPlaceId(r.이름, cat) === placeId) {
+        return { restaurant: r, category: cat };
+      }
+    }
+  }
+
+  return null;
+}

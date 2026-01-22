@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import jwt from "jsonwebtoken";
 import { getDb } from "@/lib/mongodb";
-import { JWTPayload, RestaurantHistory } from "@/lib/types";
+import { JWTPayload, RestaurantHistory, CustomRestaurant } from "@/lib/types";
+import { findStaticRestaurant } from "@/data/yeouido-food";
 
 const JWT_SECRET = process.env.JWT_SECRET || "yeouido-food-secret-key";
 
@@ -58,6 +59,44 @@ async function recordHistory(data: {
   }
 }
 
+// 정적 데이터를 DB로 마이그레이션
+async function migrateStaticToDb(
+  placeId: string,
+  decoded: JWTPayload
+): Promise<CustomRestaurant | null> {
+  const staticData = findStaticRestaurant(placeId);
+  if (!staticData) return null;
+
+  const { restaurant, category } = staticData;
+  const db = await getDb();
+  const collection = db.collection<CustomRestaurant>("custom_restaurants");
+
+  const newRestaurant: Omit<CustomRestaurant, "_id"> = {
+    place_id: placeId,
+    name: restaurant.이름,
+    address: restaurant.주소,
+    category: category as CustomRestaurant["category"],
+    feature: restaurant.특징 || "",
+    region: restaurant.지역,
+    coordinates: { lat: 37.5219, lng: 126.9245 }, // 여의도 기본 좌표
+    google_rating: restaurant.평점,
+    google_reviews_count: restaurant.리뷰수,
+    price_level: undefined,
+    phone_number: restaurant.전화번호,
+    opening_hours: restaurant.영업시간 ? [restaurant.영업시간] : undefined,
+    photos: undefined,
+    website: undefined,
+    google_map_url: undefined,
+    registered_by: decoded.userId,
+    registered_by_name: decoded.name,
+    created_at: new Date().toISOString(),
+    building: restaurant.빌딩,
+  };
+
+  await collection.insertOne(newRestaurant as CustomRestaurant);
+  return newRestaurant as CustomRestaurant;
+}
+
 // GET: 맛집 목록 조회 (인증 불필요)
 export async function GET(request: NextRequest) {
   try {
@@ -65,25 +104,40 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get("category");
     const region = searchParams.get("region");
     const registeredBy = searchParams.get("registeredBy");
+    const placeId = searchParams.get("place_id");
 
     const db = await getDb();
-    const collection = db.collection("custom_restaurants");
+    const collection = db.collection<CustomRestaurant>("custom_restaurants");
 
     // 필터 조건 구성
     const filter: Record<string, unknown> = {};
+    if (placeId) {
+      // place_id로 검색 (중복 확인용)
+      filter.place_id = placeId;
+    }
     if (category) filter.category = category;
     if (region) filter.region = region;
     if (registeredBy) filter.registered_by = parseInt(registeredBy);
+
+    // 삭제되지 않은 항목만 조회
+    filter.deleted = { $ne: true };
 
     const restaurants = await collection
       .find(filter)
       .sort({ created_at: -1 })
       .toArray();
 
+    // 삭제된 정적 데이터의 place_id 목록 조회 (정적 데이터 필터링용)
+    const deletedStaticIds = await collection
+      .find({ deleted: true, place_id: { $regex: /^static_/ } })
+      .project({ place_id: 1 })
+      .toArray();
+
     return NextResponse.json({
       success: true,
       count: restaurants.length,
       data: restaurants,
+      deletedStaticIds: deletedStaticIds.map((d) => d.place_id),
     });
   } catch (error) {
     console.error("Error fetching custom restaurants:", error);
@@ -222,7 +276,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH: 맛집 수정 (등록자 또는 관리자만)
+// PATCH: 맛집 카테고리 수정 (등록자 또는 관리자만)
 export async function PATCH(request: NextRequest) {
   try {
     // 인증 확인
@@ -255,10 +309,31 @@ export async function PATCH(request: NextRequest) {
     }
 
     const db = await getDb();
-    const collection = db.collection("custom_restaurants");
+    const collection = db.collection<CustomRestaurant>("custom_restaurants");
 
     // 맛집 조회
-    const restaurant = await collection.findOne({ place_id });
+    let restaurant: CustomRestaurant | null = await collection.findOne({ place_id }) as CustomRestaurant | null;
+
+    // DB에 없고 정적 데이터인 경우 자동 마이그레이션
+    if (!restaurant && place_id.startsWith("static_")) {
+      // 관리자 또는 박병철만 정적 데이터 수정 가능
+      if (!decoded.is_admin && decoded.name !== "박병철") {
+        return NextResponse.json(
+          { success: false, error: "정적 데이터 수정 권한이 없습니다." },
+          { status: 403 }
+        );
+      }
+
+      const migrated = await migrateStaticToDb(place_id, decoded);
+      if (!migrated) {
+        return NextResponse.json(
+          { success: false, error: "맛집을 찾을 수 없습니다." },
+          { status: 404 }
+        );
+      }
+      restaurant = migrated;
+    }
+
     if (!restaurant) {
       return NextResponse.json(
         { success: false, error: "맛집을 찾을 수 없습니다." },
@@ -266,8 +341,8 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    // 권한 확인 (등록자 또는 관리자)
-    if (restaurant.registered_by !== decoded.userId && !decoded.is_admin) {
+    // 권한 확인 (등록자 또는 관리자 또는 박병철만 수정 가능)
+    if (restaurant.registered_by !== decoded.userId && !decoded.is_admin && decoded.name !== "박병철") {
       return NextResponse.json(
         { success: false, error: "수정 권한이 없습니다." },
         { status: 403 }
@@ -278,14 +353,39 @@ export async function PATCH(request: NextRequest) {
     const updateFields: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
     };
-    if (category) updateFields.category = category;
-    if (feature !== undefined) updateFields.feature = feature;
-    if (region) updateFields.region = region;
+    const changedFields: string[] = [];
+
+    if (category && category !== restaurant.category) {
+      updateFields.category = category;
+      changedFields.push(`카테고리: ${restaurant.category} → ${category}`);
+    }
+    if (feature !== undefined) {
+      updateFields.feature = feature;
+      changedFields.push("특징");
+    }
+    if (region) {
+      updateFields.region = region;
+      changedFields.push("지역");
+    }
 
     await collection.updateOne(
       { place_id },
       { $set: updateFields }
     );
+
+    // 히스토리 기록 (변경된 필드가 있을 때만)
+    if (changedFields.length > 0) {
+      await recordHistory({
+        place_id,
+        name: restaurant.name,
+        address: restaurant.address,
+        category: category || restaurant.category,
+        registered_by: decoded.userId,
+        registered_by_name: decoded.name,
+        action: "update",
+        memo: changedFields.join(", "),
+      });
+    }
 
     return NextResponse.json({
       success: true,
@@ -341,10 +441,31 @@ export async function PUT(request: NextRequest) {
     }
 
     const db = await getDb();
-    const collection = db.collection("custom_restaurants");
+    const collection = db.collection<CustomRestaurant>("custom_restaurants");
 
     // 기존 맛집 찾기
-    const restaurant = await collection.findOne({ place_id: old_place_id });
+    let restaurant: CustomRestaurant | null = await collection.findOne({ place_id: old_place_id }) as CustomRestaurant | null;
+
+    // DB에 없고 정적 데이터인 경우 자동 마이그레이션
+    if (!restaurant && old_place_id.startsWith("static_")) {
+      // 관리자 또는 박병철만 정적 데이터 수정 가능
+      if (!decoded.is_admin && decoded.name !== "박병철") {
+        return NextResponse.json(
+          { success: false, error: "정적 데이터 수정 권한이 없습니다." },
+          { status: 403 }
+        );
+      }
+
+      const migrated = await migrateStaticToDb(old_place_id, decoded);
+      if (!migrated) {
+        return NextResponse.json(
+          { success: false, error: "맛집을 찾을 수 없습니다." },
+          { status: 404 }
+        );
+      }
+      restaurant = migrated;
+    }
+
     if (!restaurant) {
       return NextResponse.json(
         { success: false, error: "맛집을 찾을 수 없습니다." },
@@ -352,8 +473,8 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    // 권한 확인 (등록자 또는 관리자)
-    if (restaurant.registered_by !== decoded.userId && !decoded.is_admin) {
+    // 권한 확인 (등록자 또는 관리자 또는 박병철만 수정 가능)
+    if (restaurant.registered_by !== decoded.userId && !decoded.is_admin && decoded.name !== "박병철") {
       return NextResponse.json(
         { success: false, error: "수정 권한이 없습니다." },
         { status: 403 }
@@ -460,10 +581,31 @@ export async function DELETE(request: NextRequest) {
     }
 
     const db = await getDb();
-    const collection = db.collection("custom_restaurants");
+    const collection = db.collection<CustomRestaurant>("custom_restaurants");
 
     // 맛집 조회
-    const restaurant = await collection.findOne({ place_id });
+    let restaurant: CustomRestaurant | null = await collection.findOne({ place_id }) as CustomRestaurant | null;
+
+    // DB에 없고 정적 데이터인 경우 자동 마이그레이션 후 삭제
+    if (!restaurant && place_id.startsWith("static_")) {
+      // 관리자 또는 박병철만 정적 데이터 삭제 가능
+      if (!decoded.is_admin && decoded.name !== "박병철") {
+        return NextResponse.json(
+          { success: false, error: "정적 데이터 삭제 권한이 없습니다." },
+          { status: 403 }
+        );
+      }
+
+      const migrated = await migrateStaticToDb(place_id, decoded);
+      if (!migrated) {
+        return NextResponse.json(
+          { success: false, error: "맛집을 찾을 수 없습니다." },
+          { status: 404 }
+        );
+      }
+      restaurant = migrated;
+    }
+
     if (!restaurant) {
       return NextResponse.json(
         { success: false, error: "맛집을 찾을 수 없습니다." },
@@ -471,15 +613,24 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
-    // 권한 확인 (등록자 또는 관리자)
-    if (restaurant.registered_by !== decoded.userId && !decoded.is_admin) {
+    // 권한 확인 (등록자 또는 관리자 또는 박병철만 삭제 가능)
+    if (restaurant.registered_by !== decoded.userId && !decoded.is_admin && decoded.name !== "박병철") {
       return NextResponse.json(
         { success: false, error: "삭제 권한이 없습니다." },
         { status: 403 }
       );
     }
 
-    await collection.deleteOne({ place_id });
+    // 정적 데이터인 경우 실제 삭제 대신 deleted 플래그 설정 (Soft Delete)
+    if (place_id.startsWith("static_")) {
+      await collection.updateOne(
+        { place_id },
+        { $set: { deleted: true, deleted_at: new Date().toISOString() } }
+      );
+    } else {
+      // 일반 사용자 등록 맛집은 실제 삭제 (Hard Delete)
+      await collection.deleteOne({ place_id });
+    }
 
     // 히스토리 기록
     await recordHistory({

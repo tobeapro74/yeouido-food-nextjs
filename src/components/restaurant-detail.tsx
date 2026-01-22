@@ -5,7 +5,7 @@ import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Buildi
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Restaurant, getGoogleMapsLink, getGoogleSearchLink } from "@/data/yeouido-food";
+import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, generateStaticPlaceId } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
 import { CategoryEditModal } from "@/components/category-edit-modal";
@@ -96,16 +96,33 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
 
   // 커스텀 맛집 여부 확인
   const isCustomRestaurant = !!customInfo;
-  const canEdit = user && isCustomRestaurant && (user.is_admin || customInfo.registered_by === user.id);
+
+  // 정적 데이터용 place_id 생성 (DB에 없는 경우 사용)
+  const staticPlaceId = generateStaticPlaceId(restaurant.이름, restaurant.카테고리);
+
+  // 수정/삭제 권한 확인
+  // - DB에 있는 맛집: 등록자 본인 또는 관리자 또는 박병철
+  // - 정적 데이터 맛집: 관리자 또는 박병철만 가능
+  const canEdit = user && (
+    (isCustomRestaurant && customInfo && (user.is_admin || user.name === "박병철" || customInfo.registered_by === user.id)) ||
+    (!isCustomRestaurant && (user.is_admin || user.name === "박병철"))
+  );
 
   // 맛집 삭제 핸들러
   const handleDelete = async () => {
-    if (!customInfo?.place_id) return;
-    if (!confirm(`"${restaurant.이름}"을(를) 삭제하시겠습니까?\n\n삭제된 맛집은 복구할 수 없습니다.`)) return;
+    const placeIdToDelete = customInfo?.place_id || staticPlaceId;
+    if (!placeIdToDelete) return;
+
+    const isStaticData = placeIdToDelete.startsWith("static_");
+    const confirmMessage = isStaticData
+      ? `"${restaurant.이름}"을(를) 삭제하시겠습니까?\n\n정적 데이터는 삭제 표시만 되며 복구할 수 있습니다.`
+      : `"${restaurant.이름}"을(를) 삭제하시겠습니까?\n\n삭제된 맛집은 복구할 수 없습니다.`;
+
+    if (!confirm(confirmMessage)) return;
 
     setIsDeleting(true);
     try {
-      const res = await fetch(`/api/custom-restaurants?placeId=${encodeURIComponent(customInfo.place_id)}`, {
+      const res = await fetch(`/api/custom-restaurants?placeId=${encodeURIComponent(placeIdToDelete)}`, {
         method: "DELETE",
       });
       const data = await res.json();
@@ -494,11 +511,11 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       </div>
 
       {/* 카테고리 수정 모달 */}
-      {customInfo && (
+      {canEdit && (
         <CategoryEditModal
           isOpen={categoryModalOpen}
           onClose={() => setCategoryModalOpen(false)}
-          placeId={customInfo.place_id}
+          placeId={customInfo?.place_id || staticPlaceId}
           currentCategory={currentCategory}
           onSuccess={(newCategory) => {
             setCurrentCategory(newCategory);
@@ -508,20 +525,20 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       )}
 
       {/* 상세 정보 수정 모달 */}
-      {customInfo && (
+      {canEdit && (
         <RestaurantEditModal
           isOpen={editModalOpen}
           onClose={() => setEditModalOpen(false)}
           restaurant={{
-            place_id: customInfo.place_id,
+            place_id: customInfo?.place_id || staticPlaceId,
             name: restaurant.이름,
-            address: customInfo.address || restaurant.주소 || "",
+            address: customInfo?.address || restaurant.주소 || "",
             category: currentCategory,
             feature: currentFeature,
-            phone_number: currentPhoneNumber || "",
-            opening_hours: openingHours || undefined,
-            google_map_url: customInfo.google_map_url,
-            coordinates: customInfo.coordinates,
+            phone_number: currentPhoneNumber || restaurant.전화번호 || "",
+            opening_hours: openingHours || (restaurant.영업시간 ? [restaurant.영업시간] : undefined),
+            google_map_url: customInfo?.google_map_url,
+            coordinates: customInfo?.coordinates,
           }}
           onSuccess={(updatedData: Partial<{ category: string; feature: string; phone_number: string; opening_hours: string[]; address: string; coordinates: { lat: number; lng: number } }>) => {
             if (updatedData.category) {
@@ -538,7 +555,7 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
             if (updatedData.opening_hours !== undefined) {
               setOpeningHours(updatedData.opening_hours || null);
             }
-            // customInfo 전체 업데이트
+            // customInfo 전체 업데이트 (기존 DB 맛집인 경우)
             if (customInfo) {
               setCustomInfo({
                 ...customInfo,
@@ -549,6 +566,35 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
                 ...(updatedData.address !== undefined && { address: updatedData.address }),
                 ...(updatedData.coordinates && { coordinates: updatedData.coordinates }),
               });
+            } else {
+              // 정적 데이터가 DB로 마이그레이션된 경우 새로 조회
+              const fetchNewCustomInfo = async () => {
+                try {
+                  const res = await fetch(`/api/custom-restaurants?place_id=${encodeURIComponent(staticPlaceId)}`);
+                  const data = await res.json();
+                  if (data.success && data.data && data.data.length > 0) {
+                    const found = data.data[0];
+                    setCustomInfo({
+                      place_id: found.place_id,
+                      category: found.category,
+                      registered_by: found.registered_by,
+                      feature: found.feature,
+                      phone_number: found.phone_number,
+                      price_level: found.price_level,
+                      photos: found.photos,
+                      opening_hours: found.opening_hours,
+                      address: found.address,
+                      google_rating: found.google_rating,
+                      google_reviews_count: found.google_reviews_count,
+                      google_map_url: found.google_map_url,
+                      coordinates: found.coordinates,
+                    });
+                  }
+                } catch {
+                  // 무시
+                }
+              };
+              fetchNewCustomInfo();
             }
             onUpdate?.(updatedData);
           }}

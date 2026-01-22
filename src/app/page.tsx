@@ -36,6 +36,7 @@ import {
   getRestaurantsByRegion,
   getRestaurantsByBuilding,
   getPopularRestaurants,
+  generateStaticPlaceId,
 } from "@/data/yeouido-food";
 
 type View = "home" | "list" | "detail" | "recommend" | "fortune" | "history" | "popular" | "buildingRanking";
@@ -60,6 +61,9 @@ export default function Home() {
 
   // 커스텀 맛집 (빌딩 랭킹용)
   const [customRestaurantsForRanking, setCustomRestaurantsForRanking] = useState<Restaurant[]>([]);
+
+  // 삭제된 정적 데이터 ID 목록 (홈화면 필터링용)
+  const [deletedStaticIds, setDeletedStaticIds] = useState<string[]>([]);
 
   // 시트 상태
   const [categorySheetOpen, setCategorySheetOpen] = useState(false);
@@ -132,7 +136,7 @@ export default function Home() {
     checkAuth();
   }, []);
 
-  // 빌딩 랭킹용 커스텀 맛집 로드
+  // 빌딩 랭킹용 커스텀 맛집 및 삭제된 정적 데이터 ID 로드
   useEffect(() => {
     const loadCustomRestaurants = async () => {
       try {
@@ -140,6 +144,10 @@ export default function Home() {
         const data = await res.json();
         if (data.success && data.data) {
           setCustomRestaurantsForRanking(data.data.map(convertCustomToRestaurant));
+        }
+        // 삭제된 정적 데이터 ID 목록 저장
+        if (data.deletedStaticIds) {
+          setDeletedStaticIds(data.deletedStaticIds);
         }
       } catch (error) {
         console.error("Failed to load custom restaurants for ranking:", error);
@@ -171,12 +179,21 @@ export default function Home() {
   };
 
   // 인기 맛집 - 3시간마다 카테고리 로테이션, 하루마다 순위 로테이션
-  const [popularRestaurants, setPopularRestaurants] = useState(() => getPopularRestaurants());
+  const [rawPopularRestaurants, setRawPopularRestaurants] = useState(() => getPopularRestaurants());
+
+  // 삭제된 정적 데이터 제외한 인기 맛집
+  const popularRestaurants = useMemo(() => {
+    if (deletedStaticIds.length === 0) return rawPopularRestaurants;
+    return rawPopularRestaurants.filter((r) => {
+      const staticPlaceId = generateStaticPlaceId(r.이름, r.카테고리);
+      return !deletedStaticIds.includes(staticPlaceId);
+    });
+  }, [rawPopularRestaurants, deletedStaticIds]);
 
   // 3시간마다 인기맛집 갱신
   useEffect(() => {
     const updatePopular = () => {
-      setPopularRestaurants(getPopularRestaurants());
+      setRawPopularRestaurants(getPopularRestaurants());
     };
 
     // 다음 3시간 단위까지 남은 시간 계산
@@ -202,11 +219,22 @@ export default function Home() {
     return () => clearTimeout(timeout);
   }, []);
 
-  // 지역별 맛집 (실시간 평점 기준 정렬)
+  // 정적 데이터에서 삭제된 항목 필터링
+  const filterDeletedStatic = useCallback((restaurants: Restaurant[], delIds: string[], categoryId?: string): Restaurant[] => {
+    if (delIds.length === 0) return restaurants;
+    return restaurants.filter((r) => {
+      const staticPlaceId = generateStaticPlaceId(r.이름, categoryId || r.카테고리);
+      return !delIds.includes(staticPlaceId);
+    });
+  }, []);
+
+  // 지역별 맛집 (실시간 평점 기준 정렬, 삭제된 정적 데이터 제외)
   const regionRestaurants = useMemo(() => {
-    const restaurants = getRestaurantsByRegion(selectedRegion);
+    let restaurants = getRestaurantsByRegion(selectedRegion);
+    // 삭제된 정적 데이터 필터링
+    restaurants = filterDeletedStatic(restaurants, deletedStaticIds);
     return sortByRealTimeRating(restaurants, realTimeRatings).slice(0, 6);
-  }, [selectedRegion, realTimeRatings]);
+  }, [selectedRegion, realTimeRatings, deletedStaticIds, filterDeletedStatic]);
 
   // 운세 모달 상태 변경 핸들러
   const handleFortuneModalChange = (open: boolean) => {
@@ -308,17 +336,20 @@ export default function Home() {
     빌딩: custom.building || extractBuildingFromAddress(custom.address),
   });
 
-  // 커스텀 맛집 가져오기
-  const fetchCustomRestaurants = async (): Promise<Restaurant[]> => {
+  // 커스텀 맛집 가져오기 (삭제된 정적 데이터 ID 목록도 함께 반환)
+  const fetchCustomRestaurants = async (): Promise<{ restaurants: Restaurant[]; deletedStaticIds: string[] }> => {
     try {
       const res = await fetch("/api/custom-restaurants");
       const data = await res.json();
       if (data.success && data.data) {
-        return data.data.map(convertCustomToRestaurant);
+        return {
+          restaurants: data.data.map(convertCustomToRestaurant),
+          deletedStaticIds: data.deletedStaticIds || [],
+        };
       }
-      return [];
+      return { restaurants: [], deletedStaticIds: [] };
     } catch {
-      return [];
+      return { restaurants: [], deletedStaticIds: [] };
     }
   };
 
@@ -328,10 +359,14 @@ export default function Home() {
     setListTitle(categoryId === "전체" ? "전체 맛집" : `${category?.name || categoryId} 맛집`);
 
     // 기존 데이터
-    const staticRestaurants = getRestaurantsByCategory(categoryId);
+    let staticRestaurants = getRestaurantsByCategory(categoryId);
 
     // 커스텀 맛집 가져오기
-    const customRestaurants = await fetchCustomRestaurants();
+    const { restaurants: customRestaurants, deletedStaticIds } = await fetchCustomRestaurants();
+
+    // 삭제된 정적 데이터 필터링
+    staticRestaurants = filterDeletedStatic(staticRestaurants, deletedStaticIds, categoryId === "전체" ? undefined : categoryId);
+
     const filteredCustom = categoryId === "전체"
       ? customRestaurants
       : customRestaurants.filter((r) => r.카테고리 === categoryId);
@@ -354,10 +389,14 @@ export default function Home() {
     setListTitle(regionId === "전체" ? "전체 지역" : `${region?.name || regionId} 맛집`);
 
     // 기존 데이터
-    const staticRestaurants = getRestaurantsByRegion(regionId);
+    let staticRestaurants = getRestaurantsByRegion(regionId);
 
     // 커스텀 맛집 가져오기
-    const customRestaurants = await fetchCustomRestaurants();
+    const { restaurants: customRestaurants, deletedStaticIds } = await fetchCustomRestaurants();
+
+    // 삭제된 정적 데이터 필터링
+    staticRestaurants = filterDeletedStatic(staticRestaurants, deletedStaticIds);
+
     const filteredCustom = regionId === "전체"
       ? customRestaurants
       : customRestaurants.filter((r) => r.지역 === regionId);
@@ -380,10 +419,14 @@ export default function Home() {
     setListTitle(buildingId === "전체" ? "전체 빌딩" : `${building?.name || buildingId} 맛집`);
 
     // 기존 데이터
-    const staticRestaurants = getRestaurantsByBuilding(buildingId);
+    let staticRestaurants = getRestaurantsByBuilding(buildingId);
 
     // 커스텀 맛집 가져오기
-    const customRestaurants = await fetchCustomRestaurants();
+    const { restaurants: customRestaurants, deletedStaticIds } = await fetchCustomRestaurants();
+
+    // 삭제된 정적 데이터 필터링
+    staticRestaurants = filterDeletedStatic(staticRestaurants, deletedStaticIds);
+
     const filteredCustom = buildingId === "전체"
       ? customRestaurants
       : customRestaurants.filter((r) => r.빌딩 === building?.name);
