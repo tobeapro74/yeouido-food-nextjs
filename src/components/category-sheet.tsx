@@ -45,7 +45,7 @@ export function CategorySheet({
             <button
               key={option.id}
               onClick={() => handleSelect(option.id)}
-              className="flex flex-col items-center justify-center p-4 rounded-xl bg-muted hover:bg-muted/80 transition-colors"
+              className="flex flex-col items-center justify-center p-4 rounded-xl bg-muted hover:bg-muted/80 transition-all active:scale-95"
             >
               <span className="text-2xl mb-2">{option.icon}</span>
               <span className="text-sm font-medium">{option.name}</span>

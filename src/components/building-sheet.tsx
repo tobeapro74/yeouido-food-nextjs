@@ -76,7 +76,7 @@ export function BuildingSheet({
           {allOption && (
             <button
               onClick={() => handleSelect(allOption.id)}
-              className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-colors border border-primary/20"
+              className="w-full flex items-center justify-center gap-2 p-2.5 rounded-lg bg-primary/10 hover:bg-primary/20 transition-all active:scale-[0.98] border border-primary/20"
             >
               <span className="text-lg">{allOption.icon}</span>
               <span className="font-medium text-primary text-sm">전체 빌딩 보기</span>
@@ -126,7 +126,7 @@ export function BuildingSheet({
               <button
                 key={building.id}
                 onClick={() => handleSelect(building.id)}
-                className="flex items-center gap-2 p-3 rounded-lg hover:bg-muted transition-colors text-left border border-border/50"
+                className="flex items-center gap-2 p-3 rounded-lg hover:bg-muted transition-all active:scale-95 text-left border border-border/50"
               >
                 <span className="text-lg">{building.icon}</span>
                 <span className="text-sm truncate">{building.name}</span>
