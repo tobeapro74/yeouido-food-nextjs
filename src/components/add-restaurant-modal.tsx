@@ -260,7 +260,7 @@ export function AddRestaurantModal({
                   key={result.place_id}
                   onClick={() => handleSelectPlace(result.place_id)}
                   disabled={isLoadingDetails}
-                  className="w-full p-3 text-left rounded-lg border hover:bg-accent transition-colors disabled:opacity-50"
+                  className="w-full p-3 text-left rounded-lg border hover:bg-accent transition-all active:scale-[0.98] disabled:opacity-50"
                 >
                   <p className="font-medium">{result.name}</p>
                   <p className="text-sm text-muted-foreground truncate">
