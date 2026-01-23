@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { v2 as cloudinary } from "cloudinary";
+import { isValidSessionToken, createSessionToken } from "@/lib/google-session-token";
 
 const GOOGLE_PLACES_API_KEY = process.env.GOOGLE_PLACES_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
@@ -33,16 +34,16 @@ interface PlaceDetails {
     height: number;
     width: number;
   }>;
-  website?: string;
-  url?: string; // Google Maps URL
   business_status?: string;
+  // 비용 최적화: website, url 필드 제거 (미사용)
 }
 
 // POST: 장소 상세 정보 조회 (place_id로)
+// sessionToken을 사용하면 Autocomplete에서 받은 placeId로 Details 조회 시 한 세션으로 묶여 비용 절감
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { placeId } = body;
+    const { placeId, sessionToken: clientToken } = body;
 
     if (!placeId) {
       return NextResponse.json(
@@ -58,7 +59,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Google Place Details API 호출
+    // sessionToken 처리: Autocomplete에서 받은 토큰 사용 또는 새로 생성
+    const sessionToken = isValidSessionToken(clientToken) ? clientToken : createSessionToken();
+
+    // Google Place Details API 호출 (sessionToken 포함, fields 최적화)
+    // 비용 절감: 실제 사용하는 필드만 요청 (website, url 제거 - 미사용)
     const fields = [
       "place_id",
       "name",
@@ -70,12 +75,10 @@ export async function POST(request: NextRequest) {
       "formatted_phone_number",
       "opening_hours",
       "photos",
-      "website",
-      "url",
       "business_status",
     ].join(",");
 
-    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&language=ko&key=${GOOGLE_PLACES_API_KEY}`;
+    const detailsUrl = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${placeId}&fields=${fields}&sessiontoken=${sessionToken}&language=ko&key=${GOOGLE_PLACES_API_KEY}`;
 
     const response = await fetch(detailsUrl);
     const data = await response.json();
@@ -176,8 +179,6 @@ export async function POST(request: NextRequest) {
         openingHours: result.opening_hours?.weekday_text || [],
         isOpen: result.opening_hours?.open_now,
         photos: photoUrls,
-        website: result.website || null,
-        googleMapUrl: result.url || null,
         businessStatus: result.business_status,
         region,
       },
