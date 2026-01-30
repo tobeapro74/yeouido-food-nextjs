@@ -14,7 +14,7 @@ interface RatingsMap {
   };
 }
 
-type RegionFilter = "전체" | "서여의도" | "동여의도";
+type RegionFilter = "전체" | "동여의도" | "서여의도";
 
 interface RestaurantListProps {
   title: string;
@@ -78,7 +78,7 @@ export function RestaurantList({
         {/* 지역 필터 탭 - 빌딩이 아닌 경우만 표시 */}
         {!isBuilding && (
           <div className="flex border-t border-border">
-            {(["전체", "서여의도", "동여의도"] as RegionFilter[]).map((region) => (
+            {(["전체", "동여의도", "서여의도"] as RegionFilter[]).map((region) => (
               <button
                 key={region}
                 onClick={() => setRegionFilter(region)}

@@ -51,7 +51,7 @@ interface PlaceDetails {
   website: string | null;
   googleMapUrl: string | null;
   businessStatus: string;
-  region: "서여의도" | "동여의도";
+  region: "동여의도" | "서여의도";
 }
 
 type Step = "search" | "details" | "confirm";

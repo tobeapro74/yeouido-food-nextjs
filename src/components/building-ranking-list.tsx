@@ -13,7 +13,7 @@ interface BuildingRankingListProps {
   customRestaurants?: Restaurant[];
 }
 
-type RegionFilter = "전체" | "서여의도" | "동여의도";
+type RegionFilter = "전체" | "동여의도" | "서여의도";
 
 const rankEmojis = ["🥇", "🥈", "🥉"];
 
@@ -81,7 +81,7 @@ export function BuildingRankingList({ onBack, onSelectBuilding, customRestaurant
 
         {/* 지역 필터 탭 */}
         <div className="flex border-t border-border">
-          {(["전체", "서여의도", "동여의도"] as RegionFilter[]).map((region) => (
+          {(["전체", "동여의도", "서여의도"] as RegionFilter[]).map((region) => (
             <button
               key={region}
               onClick={() => setRegionFilter(region)}

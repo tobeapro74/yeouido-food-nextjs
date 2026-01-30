@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
     }
 
     // 지역 검증
-    const validRegions = ["서여의도", "동여의도"];
+    const validRegions = ["동여의도", "서여의도"];
     if (!validRegions.includes(region)) {
       return NextResponse.json(
         { success: false, error: "올바른 지역을 선택해주세요." },

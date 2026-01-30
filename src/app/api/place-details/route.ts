@@ -135,7 +135,7 @@ export async function POST(request: NextRequest) {
 
     // 지역 판단 (주소 기반)
     const address = result.formatted_address || "";
-    let region: "서여의도" | "동여의도" = "동여의도"; // 기본값
+    let region: "동여의도" | "서여의도" = "동여의도"; // 기본값
 
     // 서여의도 키워드
     const westKeywords = ["국회", "의사당", "여의대로", "은행로"];

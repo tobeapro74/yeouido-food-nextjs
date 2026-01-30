@@ -49,7 +49,7 @@ export interface CustomRestaurant {
   address: string;
   category: "한식" | "양식" | "중식" | "일식" | "동남아식";
   feature?: string;
-  region: "서여의도" | "동여의도";
+  region: "동여의도" | "서여의도";
   coordinates: {
     lat: number;
     lng: number;

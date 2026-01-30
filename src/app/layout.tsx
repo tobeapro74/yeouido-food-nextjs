@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "여의도 한끼",
-  description: "여의도 직장인 점심 가이드 - 서여의도, 동여의도 맛집 추천",
+  description: "여의도 직장인 점심 가이드 - 동여의도, 서여의도 맛집 추천",
   manifest: "/manifest.json",
   icons: {
     icon: [

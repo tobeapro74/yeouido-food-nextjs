@@ -3,7 +3,7 @@ export interface Restaurant {
   이름: string;
   주소: string;
   특징: string;
-  지역: "서여의도" | "동여의도";
+  지역: "동여의도" | "서여의도";
   카테고리: "한식" | "양식" | "중식" | "일식" | "동남아식";
   빌딩?: string;
   평점?: number;
