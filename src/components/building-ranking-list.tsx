@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useState, useMemo } from "react";
 import { ChevronLeft, Star, ChefHat, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,8 @@ interface BuildingRankingListProps {
   onSelectBuilding: (buildingId: string) => void;
   customRestaurants?: Restaurant[];
 }
+
+type RegionFilter = "전체" | "서여의도" | "동여의도";
 
 const rankEmojis = ["🥇", "🥈", "🥉"];
 
@@ -48,7 +50,15 @@ const getIconForBuilding = (name: string): string => {
 };
 
 export function BuildingRankingList({ onBack, onSelectBuilding, customRestaurants = [] }: BuildingRankingListProps) {
+  const [regionFilter, setRegionFilter] = useState<RegionFilter>("전체");
+
   const allBuildings = useMemo(() => getBuildingRankings(customRestaurants), [customRestaurants]);
+
+  // 지역 필터링
+  const filteredBuildings = useMemo(() => {
+    if (regionFilter === "전체") return allBuildings;
+    return allBuildings.filter((b) => b.지역 === regionFilter);
+  }, [allBuildings, regionFilter]);
 
   return (
     <div className="min-h-screen pb-20">
@@ -65,15 +75,32 @@ export function BuildingRankingList({ onBack, onSelectBuilding, customRestaurant
           <Trophy className="h-5 w-5 text-amber-500 mr-2" />
           <h1 className="text-lg font-semibold">오늘의 맛빌딩</h1>
           <span className="ml-2 text-sm text-muted-foreground">
-            ({allBuildings.length})
+            ({filteredBuildings.length})
           </span>
+        </div>
+
+        {/* 지역 필터 탭 */}
+        <div className="flex border-t border-border">
+          {(["전체", "서여의도", "동여의도"] as RegionFilter[]).map((region) => (
+            <button
+              key={region}
+              onClick={() => setRegionFilter(region)}
+              className={`flex-1 py-2.5 text-sm font-medium transition-colors ${
+                regionFilter === region
+                  ? "text-primary border-b-2 border-primary bg-primary/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+              }`}
+            >
+              {region}
+            </button>
+          ))}
         </div>
       </header>
 
       {/* 목록 */}
       <div className="p-4 space-y-3">
-        {allBuildings.length > 0 ? (
-          allBuildings.map((building, index) => (
+        {filteredBuildings.length > 0 ? (
+          filteredBuildings.map((building, index) => (
             <Card
               key={building.buildingId}
               className="cursor-pointer transition-all hover:shadow-md active:scale-[0.99]"
@@ -81,27 +108,33 @@ export function BuildingRankingList({ onBack, onSelectBuilding, customRestaurant
             >
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
-                  {/* 순위 */}
+                  {/* 순위 (전체 탭에서만 표시) */}
                   <div className="flex-shrink-0 w-12 text-center">
-                    {index < 3 ? (
+                    {regionFilter === "전체" && index < 3 ? (
                       <span className="text-3xl">{rankEmojis[index]}</span>
-                    ) : (
+                    ) : regionFilter === "전체" ? (
                       <span className="text-xl font-bold text-muted-foreground">{index + 1}위</span>
+                    ) : (
+                      <span className="text-3xl">{getIconForBuilding(building.buildingName)}</span>
                     )}
                   </div>
 
-                  {/* 빌딩 아이콘 */}
-                  <div className="flex-shrink-0 text-3xl">
-                    {getIconForBuilding(building.buildingName)}
-                  </div>
+                  {/* 빌딩 아이콘 (전체 탭에서만 표시) */}
+                  {regionFilter === "전체" && (
+                    <div className="flex-shrink-0 text-3xl">
+                      {getIconForBuilding(building.buildingName)}
+                    </div>
+                  )}
 
                   {/* 빌딩 정보 */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <h3 className="font-semibold truncate">{building.buildingName}</h3>
-                      <Badge variant="outline" className="text-xs flex-shrink-0">
-                        {building.지역}
-                      </Badge>
+                      {regionFilter === "전체" && (
+                        <Badge variant="outline" className="text-xs flex-shrink-0">
+                          {building.지역}
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex items-center gap-3 mt-1">
                       <div className="flex items-center gap-1">
@@ -125,7 +158,9 @@ export function BuildingRankingList({ onBack, onSelectBuilding, customRestaurant
           ))
         ) : (
           <div className="text-center py-12 text-muted-foreground">
-            등록된 빌딩이 없습니다.
+            {regionFilter === "전체"
+              ? "등록된 빌딩이 없습니다."
+              : `${regionFilter}에 등록된 맛빌딩이 없습니다.`}
           </div>
         )}
       </div>
