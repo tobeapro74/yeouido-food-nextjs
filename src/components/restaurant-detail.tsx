@@ -303,8 +303,8 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
 
   return (
     <div className="min-h-screen pb-20 bg-background">
-      {/* 이미지 영역 */}
-      <div className="relative h-64 bg-muted">
+      {/* 이미지 영역 - iPad에서 더 큰 높이 */}
+      <div className="relative h-64 md:h-80 lg:h-96 bg-muted">
         {isLoading && (
           <div className="absolute inset-0 animate-pulse bg-gradient-to-r from-muted via-muted/50 to-muted" />
         )}
