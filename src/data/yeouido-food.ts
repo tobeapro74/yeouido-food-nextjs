@@ -2087,8 +2087,8 @@ export const categories = [
 // 동여의도: 여의동로, 여의나루로, 여의대로, 국제금융로, 여의대방로, 의사당대로
 export const regions = [
   { id: "전체", name: "전체", icon: "📍" },
-  { id: "서여의도", name: "서여의도", icon: "🏛️", description: "국회대로 62~76길, 여의서로, 은행로" },
   { id: "동여의도", name: "동여의도", icon: "🏙️", description: "여의대로, 국제금융로, 여의나루로 (IFC, 더현대)" },
+  { id: "서여의도", name: "서여의도", icon: "🏛️", description: "국회대로 62~76길, 여의서로, 은행로" },
 ];
 
 // 빌딩 정보 (정적 데이터에 실제 존재하는 빌딩만 포함)
