@@ -2187,13 +2187,13 @@ export interface PopularRestaurant extends Restaurant {
 }
 
 // 인기맛집 로테이션 로직
-// - 카테고리: 3시간마다 로테이션 (5개 카테고리 중 3개 표시)
+// - 카테고리: 5개 카테고리 모두 표시 (순서는 3시간마다 로테이션)
 // - 순위: 하루마다 로테이션 (1등→2등→3등)
 export function getPopularRestaurants(): PopularRestaurant[] {
   const cats = ["한식", "양식", "중식", "일식", "동남아식"] as const;
   const now = new Date();
 
-  // 카테고리 로테이션: 3시간마다 (0-2시: 0, 3-5시: 1, ...)
+  // 카테고리 순서 로테이션: 3시간마다 (0-2시: 0, 3-5시: 1, ...)
   const hourSlot = Math.floor(now.getHours() / 3); // 0~7
   const categoryOffset = hourSlot % cats.length;
 
@@ -2201,12 +2201,8 @@ export function getPopularRestaurants(): PopularRestaurant[] {
   const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / (1000 * 60 * 60 * 24));
   const rankOffset = dayOfYear % 3;
 
-  // 3개 카테고리 선택 (로테이션된 순서로)
-  const selectedCategories = [
-    cats[(categoryOffset + 0) % cats.length],
-    cats[(categoryOffset + 1) % cats.length],
-    cats[(categoryOffset + 2) % cats.length],
-  ];
+  // 5개 카테고리 모두 선택 (로테이션된 순서로)
+  const selectedCategories = cats.map((_, i) => cats[(categoryOffset + i) % cats.length]);
 
   const topByCategory: PopularRestaurant[] = [];
 

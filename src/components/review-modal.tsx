@@ -142,8 +142,9 @@ export function ReviewModal({
         width: 800,
         height: 800,
         correctOrientation: true,
-        // iOS에서 카메라 사용 불가 시 자동으로 갤러리로 전환하지 않음
         saveToGallery: false,
+        // iPad에서 카메라/갤러리 UI가 popover로 표시되어야 함
+        presentationStyle: 'popover',
       });
 
       if (image.dataUrl) {
