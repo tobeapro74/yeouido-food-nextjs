@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Star, X, Camera, Loader2, ImageIcon } from "lucide-react";
+import { useState, useRef, useEffect, useCallback } from "react";
+import { Star, X, Camera, Loader2, ImageIcon, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
@@ -38,10 +38,39 @@ export function ReviewModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [showPhotoOptions, setShowPhotoOptions] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [useWebFallback, setUseWebFallback] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const isNative = Capacitor.isNativePlatform();
   const isEditMode = !!editReview;
+
+  // 네이티브 플러그인 사용 가능 여부 체크
+  const checkNativeAvailable = useCallback(async () => {
+    if (!Capacitor.isNativePlatform()) {
+      return false;
+    }
+    try {
+      // 플러그인이 제대로 로드되었는지 확인
+      await CapacitorCamera.checkPermissions();
+      return true;
+    } catch (error) {
+      console.log("Native camera plugin not available, using web fallback", error);
+      return false;
+    }
+  }, []);
+
+  // 컴포넌트 마운트 시 네이티브 플러그인 사용 가능 여부 체크
+  useEffect(() => {
+    if (Capacitor.isNativePlatform() && !useWebFallback) {
+      checkNativeAvailable().then((available) => {
+        if (!available) {
+          setUseWebFallback(true);
+        }
+      });
+    }
+  }, [checkNativeAvailable, useWebFallback]);
+
+  const isNative = Capacitor.isNativePlatform() && !useWebFallback;
 
   // 수정 모드일 때 기존 데이터로 폼 초기화 및 배경 스크롤 방지
   useEffect(() => {
@@ -82,6 +111,12 @@ export function ReviewModal({
     onClose();
   };
 
+  // 에러 메시지 표시 (3초 후 자동 숨김)
+  const showError = useCallback((message: string) => {
+    setErrorMessage(message);
+    setTimeout(() => setErrorMessage(null), 3000);
+  }, []);
+
   // 카메라/갤러리 권한 확인 함수
   const checkCameraPermissions = async (source: CameraSource): Promise<boolean> => {
     try {
@@ -89,25 +124,25 @@ export function ReviewModal({
 
       if (source === CameraSource.Camera) {
         if (permissions.camera === 'denied') {
-          alert("카메라 권한이 거부되었습니다. 설정에서 카메라 권한을 허용해주세요.");
+          showError("카메라 권한이 필요합니다. 설정에서 허용해주세요.");
           return false;
         }
         if (permissions.camera === 'prompt' || permissions.camera === 'prompt-with-rationale') {
           const requested = await CapacitorCamera.requestPermissions({ permissions: ['camera'] });
           if (requested.camera === 'denied') {
-            alert("카메라 권한이 필요합니다. 설정에서 권한을 허용해주세요.");
+            showError("카메라 권한이 필요합니다. 설정에서 허용해주세요.");
             return false;
           }
         }
       } else if (source === CameraSource.Photos) {
         if (permissions.photos === 'denied') {
-          alert("사진 라이브러리 권한이 거부되었습니다. 설정에서 권한을 허용해주세요.");
+          showError("사진 라이브러리 권한이 필요합니다. 설정에서 허용해주세요.");
           return false;
         }
         if (permissions.photos === 'prompt' || permissions.photos === 'prompt-with-rationale') {
           const requested = await CapacitorCamera.requestPermissions({ permissions: ['photos'] });
           if (requested.photos === 'denied') {
-            alert("사진 라이브러리 권한이 필요합니다. 설정에서 권한을 허용해주세요.");
+            showError("사진 라이브러리 권한이 필요합니다. 설정에서 허용해주세요.");
             return false;
           }
         }
@@ -115,7 +150,9 @@ export function ReviewModal({
       return true;
     } catch (error) {
       console.error("Permission check error:", error);
-      return true; // 권한 체크 실패 시 일단 진행 (getPhoto에서 처리)
+      // 플러그인 에러 시 웹 폴백으로 전환
+      setUseWebFallback(true);
+      return false;
     }
   };
 
@@ -159,27 +196,38 @@ export function ReviewModal({
         if (data.success && data.url) {
           setPhotos((prev) => [...prev, data.url]);
         } else {
-          alert("사진 업로드에 실패했습니다.");
+          showError("사진 업로드에 실패했습니다. 다시 시도해주세요.");
         }
       }
     } catch (error: unknown) {
       // 사용자가 취소한 경우는 에러 메시지 표시하지 않음
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errMsg = error instanceof Error ? error.message : String(error);
       const isCancelled =
-        errorMessage.toLowerCase().includes("cancel") ||
-        errorMessage.toLowerCase().includes("user denied") ||
-        errorMessage.toLowerCase().includes("no image picked") ||
-        errorMessage.includes("User cancelled");
+        errMsg.toLowerCase().includes("cancel") ||
+        errMsg.toLowerCase().includes("user denied") ||
+        errMsg.toLowerCase().includes("no image picked") ||
+        errMsg.includes("User cancelled");
 
       if (!isCancelled) {
         console.error("Camera error:", error);
-        // 카메라 사용 불가능한 경우 (예: 시뮬레이터)
-        if (errorMessage.includes("Camera not available") ||
-            errorMessage.includes("no camera") ||
-            errorMessage.includes("unavailable")) {
-          alert("이 기기에서는 카메라를 사용할 수 없습니다. 갤러리에서 사진을 선택해주세요.");
+        // 플러그인 에러 또는 카메라 사용 불가 시 웹 폴백으로 전환
+        if (errMsg.includes("Camera not available") ||
+            errMsg.includes("no camera") ||
+            errMsg.includes("unavailable")) {
+          // 카메라 사용 불가 시 갤러리만 안내
+          showError("카메라를 사용할 수 없습니다. 갤러리를 이용해주세요.");
+        } else if (errMsg.includes("not implemented") ||
+                   errMsg.includes("plugin") ||
+                   errMsg.includes("undefined") ||
+                   errMsg.includes("null")) {
+          // 플러그인 에러 시 웹 폴백으로 자동 전환
+          console.log("Switching to web fallback due to plugin error");
+          setUseWebFallback(true);
+          // 웹 파일 선택기 자동 트리거
+          setTimeout(() => fileInputRef.current?.click(), 100);
         } else {
-          alert("사진을 가져오는 중 오류가 발생했습니다. 다시 시도해주세요.");
+          // 기타 에러 시 웹 폴백으로 전환
+          setUseWebFallback(true);
         }
       }
     } finally {
@@ -417,6 +465,13 @@ export function ReviewModal({
           {/* 사진 업로드 */}
           <div>
             <p className="text-sm font-medium mb-2">사진 첨부 (최대 4장)</p>
+            {/* 에러 메시지 표시 */}
+            {errorMessage && (
+              <div className="flex items-center gap-2 mb-2 p-2 bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 rounded-lg text-sm">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
             <div className="flex gap-2 flex-wrap">
               {photos.map((photo, index) => (
                 <div key={index} className="relative w-20 h-20">
