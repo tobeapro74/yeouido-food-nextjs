@@ -616,6 +616,16 @@ ios/
 
 ## UI/UX 패턴
 
+### 디자인 시스템 (2026.02.07 적용)
+- **폰트**: Pretendard (한글) + Geist Sans (라틴) - CDN dynamic subset
+- **컬러**: OKLCH 기반 CSS 변수 시스템, 레드 브랜드
+- **토스트**: sonner 비블로킹 알림 (`toast.success/error/warning/info`)
+- **터치 영역**: NDS 40px 최소 기준 (버튼 기본 40px, lg 44px)
+- **애니메이션**: globals.css 공통 정의 (`animate-fade-in`, `animate-slide-up`, `animate-scale-in`, `animate-fade-in-up`)
+- **빈 화면**: EmptyState 공통 컴포넌트 (`src/components/ui/empty-state.tsx`)
+- **헤더**: 글래스모피즘 (`bg-white/80 backdrop-blur-xl border-b`)
+- **상세 가이드**: `docs/design-guide.md` 참조
+
 ### 바텀 시트 (Sheet) - 카테고리 선택
 - Radix UI Dialog 기반
 - `side="bottom"` 설정으로 하단에서 슬라이드 업
@@ -624,7 +634,7 @@ ios/
 
 ### 바텀시트 모달 (맛집수정, 리뷰)
 - 커스텀 구현 (CSS 애니메이션)
-- 아래에서 위로 슬라이드 애니메이션 (`slide-up`)
+- 아래에서 위로 슬라이드 애니메이션 (`animate-slide-up`)
 - 드래그 핸들 (상단 회색 바)
 - 배경 터치 시 닫힘
 - 상단 모서리만 둥글게 (`rounded-t-3xl`)
