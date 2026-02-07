@@ -324,13 +324,13 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
         <Button
           variant="ghost"
           onClick={onBack}
-          className="absolute top-4 left-4 h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-black/50 text-white rounded-full safe-area-top flex items-center justify-center p-0"
+          className="absolute top-[calc(1rem+env(safe-area-inset-top))] left-4 h-11 w-11 min-w-[44px] min-h-[44px] bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center p-0"
         >
           <ChevronLeft className="w-6 h-6" />
         </Button>
         {/* 수정/삭제 버튼 (사용자 등록 맛집 + 권한 있는 경우) */}
         {canEdit && (
-          <div className="absolute top-4 right-4 flex gap-2 safe-area-top">
+          <div className="absolute top-[calc(1rem+env(safe-area-inset-top))] right-4 flex gap-2">
             <Button
               variant="ghost"
               onClick={() => setEditModalOpen(true)}
