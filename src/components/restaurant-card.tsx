@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { MapPin, Star, Building2 } from "lucide-react";
 import { Restaurant } from "@/data/yeouido-food";
 import Image from "next/image";
+import { imageCache, buildingCache, businessStatusCache } from "@/lib/cache";
 
 function formatReviewCount(count: number): string {
   if (count >= 10000) return `${(count / 1000).toFixed(0)}K`;
@@ -45,10 +46,6 @@ function extractFloor(address: string): string | null {
   return null;
 }
 
-const imageCache: Record<string, string> = {};
-const closedCache: Record<string, boolean> = {};
-const buildingCache: Record<string, string | null> = {};
-
 const categoryIcons: Record<string, string> = {
   한식: "🍚",
   양식: "🥩",
@@ -81,29 +78,35 @@ export function RestaurantCard({
   const displayRating = realTimeRating?.rating ?? restaurant.평점;
   const displayReviewCount = realTimeRating?.reviewCount ?? restaurant.리뷰수;
   const cacheKey = restaurant.이름;
-  // 캐시에 이미지가 있으면 바로 사용, 없으면 빈 문자열로 시작
-  const [imageUrl, setImageUrl] = useState<string>(imageCache[cacheKey] || "");
-  const [isLoading, setIsLoading] = useState(!imageCache[cacheKey]);
-  const [isClosed, setIsClosed] = useState(closedCache[cacheKey] || false);
-  // 건물 정보: 정적 데이터 우선, 없으면 DB에서 가져온 정보 사용
+
+  // LRU 캐시에서 초기값 가져오기
+  const cachedImage = imageCache.get(cacheKey);
+  const cachedBuilding = buildingCache.get(cacheKey);
+  const cachedClosed = businessStatusCache.get(cacheKey);
+
+  const [imageUrl, setImageUrl] = useState<string>(cachedImage || "");
+  const [isLoading, setIsLoading] = useState(!cachedImage);
+  const [isClosed, setIsClosed] = useState(cachedClosed || false);
   const [buildingName, setBuildingName] = useState<string | null>(
-    restaurant.빌딩 || buildingCache[cacheKey] || null
+    restaurant.빌딩 || cachedBuilding || null
   );
 
   useEffect(() => {
     // 이미 폐업/휴업으로 확인된 경우
-    if (closedCache[cacheKey]) {
+    if (businessStatusCache.get(cacheKey)) {
       setIsClosed(true);
       setIsLoading(false);
       return;
     }
 
     // 이미 캐시된 경우
-    if (imageCache[cacheKey]) {
-      setImageUrl(imageCache[cacheKey]);
+    const cachedImg = imageCache.get(cacheKey);
+    if (cachedImg) {
+      setImageUrl(cachedImg);
       // 건물 정보도 캐시에서 가져오기 (정적 데이터가 없는 경우)
-      if (!restaurant.빌딩 && buildingCache[cacheKey]) {
-        setBuildingName(buildingCache[cacheKey]);
+      const cachedBldg = buildingCache.get(cacheKey);
+      if (!restaurant.빌딩 && cachedBldg) {
+        setBuildingName(cachedBldg);
       }
       setIsLoading(false);
       return;
@@ -117,13 +120,13 @@ export function RestaurantCard({
 
         // 휴업/폐업 체크
         if (data.isClosed) {
-          closedCache[cacheKey] = true;
+          businessStatusCache.set(cacheKey, true);
           setIsClosed(true);
           return;
         }
 
         if (data.photoUrl) {
-          imageCache[cacheKey] = data.photoUrl;
+          imageCache.set(cacheKey, data.photoUrl);
           setImageUrl(data.photoUrl);
         } else {
           // Google에서 못 찾으면 카테고리 기반 placeholder 사용
@@ -135,19 +138,19 @@ export function RestaurantCard({
             동남아식: "/images/placeholder-asian.svg",
           };
           const placeholder = categoryPlaceholders[restaurant.카테고리] || "/images/placeholder-food.svg";
-          imageCache[cacheKey] = placeholder;
+          imageCache.set(cacheKey, placeholder);
           setImageUrl(placeholder);
         }
 
         // 건물 정보 캐시 및 상태 업데이트 (정적 데이터가 없는 경우)
         if (!restaurant.빌딩 && data.buildingName) {
-          buildingCache[cacheKey] = data.buildingName;
+          buildingCache.set(cacheKey, data.buildingName);
           setBuildingName(data.buildingName);
         }
       } catch {
         // 에러 시에도 카테고리 기반 placeholder 사용
         const placeholder = "/images/placeholder-food.svg";
-        imageCache[cacheKey] = placeholder;
+        imageCache.set(cacheKey, placeholder);
         setImageUrl(placeholder);
       } finally {
         setIsLoading(false);

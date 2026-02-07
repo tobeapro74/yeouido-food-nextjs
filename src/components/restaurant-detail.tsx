@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
@@ -127,14 +128,14 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       });
       const data = await res.json();
       if (data.success) {
-        alert("맛집이 삭제되었습니다.");
+        toast.success("맛집이 삭제되었습니다.");
         onDelete?.();
         onBack();
       } else {
-        alert(data.error || "삭제에 실패했습니다.");
+        toast.error(data.error || "삭제에 실패했습니다.");
       }
     } catch {
-      alert("삭제 중 오류가 발생했습니다.");
+      toast.error("삭제 중 오류가 발생했습니다.");
     } finally {
       setIsDeleting(false);
     }

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Loader2, Check, Eye, EyeOff } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -217,7 +218,7 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
         } else {
           setTab("login");
           setLoginEmail(registerEmail);
-          alert("회원가입이 완료되었습니다. 로그인해주세요.");
+          toast.success("회원가입이 완료되었습니다. 로그인해주세요.");
         }
       } else {
         setError(data.error || "회원가입에 실패했습니다.");

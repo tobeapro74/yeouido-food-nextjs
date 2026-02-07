@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Star, X, Camera, Loader2, ImageIcon, AlertCircle } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
@@ -329,7 +330,7 @@ export function ReviewModal({
 
   const handleSubmit = async () => {
     if (rating === 0) {
-      alert("별점을 선택해주세요.");
+      toast.warning("별점을 선택해주세요.");
       return;
     }
 
@@ -360,10 +361,10 @@ export function ReviewModal({
         onSuccess();
         handleClose();
       } else {
-        alert(data.error || (isEditMode ? "리뷰 수정에 실패했습니다." : "리뷰 작성에 실패했습니다."));
+        toast.error(data.error || (isEditMode ? "리뷰 수정에 실패했습니다." : "리뷰 작성에 실패했습니다."));
       }
     } catch {
-      alert(isEditMode ? "리뷰 수정 중 오류가 발생했습니다." : "리뷰 작성 중 오류가 발생했습니다.");
+      toast.error(isEditMode ? "리뷰 수정 중 오류가 발생했습니다." : "리뷰 작성 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -592,28 +593,6 @@ export function ReviewModal({
         </div>
       </div>
 
-      <style jsx>{`
-        @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-        @keyframes slide-up {
-          from {
-            transform: translateY(100%);
-            opacity: 0;
-          }
-          to {
-            transform: translateY(0);
-            opacity: 1;
-          }
-        }
-        .animate-fade-in {
-          animation: fade-in 0.2s ease-out;
-        }
-        .animate-slide-up {
-          animation: slide-up 0.3s ease-out;
-        }
-      `}</style>
     </div>
   );
 }

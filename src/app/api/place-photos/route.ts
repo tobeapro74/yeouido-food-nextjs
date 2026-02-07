@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { createCacheHeaders, CACHE_PRESETS } from "@/lib/cache";
 
 // 이미지 캐시 타입
 interface ImageCache {
@@ -94,7 +95,10 @@ export async function POST(request: NextRequest) {
       };
     });
 
-    return NextResponse.json({ results });
+    // 캐시 헤더 추가 (5분 캐시, 10분 stale-while-revalidate)
+    const headers = createCacheHeaders(CACHE_PRESETS.static);
+
+    return NextResponse.json({ results }, { headers });
   } catch (error) {
     console.error("Batch image fetch error:", error);
     return NextResponse.json({ error: "Failed to fetch images" }, { status: 500 });

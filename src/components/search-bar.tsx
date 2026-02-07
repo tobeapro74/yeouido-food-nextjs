@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Search, X, MapPin, Building2, UtensilsCrossed } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Restaurant, searchRestaurants } from "@/data/yeouido-food";
 
 interface SearchBarProps {
@@ -192,10 +193,12 @@ export function SearchBar({ onSelect }: SearchBarProps) {
 
       {/* 검색 결과 없음 */}
       {isOpen && query.trim().length >= 1 && results.length === 0 && (
-        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 p-4 text-center text-muted-foreground">
-          <Search className="h-8 w-8 mx-auto mb-2 opacity-50" />
-          <p className="text-sm">"{query}"에 대한 검색 결과가 없습니다</p>
-          <p className="text-xs mt-1">다른 키워드로 검색해보세요</p>
+        <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50">
+          <EmptyState
+            icon={Search}
+            title={`"${query}"에 대한 검색 결과가 없습니다`}
+            description="다른 키워드로 검색해보세요"
+          />
         </div>
       )}
     </div>

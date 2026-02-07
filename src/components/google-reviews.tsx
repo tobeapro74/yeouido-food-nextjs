@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Star, User, ExternalLink } from "lucide-react";
 import Image from "next/image";
+import { reviewsCache } from "@/lib/cache";
 
 interface GoogleReview {
   author_name: string;
@@ -18,48 +19,27 @@ interface GoogleReviewsProps {
   restaurantName: string;
 }
 
-// 리뷰 캐시 (10분 만료)
-interface CacheEntry {
-  reviews: GoogleReview[];
-  rating: number | null;
-  userRatingsTotal: number | null;
-  timestamp: number;
-}
-
-const CACHE_TTL = 10 * 60 * 1000; // 10분
-
-const getReviewCache = (): Record<string, CacheEntry> => {
-  if (typeof window !== "undefined") {
-    if (!(window as unknown as { __googleReviewCache?: Record<string, CacheEntry> }).__googleReviewCache) {
-      (window as unknown as { __googleReviewCache: Record<string, CacheEntry> }).__googleReviewCache = {};
-    }
-    return (window as unknown as { __googleReviewCache: Record<string, CacheEntry> }).__googleReviewCache;
-  }
-  return {};
-};
-
-const isCacheValid = (entry: CacheEntry | undefined): entry is CacheEntry => {
-  if (!entry) return false;
-  return Date.now() - entry.timestamp < CACHE_TTL;
-};
-
 export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
-  const cache = getReviewCache();
-  const cachedEntry = cache[restaurantName];
-  const hasFreshCache = isCacheValid(cachedEntry);
+  // LRU 캐시에서 초기값 가져오기
+  const cachedData = reviewsCache.get(restaurantName);
 
-  const [reviews, setReviews] = useState<GoogleReview[]>(hasFreshCache ? cachedEntry.reviews : []);
-  const [rating, setRating] = useState<number | null>(hasFreshCache ? cachedEntry.rating : null);
-  const [userRatingsTotal, setUserRatingsTotal] = useState<number | null>(hasFreshCache ? cachedEntry.userRatingsTotal : null);
-  const [isLoading, setIsLoading] = useState(!hasFreshCache);
+  const [reviews, setReviews] = useState<GoogleReview[]>(
+    cachedData?.reviews as GoogleReview[] || []
+  );
+  const [rating, setRating] = useState<number | null>(cachedData?.rating ?? null);
+  const [userRatingsTotal, setUserRatingsTotal] = useState<number | null>(
+    cachedData?.reviewCount ?? null
+  );
+  const [isLoading, setIsLoading] = useState(!cachedData);
   const [expandedReviews, setExpandedReviews] = useState<Set<number>>(new Set());
 
   useEffect(() => {
-    const cachedData = cache[restaurantName];
-    if (isCacheValid(cachedData)) {
-      setReviews(cachedData.reviews);
-      setRating(cachedData.rating);
-      setUserRatingsTotal(cachedData.userRatingsTotal);
+    // LRU 캐시 확인
+    const cached = reviewsCache.get(restaurantName);
+    if (cached) {
+      setReviews(cached.reviews as GoogleReview[]);
+      setRating(cached.rating);
+      setUserRatingsTotal(cached.reviewCount);
       setIsLoading(false);
       return;
     }
@@ -72,12 +52,12 @@ export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
         });
         const data = await res.json();
 
-        cache[restaurantName] = {
+        // LRU 캐시에 저장
+        reviewsCache.set(restaurantName, {
           reviews: data.reviews || [],
           rating: data.rating,
-          userRatingsTotal: data.userRatingsTotal,
-          timestamp: Date.now()
-        };
+          reviewCount: data.userRatingsTotal
+        });
 
         setReviews(data.reviews || []);
         setRating(data.rating);
@@ -90,7 +70,7 @@ export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
     };
 
     fetchReviews();
-  }, [restaurantName, cache]);
+  }, [restaurantName]);
 
   const toggleExpand = (index: number) => {
     setExpandedReviews(prev => {

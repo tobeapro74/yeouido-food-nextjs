@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/mongodb";
+import { createCacheHeaders, CACHE_PRESETS } from "@/lib/cache";
 
 // 실시간 평점 캐시 타입
 interface RatingCache {
@@ -29,11 +30,14 @@ export async function GET() {
       };
     }
 
+    // 캐시 헤더 추가 (1분 캐시, 5분 stale-while-revalidate)
+    const headers = createCacheHeaders(CACHE_PRESETS.dynamic);
+
     return NextResponse.json({
       success: true,
       count: ratings.length,
       ratings: ratingsMap,
-    });
+    }, { headers });
   } catch (error) {
     console.error("Error fetching ratings:", error);
     return NextResponse.json({

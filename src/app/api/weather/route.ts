@@ -1,5 +1,9 @@
 import { NextResponse } from "next/server";
 
+// Edge Runtime 사용 (한국 리전에서 더 빠른 응답)
+export const runtime = "edge";
+export const preferredRegion = ["icn1"]; // 서울
+
 // 여의도 좌표
 const YEOUIDO_LAT = 37.5219;
 const YEOUIDO_LON = 126.9245;

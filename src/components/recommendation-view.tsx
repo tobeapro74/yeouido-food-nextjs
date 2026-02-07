@@ -483,14 +483,14 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-b from-orange-50 to-white">
       {/* 헤더 */}
-      <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white px-4 py-6 safe-area-top">
+      <div className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border/50 px-4 py-4 safe-area-top">
         <div className="flex items-center justify-between mb-1">
           <div className="w-8" />
-          <h2 className="text-xl font-bold text-center">🎲 한끼 추천</h2>
+          <h2 className="text-xl font-bold text-foreground text-center tracking-tight">🎲 <span className="text-orange-500">한끼</span> 추천</h2>
           <button
             onClick={() => setSettingsOpen(true)}
             className={`w-8 h-8 flex items-center justify-center rounded-full transition-colors ${
-              hasCustomPrefs ? "bg-white/30" : "bg-white/20 hover:bg-white/30"
+              hasCustomPrefs ? "bg-orange-100 text-orange-600" : "bg-muted text-muted-foreground hover:bg-muted/80"
             }`}
           >
             <Settings className="w-5 h-5" />
@@ -500,20 +500,20 @@ export function RecommendationView({ onSelectRestaurant }: RecommendationViewPro
         {!weatherLoading && weather && (
           <div className="flex items-center justify-center gap-2 mb-1">
             <span className="text-lg">{weather.current.icon}</span>
-            <span className="text-sm font-medium">{weather.current.temperature}°</span>
-            <span className="text-orange-200 text-xs">{weather.current.weather}</span>
+            <span className="text-sm font-medium text-foreground">{weather.current.temperature}°</span>
+            <span className="text-muted-foreground text-xs">{weather.current.weather}</span>
             {weather.comparison.tempDiff !== 0 && (
-              <span className="text-orange-200 text-xs">
+              <span className="text-muted-foreground text-xs">
                 (어제보다 {weather.comparison.tempDiff > 0 ? "+" : ""}{weather.comparison.tempDiff}°)
               </span>
             )}
           </div>
         )}
-        <p className="text-center text-orange-100 text-sm">
+        <p className="text-center text-muted-foreground text-sm">
           {weather?.recommendation?.message || timeContext.message}
         </p>
         {hasCustomPrefs && (
-          <p className="text-center text-orange-200 text-xs mt-1">
+          <p className="text-center text-orange-500 text-xs mt-1">
             ⚙️ 내 취향이 반영되고 있어요
           </p>
         )}

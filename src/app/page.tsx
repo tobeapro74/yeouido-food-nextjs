@@ -649,10 +649,10 @@ export default function Home() {
     return (
       <>
         <div className="min-h-screen pb-20">
-          <header className="bg-gradient-to-r from-purple-600 to-pink-500 safe-area-top">
+          <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
             <div className="px-4 py-3 flex items-center justify-center">
-              <h1 className="text-xl font-bold text-white">
-                🔮 오늘의 맛집 운세
+              <h1 className="text-xl font-bold text-foreground tracking-tight">
+                🔮 <span className="text-purple-500">오늘의</span> 맛집 운세
               </h1>
             </div>
           </header>
@@ -741,17 +741,17 @@ export default function Home() {
       <PullToRefresh>
       <div className="min-h-screen pb-20">
         {/* 헤더 */}
-        <header className="bg-gradient-to-r from-red-600 to-red-500 safe-area-top">
+        <header className="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-border/50 safe-area-top">
           <div className="px-4 py-3 flex items-center justify-between">
             <div className="w-10" />
-            <h1 className="text-xl font-bold text-white text-center">
-              🏛️ 여의도 한끼
+            <h1 className="text-xl font-bold text-foreground text-center tracking-tight">
+              <span className="text-red-500">여의도</span> 한끼
             </h1>
             {user ? (
               <div className="relative" ref={userMenuRef}>
                 <button
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
-                  className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                  className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
                   title={`${user.name}님`}
                 >
                   <User className="w-5 h-5" />
@@ -808,7 +808,7 @@ export default function Home() {
             ) : (
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white hover:bg-white/30 transition-colors"
+                className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted/80 hover:text-foreground transition-colors"
                 title="로그인"
               >
                 <User className="w-5 h-5" />

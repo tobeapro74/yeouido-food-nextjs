@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Star, Trash2, MessageSquarePlus, Pencil } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ReviewModal } from "@/components/review-modal";
@@ -66,10 +67,10 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
       if (data.success) {
         setReviews((prev) => prev.filter((r) => r._id !== reviewId));
       } else {
-        alert(data.error || "삭제에 실패했습니다.");
+        toast.error(data.error || "삭제에 실패했습니다.");
       }
     } catch {
-      alert("삭제 중 오류가 발생했습니다.");
+      toast.error("삭제 중 오류가 발생했습니다.");
     }
   };
 
@@ -102,7 +103,7 @@ export function ReviewSection({ restaurantId, restaurantName }: ReviewSectionPro
           size="sm"
           onClick={() => {
             if (!user) {
-              alert("로그인이 필요합니다.");
+              toast.info("로그인이 필요합니다.");
               return;
             }
             setReviewModalOpen(true);
