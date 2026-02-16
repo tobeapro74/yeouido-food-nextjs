@@ -32,13 +32,23 @@
 
 ## 주요 파일 위치
 - 맛집 데이터: src/data/yeouido-food.ts
+- 메인 페이지: src/app/page.tsx
 - 추천 컴포넌트: src/components/recommendation-view.tsx
+- 맛집 상세: src/components/restaurant-detail.tsx
+- 맛집 등록: src/components/add-restaurant-modal.tsx
+- 맛집 수정: src/components/restaurant-edit-modal.tsx
+- 빌딩 랭킹: src/components/building-ranking-list.tsx
+- 인기 맛집: src/components/popular-restaurants.tsx / popular-restaurants-list.tsx
+- 운세맛집: src/components/fortune-modal.tsx / fortune-result.tsx / fortune-detail-modal.tsx
 - API 라우트: src/app/api/
 - DB 연결: src/lib/mongodb.ts
+- 캐시 유틸: src/lib/cache.ts
+- 서버 프리페치: src/lib/server-prefetch.ts
+- 세션 토큰: src/lib/google-session-token.ts
 - Capacitor 설정: capacitor.config.ts
 - 전역 스타일/테마: src/app/globals.css
 - 레이아웃/폰트: src/app/layout.tsx
-- UI 컴포넌트: src/components/ui/
+- UI 컴포넌트: src/components/ui/ (12개)
 
 ## 주요 타입 정의
 - Restaurant: { 이름, 카테고리, 평점, 특징[], 위치, place_id }

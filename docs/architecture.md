@@ -60,42 +60,71 @@ rsvg-convert -w 32 -h 32 icon.svg -o favicon-32x32.png
 ```
 src/
 ├── app/                    # Next.js App Router
-│   ├── api/               # API 라우트
+│   ├── api/               # API 라우트 (29개)
 │   │   ├── auth/          # 인증 API
 │   │   │   ├── login/         # 로그인
 │   │   │   ├── logout/        # 로그아웃
 │   │   │   ├── register/      # 회원가입
 │   │   │   ├── me/            # 현재 사용자 조회
 │   │   │   ├── change-password/ # 비밀번호 변경
+│   │   │   ├── delete-account/  # 계정 삭제
 │   │   │   ├── send-verification/ # 이메일 인증 코드 발송
-│   │   │   └── verify-code/   # 이메일 인증 코드 확인
+│   │   │   ├── verify-code/   # 이메일 인증 코드 확인
+│   │   │   └── verify-email/  # 이메일 인증
 │   │   ├── reviews/       # 리뷰 CRUD API
+│   │   │   ├── route.ts       # 리뷰 목록/작성
+│   │   │   └── [id]/route.ts  # 리뷰 수정/삭제
 │   │   ├── place-photo/   # Google Places 사진 API (개별 조회)
 │   │   ├── place-photos/  # 배치 이미지 API (여러 개 한 번에)
+│   │   ├── place-details/ # Google Places 상세 정보 조회
+│   │   ├── places-search/ # Google Places 자동완성 검색
 │   │   ├── google-reviews/  # Google 리뷰 API
 │   │   │   ├── [name]/      # 식당별 리뷰 조회
 │   │   │   └── clear-cache/ # 리뷰 캐시 삭제
 │   │   ├── restaurant-buildings/ # 건물 정보 조회/관리 API
+│   │   │   ├── route.ts         # 목록 조회
+│   │   │   └── [name]/route.ts  # 개별 조회
 │   │   ├── restaurant-prices/   # 가격대/전화번호 조회 API
-│   │   ├── restaurants/sync/  # 정적 데이터 → MongoDB 동기화 API
-│   │   ├── custom-restaurants/ # 커스텀 맛집 CRUD API (GET/POST/PATCH/DELETE)
-│   │   └── upload/        # Cloudinary 이미지 업로드
+│   │   │   ├── route.ts         # 목록 조회
+│   │   │   └── [name]/route.ts  # 개별 조회
+│   │   ├── restaurants/       # 맛집 데이터 API
+│   │   │   ├── bulk-info/     # 통합 데이터 API (이미지+평점+건물 배치 조회)
+│   │   │   ├── ratings/       # 평점 조회 API
+│   │   │   └── sync/         # 정적 데이터 → MongoDB 동기화
+│   │   ├── restaurant-history/ # 맛집 등록/수정/삭제 히스토리
+│   │   ├── custom-restaurants/ # 커스텀 맛집 CRUD API (GET/POST/PATCH/PUT/DELETE)
+│   │   ├── reverse-geocode/   # 좌표 → 주소 변환 (Google Geocoding)
+│   │   ├── upload/        # Cloudinary 이미지 업로드
+│   │   ├── weather/       # 여의도 날씨 API (Edge Runtime)
+│   │   └── cron/
+│   │       └── update-reviews/ # Google 리뷰 자동 업데이트 (Vercel Cron)
 │   ├── layout.tsx         # 루트 레이아웃
 │   ├── page.tsx           # 메인 페이지
 │   └── globals.css        # 전역 스타일
-├── components/            # React 컴포넌트
-│   ├── ui/               # shadcn/ui 기본 컴포넌트
+├── components/            # React 컴포넌트 (29개 + ui 12개)
+│   ├── ui/               # shadcn/ui 기본 컴포넌트 (12개)
+│   │   ├── button.tsx / badge.tsx / card.tsx / dialog.tsx
+│   │   ├── input.tsx / tabs.tsx / sheet.tsx / scroll-area.tsx
+│   │   ├── skeleton.tsx / avatar.tsx / separator.tsx
+│   │   └── empty-state.tsx    # 빈 화면 공통 컴포넌트
 │   ├── auth-modal.tsx    # 로그인/회원가입 모달
 │   ├── change-password-modal.tsx # 비밀번호 변경 모달
+│   ├── delete-account-modal.tsx  # 회원탈퇴 모달
 │   ├── bottom-nav.tsx    # 하단 네비게이션
 │   ├── building-sheet.tsx # 빌딩 선택 시트
+│   ├── building-ranking-list.tsx # 빌딩 랭킹 목록
+│   ├── top-buildings.tsx  # 인기 빌딩 섹션
 │   ├── category-sheet.tsx # 카테고리 선택 시트
+│   ├── category-edit-modal.tsx # 카테고리 수정 모달
 │   ├── popular-restaurants.tsx # 인기 맛집 섹션 (배치 로딩)
+│   ├── popular-restaurants-list.tsx # 인기 맛집 전체 목록
 │   ├── preference-settings.tsx # 취향 설정
 │   ├── recommendation-view.tsx # 한끼추천 뷰
 │   ├── restaurant-card.tsx # 맛집 카드
 │   ├── restaurant-detail.tsx # 맛집 상세
 │   ├── restaurant-list.tsx # 맛집 리스트
+│   ├── restaurant-edit-modal.tsx # 맛집 정보 수정 바텀시트 모달
+│   ├── restaurant-history.tsx # 맛집 등록 히스토리
 │   ├── review-modal.tsx  # 리뷰 작성 모달
 │   ├── review-section.tsx # 리뷰 섹션 (사용자 리뷰)
 │   ├── google-reviews.tsx # Google 리뷰 표시 컴포넌트
@@ -105,24 +134,37 @@ src/
 │   ├── fortune-result.tsx # 운세 결과 화면
 │   ├── fortune-detail-modal.tsx # 운세 상세 해설 모달
 │   ├── pull-to-refresh.tsx # Pull-to-Refresh 컴포넌트
-│   ├── custom-restaurant-modal.tsx # 커스텀 맛집 등록 모달
-│   └── category-edit-modal.tsx # 카테고리 수정 모달 (커스텀 맛집용)
+│   ├── add-restaurant-modal.tsx # 맛집 등록 모달 (Google Places 검색)
+│   └── virtual-list.tsx  # Virtual Scroll 컴포넌트
 ├── data/
 │   └── yeouido-food.ts   # 맛집 정적 데이터 (195개 식당)
 ├── hooks/
-│   ├── useImageBatch.ts  # 이미지 배치 로딩 훅
-│   └── useSwipeBack.ts   # 스와이프 뒤로가기 제스처 훅
+│   ├── useImageBatch.ts      # 이미지 배치 로딩 훅
+│   ├── useSwipeBack.ts       # 스와이프 뒤로가기 제스처 훅
+│   ├── useRealTimeRatings.ts # 실시간 평점 조회 훅
+│   ├── use-fetch.ts          # SWR 대체 데이터 페칭 훅
+│   └── use-restaurant-data.ts # 맛집 데이터 통합 훅
 └── lib/
-    ├── mongodb.ts        # MongoDB 연결
-    ├── fortune.ts        # 오행 운세 계산 로직
-    ├── types.ts          # 공통 타입 정의
-    └── utils.ts          # 유틸리티 함수
+    ├── mongodb.ts             # MongoDB 연결 + 자동 인덱스 생성
+    ├── fortune.ts             # 오행 운세 계산 로직
+    ├── types.ts               # 공통 타입 정의
+    ├── utils.ts               # 유틸리티 함수
+    ├── cache.ts               # LRU 캐시, 로컬 스토리지 캐시, HTTP 헤더 유틸
+    ├── google-session-token.ts # Google Places sessionToken 관리
+    └── server-prefetch.ts     # 서버 컴포넌트용 데이터 프리페칭
 
-scripts/                   # 데이터 동기화 스크립트
+scripts/                   # 데이터 동기화/관리 스크립트
 ├── sync-restaurants-v2.mjs      # 정적 데이터 → MongoDB 동기화
+├── sync-restaurants.mjs         # 동기화 (구버전)
 ├── fetch-building-info.mjs      # Google API 건물 정보 수집
 ├── fetch-building-info-v2.mjs   # 개선된 건물 정보 수집
 ├── manual-building-update.mjs   # 수동 건물 정보 업데이트
+├── collect-restaurant-prices.js # 가격 정보 수집
+├── extract-restaurant-names.js  # 맛집명 추출
+├── migrate-indexes.ts           # MongoDB 인덱스 마이그레이션
+├── create-test-account.ts       # 테스트 계정 생성
+├── check-test-account.ts        # 테스트 계정 확인
+├── update-test-account-admin.ts # 테스트 계정 관리자 권한 설정
 └── restaurant-data.json         # 식당 데이터 JSON
 ```
 
@@ -232,7 +274,7 @@ MongoDB 캐시 저장 → 클라이언트 반환
   - 실시간 자동완성 드롭다운
 - 카테고리 퀵 버튼 (한식, 양식, 중식, 일식, 동남아식)
 - 인기 맛집 카드 (카테고리별 최고 평점)
-- 지역별 맛집 (서여의도/동여의도)
+- 지역별 맛집 (동여의도/서여의도)
 
 ### 2. 통합 검색
 - 식당 이름 검색 (예: "김삼보", "딘타이펑")
@@ -321,10 +363,12 @@ MongoDB 캐시 저장 → 클라이언트 반환
 └─────────────────────────────────────┘
 ```
 
-#### 뒤로가기 버튼 (2025.01.12 개선)
+#### 뒤로가기 버튼 (2025.01.12 개선, 2026.02.07 safe-area 수정)
 - Apple HIG 권장 44x44px 터치 영역
 - 반투명 배경으로 가시성 확보 (상세 페이지)
 - 둥근 원형 디자인
+- safe-area를 버튼 내부 패딩이 아닌 `top` 위치 오프셋으로 적용
+  - `top-[calc(1rem+env(safe-area-inset-top))]` 방식으로 원형 유지
 
 ### 9. 운세맛집 (오행 + 띠 기반 맛집 운세)
 - **입력 정보**: 생년월일, 성별, 결혼여부
