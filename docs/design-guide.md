@@ -77,6 +77,20 @@ Pretendard는 CDN dynamic subset으로 로드 (필요한 글리프만 다운로�
   href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 ```
 
+### 모바일 가독성 — 최소 폰트 크기 보장
+
+정의 위치: `src/app/globals.css`
+
+body 기본 폰트 15px, line-height 1.6. 작은 폰트는 CSS override로 최소값 보장:
+
+| Tailwind 클래스 | 기본 크기 | 실제 적용 크기 | line-height |
+|---|---|---|---|
+| `text-[7px]`~`text-[9px]` | 7~9px | **11px** | 1.4 |
+| `text-[10px]`~`text-[11px]` | 10~11px | **12px** | 1.4 |
+| `text-xs` | 12px | **13px** | 1.5 |
+| `text-sm` | 14px | **15px** | 1.55 |
+| `text-base` 이상 | 16px~ | 변경 없음 | Tailwind 기본 |
+
 ---
 
 ## UI 컴포넌트
