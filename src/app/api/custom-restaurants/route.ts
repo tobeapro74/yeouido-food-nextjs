@@ -431,6 +431,7 @@ export async function PUT(request: NextRequest) {
       phone_number,
       opening_hours,
       google_map_url,
+      naver_place_id,
     } = body;
 
     if (!old_place_id) {
@@ -513,10 +514,27 @@ export async function PUT(request: NextRequest) {
       updateFields.google_map_url = google_map_url;
     }
 
+    // naver_place_id 처리
+    const unsetFields: Record<string, unknown> = {};
+    if (naver_place_id !== undefined) {
+      if (naver_place_id) {
+        updateFields.naver_place_id = naver_place_id;
+        changedFields.push("네이버 플레이스 ID");
+      } else {
+        // 빈 문자열이면 필드 제거
+        unsetFields.naver_place_id = "";
+        changedFields.push("네이버 플레이스 ID 삭제");
+      }
+    }
+
     // 업데이트 실행
+    const updateOps: Record<string, unknown> = { $set: updateFields };
+    if (Object.keys(unsetFields).length > 0) {
+      updateOps.$unset = unsetFields;
+    }
     await collection.updateOne(
       { place_id: old_place_id },
-      { $set: updateFields }
+      updateOps
     );
 
     // 히스토리 기록 (변경된 필드가 있을 때만)
