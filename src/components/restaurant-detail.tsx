@@ -1,12 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info } from "lucide-react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, generateStaticPlaceId } from "@/data/yeouido-food";
+import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, getNaverMapLink, getCatchTableLink, generateStaticPlaceId } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
 import { CategoryEditModal } from "@/components/category-edit-modal";
@@ -301,6 +301,8 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customInfo.address || restaurant.이름)}`
     : getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
+  const naverMapUrl = getNaverMapLink(restaurant.이름);
+  const catchTableUrl = getCatchTableLink(restaurant.이름);
 
   return (
     <div className="min-h-screen pb-20 bg-background">
@@ -475,12 +477,11 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
         </div>
 
         {/* 외부 링크 */}
-        <div className="flex gap-3">
+        <div className="grid grid-cols-2 gap-2">
           <a
             href={googleMapsUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1"
           >
             <Button variant="outline" className="w-full">
               <MapPin className="w-4 h-4 mr-2" />
@@ -491,11 +492,30 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
             href={searchLink}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1"
           >
             <Button variant="outline" className="w-full">
               <ExternalLink className="w-4 h-4 mr-2" />
               검색하기
+            </Button>
+          </a>
+          <a
+            href={naverMapUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="outline" className="w-full text-green-600 border-green-200 hover:bg-green-50">
+              <MapPin className="w-4 h-4 mr-2" />
+              네이버 지도
+            </Button>
+          </a>
+          <a
+            href={catchTableUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <Button variant="outline" className="w-full text-orange-600 border-orange-200 hover:bg-orange-50">
+              <CalendarCheck className="w-4 h-4 mr-2" />
+              캐치테이블
             </Button>
           </a>
         </div>
