@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info, CalendarCheck } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info, CalendarCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, getNaverMapLink, getCatchTableLink, generateStaticPlaceId } from "@/data/yeouido-food";
+import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, getNaverMapLink, generateStaticPlaceId } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
 import { CategoryEditModal } from "@/components/category-edit-modal";
@@ -302,7 +302,37 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
     : getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
   const naverMapUrl = getNaverMapLink(restaurant.이름);
-  const catchTableUrl = getCatchTableLink(restaurant.이름);
+
+  // 네이버 예약 직행 링크
+  const [naverBookingUrl, setNaverBookingUrl] = useState<string | null>(null);
+  const [isLoadingBooking, setIsLoadingBooking] = useState(false);
+
+  const handleNaverBooking = useCallback(async () => {
+    // 이미 URL이 있으면 바로 이동
+    if (naverBookingUrl) {
+      window.open(naverBookingUrl, "_blank");
+      return;
+    }
+
+    setIsLoadingBooking(true);
+    try {
+      const res = await fetch(`/api/naver-place?name=${encodeURIComponent(restaurant.이름)}`);
+      const data = await res.json();
+
+      if (data.success && data.bookingUrl) {
+        setNaverBookingUrl(data.bookingUrl);
+        window.open(data.bookingUrl, "_blank");
+      } else {
+        // fallback: 네이버 지도 검색
+        window.open(naverMapUrl, "_blank");
+      }
+    } catch {
+      // 오류 시 fallback
+      window.open(naverMapUrl, "_blank");
+    } finally {
+      setIsLoadingBooking(false);
+    }
+  }, [restaurant.이름, naverBookingUrl, naverMapUrl]);
 
   return (
     <div className="min-h-screen pb-20 bg-background">
@@ -498,26 +528,19 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
               검색하기
             </Button>
           </a>
-          <a
-            href={naverMapUrl}
-            target="_blank"
-            rel="noopener noreferrer"
+          <Button
+            variant="outline"
+            className="w-full col-span-2 text-green-600 border-green-200 hover:bg-green-50"
+            onClick={handleNaverBooking}
+            disabled={isLoadingBooking}
           >
-            <Button variant="outline" className="w-full text-green-600 border-green-200 hover:bg-green-50">
-              <MapPin className="w-4 h-4 mr-2" />
-              네이버 지도
-            </Button>
-          </a>
-          <a
-            href={catchTableUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button variant="outline" className="w-full text-orange-600 border-orange-200 hover:bg-orange-50">
+            {isLoadingBooking ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
               <CalendarCheck className="w-4 h-4 mr-2" />
-              캐치테이블
-            </Button>
-          </a>
+            )}
+            네이버 예약
+          </Button>
         </div>
 
         <Separator />

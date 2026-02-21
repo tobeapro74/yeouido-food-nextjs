@@ -2301,11 +2301,6 @@ export function getNaverMapLink(name: string): string {
   return `https://map.naver.com/v5/search/${encodeURIComponent(name + " 여의도")}`;
 }
 
-// 캐치테이블 링크 생성
-export function getCatchTableLink(name: string): string {
-  return `https://app.catchtable.co.kr/ct/shop?keyword=${encodeURIComponent(name)}`;
-}
-
 // 통합 검색 함수
 export function searchRestaurants(query: string): Restaurant[] {
   if (!query.trim()) return [];

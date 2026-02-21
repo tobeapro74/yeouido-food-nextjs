@@ -27,6 +27,10 @@ const INDEX_DEFINITIONS = {
     { key: { visitorId: 1 }, options: {} },
     { key: { visitorId: 1, restaurantName: 1 }, options: { unique: true } },
   ],
+  naver_place_cache: [
+    { key: { restaurantName: 1 }, options: { unique: true } },
+    { key: { updatedAt: 1 }, options: { expireAfterSeconds: 604800 } }, // 7일 TTL
+  ],
 } as const;
 
 // 인덱스 생성 함수
