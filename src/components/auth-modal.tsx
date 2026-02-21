@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { initKakaoSDK, kakaoLogin } from "@/lib/kakao";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -141,6 +142,20 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
     }
   };
 
+  // 카카오 로그인 핸들러
+  const handleKakaoLogin = async () => {
+    setError("");
+    initKakaoSDK();
+
+    // 네이티브 앱에서는 모달을 먼저 닫아야 딥링크 복귀 시 모달이 안 보임
+    // 웹에서는 페이지 이동이 일어나므로 onClose 불필요
+    const isNative = (window as unknown as Record<string, unknown> & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
+    if (isNative) {
+      onClose();
+    }
+    await kakaoLogin();
+  };
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -246,7 +261,37 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
 
           {/* 로그인 탭 */}
           <TabsContent value="login">
-            <form onSubmit={handleLogin} className="space-y-4 pt-4">
+            {/* 카카오 로그인 */}
+            <div className="pt-4">
+              <button
+                type="button"
+                onClick={handleKakaoLogin}
+                className="w-full flex items-center justify-center gap-2 py-3.5 rounded-lg font-medium text-[15px] transition-colors"
+                style={{ backgroundColor: "#FEE500", color: "#000000" }}
+              >
+                <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M9 0.6C4.029 0.6 0 3.713 0 7.551C0 9.942 1.558 12.048 3.931 13.303L2.933 16.909C2.844 17.221 3.213 17.466 3.479 17.278L7.736 14.41C8.151 14.462 8.572 14.502 9 14.502C13.971 14.502 18 11.389 18 7.551C18 3.713 13.971 0.6 9 0.6Z"
+                    fill="#000000"
+                  />
+                </svg>
+                카카오로 로그인
+              </button>
+            </div>
+
+            {/* 구분선 */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-border" />
+              </div>
+              <div className="relative flex justify-center text-xs">
+                <span className="bg-background px-2 text-muted-foreground">또는</span>
+              </div>
+            </div>
+
+            <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <Input
                   type="email"

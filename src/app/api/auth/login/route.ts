@@ -28,6 +28,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // 카카오 전용 사용자인 경우
+    if (!user.password && user.kakao_id) {
+      return NextResponse.json(
+        { success: false, error: "카카오 로그인으로 가입된 계정입니다. 카카오 로그인을 이용해주세요." },
+        { status: 400 }
+      );
+    }
+
     // 비밀번호 확인
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {

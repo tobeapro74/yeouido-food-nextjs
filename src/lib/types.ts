@@ -5,6 +5,7 @@ export interface User {
   name: string;
   email: string;
   password?: string;
+  kakao_id?: number;
   profile_image?: string;
   is_admin: boolean;
   created_at: Date;
@@ -39,6 +40,7 @@ export interface JWTPayload {
   email: string;
   name: string;
   is_admin: boolean;
+  profile_image?: string;
 }
 
 // 사용자 등록 맛집 타입

@@ -47,6 +47,8 @@ interface UserInfo {
   name: string;
   email: string;
   is_admin: boolean;
+  profile_image?: string;
+  has_password?: boolean;
 }
 
 export default function Home() {
