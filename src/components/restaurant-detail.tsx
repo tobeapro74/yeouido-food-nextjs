@@ -33,7 +33,6 @@ interface CustomRestaurantInfo {
   google_reviews_count?: number;
   google_map_url?: string;
   coordinates?: { lat: number; lng: number };
-  naver_place_id?: string;
 }
 
 interface RestaurantDetailProps {
@@ -182,7 +181,6 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
               google_reviews_count: found.google_reviews_count,
               google_map_url: found.google_map_url,
               coordinates: found.coordinates,
-              naver_place_id: found.naver_place_id,
             });
             setCurrentCategory(found.category);
             if (found.feature) {
@@ -303,10 +301,8 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customInfo.address || restaurant.이름)}`
     : getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
-  // 네이버 예약 URL: naver_place_id가 있으면 예약 탭 직행, 없으면 검색 페이지
-  const naverPlaceUrl = customInfo?.naver_place_id
-    ? `https://m.place.naver.com/restaurant/${customInfo.naver_place_id}/booking`
-    : `https://m.place.naver.com/restaurant/list?query=${encodeURIComponent(restaurant.이름 + " 여의도")}`;
+  // 네이버 플레이스 검색 URL
+  const naverPlaceUrl = `https://m.place.naver.com/restaurant/list?query=${encodeURIComponent(restaurant.이름 + " 여의도")}`;
 
   return (
     <div className="min-h-screen pb-20 bg-background">
@@ -558,9 +554,8 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
             opening_hours: openingHours || (restaurant.영업시간 ? [restaurant.영업시간] : undefined),
             google_map_url: customInfo?.google_map_url,
             coordinates: customInfo?.coordinates,
-            naver_place_id: customInfo?.naver_place_id,
           }}
-          onSuccess={(updatedData: Partial<{ category: string; feature: string; phone_number: string; opening_hours: string[]; address: string; coordinates: { lat: number; lng: number }; naver_place_id: string }>) => {
+          onSuccess={(updatedData: Partial<{ category: string; feature: string; phone_number: string; opening_hours: string[]; address: string; coordinates: { lat: number; lng: number } }>) => {
             if (updatedData.category) {
               setCurrentCategory(updatedData.category);
               onCategoryChange?.(updatedData.category);
@@ -585,7 +580,6 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
                 ...(updatedData.opening_hours !== undefined && { opening_hours: updatedData.opening_hours }),
                 ...(updatedData.address !== undefined && { address: updatedData.address }),
                 ...(updatedData.coordinates && { coordinates: updatedData.coordinates }),
-                ...(updatedData.naver_place_id !== undefined && { naver_place_id: updatedData.naver_place_id || undefined }),
               });
             } else {
               // 정적 데이터가 DB로 마이그레이션된 경우 새로 조회
@@ -609,7 +603,6 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
                       google_reviews_count: found.google_reviews_count,
                       google_map_url: found.google_map_url,
                       coordinates: found.coordinates,
-                      naver_place_id: found.naver_place_id,
                     });
                   }
                 } catch {

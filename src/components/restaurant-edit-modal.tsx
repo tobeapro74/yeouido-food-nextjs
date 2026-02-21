@@ -7,9 +7,6 @@ import { Button } from "@/components/ui/button";
 // 좌표 형식 감지 정규식: (37.xxx, 126.xxx) 또는 37.xxx, 126.xxx
 const COORDINATE_REGEX = /^\s*\(?\s*(-?\d+\.?\d*)\s*,\s*(-?\d+\.?\d*)\s*\)?\s*$/;
 
-// 네이버 플레이스 URL에서 place_id 추출 정규식
-const NAVER_PLACE_ID_REGEX = /(?:place|restaurant)\/(\d+)/;
-
 // 카테고리 목록
 const categories = [
   { id: "한식", name: "한식", icon: "🍚" },
@@ -29,7 +26,6 @@ interface RestaurantData {
   opening_hours?: string[];
   google_map_url?: string;
   coordinates?: { lat: number; lng: number };
-  naver_place_id?: string;
 }
 
 interface RestaurantEditModalProps {
@@ -53,14 +49,6 @@ export function RestaurantEditModal({
   const [coordinates, setCoordinates] = useState<{ lat: number; lng: number } | null>(
     restaurant.coordinates || null
   );
-  const [naverPlaceUrl, setNaverPlaceUrl] = useState(
-    restaurant.naver_place_id
-      ? `https://m.place.naver.com/restaurant/${restaurant.naver_place_id}/home`
-      : ""
-  );
-  const [extractedNaverPlaceId, setExtractedNaverPlaceId] = useState<string | null>(
-    restaurant.naver_place_id || null
-  );
   const [isLoading, setIsLoading] = useState(false);
   const [isConvertingAddress, setIsConvertingAddress] = useState(false);
   const [error, setError] = useState("");
@@ -75,12 +63,6 @@ export function RestaurantEditModal({
       setOpeningHours(restaurant.opening_hours?.join("\n") || "");
       setAddress(restaurant.address);
       setCoordinates(restaurant.coordinates || null);
-      setNaverPlaceUrl(
-        restaurant.naver_place_id
-          ? `https://m.place.naver.com/restaurant/${restaurant.naver_place_id}/home`
-          : ""
-      );
-      setExtractedNaverPlaceId(restaurant.naver_place_id || null);
       setError("");
       // 배경 스크롤 방지
       document.body.style.overflow = "hidden";
@@ -143,8 +125,7 @@ export function RestaurantEditModal({
       phoneNumber !== (restaurant.phone_number || "") ||
       address !== restaurant.address ||
       JSON.stringify(openingHours.split("\n").filter(h => h.trim())) !==
-        JSON.stringify(restaurant.opening_hours || []) ||
-      (extractedNaverPlaceId || null) !== (restaurant.naver_place_id || null);
+        JSON.stringify(restaurant.opening_hours || []);
 
     if (!hasChanges) {
       onClose();
@@ -184,10 +165,6 @@ export function RestaurantEditModal({
       const oldOpeningHours = restaurant.opening_hours || [];
       if (JSON.stringify(newOpeningHours) !== JSON.stringify(oldOpeningHours)) {
         updates.opening_hours = newOpeningHours.length > 0 ? newOpeningHours : null;
-      }
-
-      if ((extractedNaverPlaceId || null) !== (restaurant.naver_place_id || null)) {
-        updates.naver_place_id = extractedNaverPlaceId || "";
       }
 
       // 변경사항이 없으면 닫기
@@ -374,38 +351,6 @@ export function RestaurantEditModal({
             </p>
           </div>
 
-          {/* 네이버 플레이스 URL */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              네이버 플레이스 URL (선택)
-            </label>
-            <input
-              type="url"
-              value={naverPlaceUrl}
-              onChange={(e) => {
-                const value = e.target.value;
-                setNaverPlaceUrl(value);
-                const match = value.match(NAVER_PLACE_ID_REGEX);
-                setExtractedNaverPlaceId(match ? match[1] : null);
-              }}
-              placeholder="https://m.place.naver.com/restaurant/1234567/home"
-              className="w-full px-3 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-sm"
-            />
-            {extractedNaverPlaceId && (
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <Check className="w-3 h-3" />
-                Place ID 추출 완료: {extractedNaverPlaceId}
-              </p>
-            )}
-            {naverPlaceUrl && !extractedNaverPlaceId && (
-              <p className="text-xs text-destructive mt-1">
-                올바른 네이버 플레이스 URL을 입력해주세요
-              </p>
-            )}
-            <p className="text-xs text-muted-foreground mt-1">
-              네이버 지도에서 맛집 검색 → URL 복사 → 붙여넣기
-            </p>
-          </div>
         </div>
 
         {/* 버튼 - 하단 고정 */}
