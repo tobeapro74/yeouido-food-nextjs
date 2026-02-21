@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info, CalendarCheck, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { ChevronLeft, Star, MapPin, Clock, Phone, ExternalLink, Banknote, Building2, Tag, Settings, Trash2, Info, CalendarCheck } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, getNaverMapLink, generateStaticPlaceId } from "@/data/yeouido-food";
+import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, generateStaticPlaceId } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
 import { CategoryEditModal } from "@/components/category-edit-modal";
@@ -301,53 +301,8 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(customInfo.address || restaurant.이름)}`
     : getGoogleMapsLink(restaurant.이름, restaurant.주소);
   const searchLink = getGoogleSearchLink(restaurant.이름);
-  const naverMapUrl = getNaverMapLink(restaurant.이름);
-
-  // 네이버 예약 직행 링크
-  const [naverBookingUrl, setNaverBookingUrl] = useState<string | null>(null);
-  const [isLoadingBooking, setIsLoadingBooking] = useState(false);
-
-  const handleNaverBooking = useCallback(async () => {
-    // 이미 URL이 있으면 바로 이동
-    if (naverBookingUrl) {
-      window.open(naverBookingUrl, "_blank");
-      return;
-    }
-
-    // iOS WebView 팝업 차단 우회: 동기적으로 빈 창을 먼저 열고 나중에 URL 설정
-    const newWindow = window.open("about:blank", "_blank");
-
-    setIsLoadingBooking(true);
-    try {
-      const res = await fetch(`/api/naver-place?name=${encodeURIComponent(restaurant.이름)}`);
-      const data = await res.json();
-
-      if (data.success && data.bookingUrl) {
-        setNaverBookingUrl(data.bookingUrl);
-        if (newWindow) {
-          newWindow.location.href = data.bookingUrl;
-        } else {
-          window.location.href = data.bookingUrl;
-        }
-      } else {
-        // fallback: 네이버 지도 검색
-        if (newWindow) {
-          newWindow.location.href = naverMapUrl;
-        } else {
-          window.location.href = naverMapUrl;
-        }
-      }
-    } catch {
-      // 오류 시 fallback
-      if (newWindow) {
-        newWindow.location.href = naverMapUrl;
-      } else {
-        window.location.href = naverMapUrl;
-      }
-    } finally {
-      setIsLoadingBooking(false);
-    }
-  }, [restaurant.이름, naverBookingUrl, naverMapUrl]);
+  // 네이버 플레이스 검색 URL (정확한 업체명으로 검색 → 상세 페이지에서 실시간예약 탭 접근 가능)
+  const naverPlaceUrl = `https://m.place.naver.com/restaurant/list?query=${encodeURIComponent(restaurant.이름 + " 여의도")}`;
 
   return (
     <div className="min-h-screen pb-20 bg-background">
@@ -543,19 +498,20 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
               검색하기
             </Button>
           </a>
-          <Button
-            variant="outline"
-            className="w-full col-span-2 text-green-600 border-green-200 hover:bg-green-50"
-            onClick={handleNaverBooking}
-            disabled={isLoadingBooking}
+          <a
+            href={naverPlaceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="col-span-2"
           >
-            {isLoadingBooking ? (
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-            ) : (
+            <Button
+              variant="outline"
+              className="w-full text-green-600 border-green-200 hover:bg-green-50"
+            >
               <CalendarCheck className="w-4 h-4 mr-2" />
-            )}
-            네이버 예약
-          </Button>
+              네이버 예약
+            </Button>
+          </a>
         </div>
 
         <Separator />
