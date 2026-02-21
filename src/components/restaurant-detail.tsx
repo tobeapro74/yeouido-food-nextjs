@@ -314,6 +314,9 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
       return;
     }
 
+    // iOS WebView 팝업 차단 우회: 동기적으로 빈 창을 먼저 열고 나중에 URL 설정
+    const newWindow = window.open("about:blank", "_blank");
+
     setIsLoadingBooking(true);
     try {
       const res = await fetch(`/api/naver-place?name=${encodeURIComponent(restaurant.이름)}`);
@@ -321,14 +324,26 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
 
       if (data.success && data.bookingUrl) {
         setNaverBookingUrl(data.bookingUrl);
-        window.open(data.bookingUrl, "_blank");
+        if (newWindow) {
+          newWindow.location.href = data.bookingUrl;
+        } else {
+          window.location.href = data.bookingUrl;
+        }
       } else {
         // fallback: 네이버 지도 검색
-        window.open(naverMapUrl, "_blank");
+        if (newWindow) {
+          newWindow.location.href = naverMapUrl;
+        } else {
+          window.location.href = naverMapUrl;
+        }
       }
     } catch {
       // 오류 시 fallback
-      window.open(naverMapUrl, "_blank");
+      if (newWindow) {
+        newWindow.location.href = naverMapUrl;
+      } else {
+        window.location.href = naverMapUrl;
+      }
     } finally {
       setIsLoadingBooking(false);
     }

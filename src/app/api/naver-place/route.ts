@@ -42,10 +42,12 @@ export async function GET(request: NextRequest) {
 
     const cached = await cache.findOne({ restaurantName: name });
     if (cached) {
+      // 캐시된 URL이 /booking이면 /reservation으로 보정
+      const cachedUrl = cached.bookingUrl.replace(/\/booking$/, "/reservation");
       return NextResponse.json({
         success: true,
         placeId: cached.naverPlaceId,
-        bookingUrl: cached.bookingUrl,
+        bookingUrl: cachedUrl,
         cached: true,
       });
     }
@@ -109,8 +111,8 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 4. 예약 직행 URL 생성
-    const bookingUrl = `https://m.place.naver.com/restaurant/${placeId}/booking`;
+    // 4. 예약 직행 URL 생성 (/reservation = 실시간예약 탭)
+    const bookingUrl = `https://m.place.naver.com/restaurant/${placeId}/reservation`;
 
     // 5. MongoDB 캐시 저장
     await cache.updateOne(
