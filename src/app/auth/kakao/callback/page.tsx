@@ -16,7 +16,6 @@ function KakaoCallbackContent() {
 
     const code = searchParams.get("code");
     const errorParam = searchParams.get("error");
-    const isNative = searchParams.get("state") === "native";
 
     if (errorParam) {
       setError("카카오 로그인이 취소되었습니다.");
@@ -45,22 +44,8 @@ function KakaoCallbackContent() {
           return;
         }
 
-        // Capacitor WebView 안인지 확인
-        const inWebView = (window as unknown as Record<string, unknown> & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
-
-        if (isNative && !inWebView) {
-          // 외부 브라우저에서 열린 경우 → 딥링크로 토큰을 앱에 전달
-          const token = data.data.token;
-          const deepLink = `yeouido://auth?token=${encodeURIComponent(token)}`;
-          window.location.href = deepLink;
-          // 딥링크 실패 시 fallback
-          setTimeout(() => {
-            window.location.replace("/");
-          }, 1500);
-        } else {
-          // WebView 안이거나 웹 브라우저: 쿠키가 이미 설정됨
-          window.location.replace("/");
-        }
+        // 쿠키가 이미 설정됨 → 메인으로 이동
+        window.location.replace("/");
       } catch {
         setError("네트워크 오류가 발생했습니다.");
         setTimeout(() => router.replace("/"), 2000);

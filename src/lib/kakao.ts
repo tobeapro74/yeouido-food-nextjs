@@ -28,12 +28,6 @@ export function initKakaoSDK(): boolean {
   return window.Kakao.isInitialized();
 }
 
-// ============ Capacitor 환경 감지 ============
-
-function isCapacitorNative(): boolean {
-  return (window as unknown as Record<string, unknown> & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
-}
-
 // ============ 카카오 로그인 ============
 
 export async function kakaoLogin() {
@@ -44,20 +38,8 @@ export async function kakaoLogin() {
   const restKey = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
   if (!restKey) return;
 
-  const native = isCapacitorNative();
-  const stateParam = native ? "&state=native" : "";
-  const oauthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${restKey}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code${stateParam}`;
+  const oauthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${restKey}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
 
-  if (native) {
-    try {
-      // @capacitor/browser가 설치된 경우에만 동적 import
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const mod = await (Function('return import("@capacitor/browser")')() as Promise<any>);
-      await mod.Browser.open({ url: oauthUrl, presentationStyle: "popover" });
-    } catch {
-      window.location.href = oauthUrl;
-    }
-  } else {
-    window.location.href = oauthUrl;
-  }
+  // 네이티브/웹 모두 WebView 내에서 직접 이동
+  window.location.href = oauthUrl;
 }

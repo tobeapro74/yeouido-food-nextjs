@@ -146,13 +146,6 @@ export function AuthModal({ isOpen, onClose, onLoginSuccess }: AuthModalProps) {
   const handleKakaoLogin = async () => {
     setError("");
     initKakaoSDK();
-
-    // 네이티브 앱에서는 모달을 먼저 닫아야 딥링크 복귀 시 모달이 안 보임
-    // 웹에서는 페이지 이동이 일어나므로 onClose 불필요
-    const isNative = (window as unknown as Record<string, unknown> & { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.() === true;
-    if (isNative) {
-      onClose();
-    }
     await kakaoLogin();
   };
 
