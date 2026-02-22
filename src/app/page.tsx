@@ -162,22 +162,9 @@ export default function Home() {
             const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
 
             if (token) {
-              // 토큰을 서버에 보내 httpOnly 쿠키 설정
-              try {
-                await fetch("/api/auth/set-token", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ token }),
-                });
-                // 로그인 상태 갱신
-                const meRes = await fetch("/api/auth/me");
-                const meData = await meRes.json();
-                if (meData.success) {
-                  setUser(meData.data);
-                }
-              } catch (err) {
-                console.error("딥링크 토큰 처리 오류:", err);
-              }
+              // GET 요청으로 쿠키 설정 후 메인 페이지로 리다이렉트
+              // (CapacitorHttp가 fetch를 프록시하여 쿠키가 안 붙는 문제 우회)
+              window.location.href = `/api/auth/set-token?token=${encodeURIComponent(token)}`;
             }
           }
         });

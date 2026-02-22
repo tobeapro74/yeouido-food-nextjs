@@ -4,6 +4,33 @@ import type { JWTPayload } from "@/lib/types";
 
 const JWT_SECRET = process.env.JWT_SECRET || "yeouido-food-secret-key";
 
+// GET: 딥링크에서 토큰을 받아 쿠키 설정 후 메인 페이지로 리다이렉트
+export async function GET(request: NextRequest) {
+  const token = request.nextUrl.searchParams.get("token");
+
+  if (!token) {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+
+  try {
+    jwt.verify(token, JWT_SECRET) as JWTPayload;
+
+    const response = NextResponse.redirect(new URL("/", request.url));
+
+    response.cookies.set("auth_token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      maxAge: 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    return response;
+  } catch {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { token } = await request.json();
