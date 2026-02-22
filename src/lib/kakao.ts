@@ -28,6 +28,13 @@ export function initKakaoSDK(): boolean {
   return window.Kakao.isInitialized();
 }
 
+// ============ Capacitor 환경 감지 ============
+
+function isCapacitorNative(): boolean {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (window as any).Capacitor?.isNativePlatform?.() === true;
+}
+
 // ============ 카카오 로그인 ============
 
 export async function kakaoLogin() {
@@ -38,8 +45,20 @@ export async function kakaoLogin() {
   const restKey = process.env.NEXT_PUBLIC_KAKAO_REST_API_KEY;
   if (!restKey) return;
 
-  const oauthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${restKey}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code`;
+  const native = isCapacitorNative();
+  // 네이티브 앱에서는 state=native를 전달하여 콜백에서 딥링크 분기
+  const stateParam = native ? "&state=native" : "";
+  const oauthUrl = `https://kauth.kakao.com/oauth/authorize?client_id=${restKey}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code${stateParam}`;
 
-  // 네이티브/웹 모두 WebView 내에서 직접 이동
-  window.location.href = oauthUrl;
+  if (native) {
+    try {
+      const { Browser } = await import("@capacitor/browser");
+      await Browser.open({ url: oauthUrl, presentationStyle: "popover" });
+    } catch {
+      // Browser 플러그인이 네이티브에 없는 경우 fallback
+      window.location.href = oauthUrl;
+    }
+  } else {
+    window.location.href = oauthUrl;
+  }
 }

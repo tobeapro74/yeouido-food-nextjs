@@ -138,6 +138,58 @@ export default function Home() {
     checkAuth();
   }, []);
 
+  // 네이티브 앱: 카카오 로그인 딥링크(yeouido://auth?token=...) 수신 처리
+  useEffect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const isNative = (window as any).Capacitor?.isNativePlatform?.() === true;
+    if (!isNative) return;
+
+    let cleanup: (() => void) | undefined;
+
+    const setupDeepLinkListener = async () => {
+      try {
+        const { App: CapApp } = await import("@capacitor/app");
+        const { Browser } = await import("@capacitor/browser");
+
+        const listener = await CapApp.addListener("appUrlOpen", async (event) => {
+          const url = new URL(event.url);
+          if (url.protocol === "yeouido:" && url.pathname === "//auth") {
+            const token = url.searchParams.get("token");
+
+            // SFSafariViewController 닫기
+            try { await Browser.close(); } catch { /* ignore */ }
+
+            if (token) {
+              // 토큰을 서버에 보내 httpOnly 쿠키 설정
+              try {
+                await fetch("/api/auth/set-token", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ token }),
+                });
+                // 로그인 상태 갱신
+                const meRes = await fetch("/api/auth/me");
+                const meData = await meRes.json();
+                if (meData.success) {
+                  setUser(meData.data);
+                }
+              } catch (err) {
+                console.error("딥링크 토큰 처리 오류:", err);
+              }
+            }
+          }
+        });
+
+        cleanup = () => listener.remove();
+      } catch {
+        // Capacitor App 플러그인 없는 경우 무시
+      }
+    };
+
+    setupDeepLinkListener();
+    return () => cleanup?.();
+  }, []);
+
   // 빌딩 랭킹용 커스텀 맛집 및 삭제된 정적 데이터 ID 로드
   useEffect(() => {
     const loadCustomRestaurants = async () => {

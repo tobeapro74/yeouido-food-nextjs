@@ -47,6 +47,17 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>yeouido</string>
+			</array>
+			<key>CFBundleURLName</key>
+			<string>com.yeoidohanki.app</string>
+		</dict>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>리뷰에 사진을 첨부하기 위해 카메라 접근 권한이 필요합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
