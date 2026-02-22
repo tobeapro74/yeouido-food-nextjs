@@ -152,12 +152,14 @@ export default function Home() {
         const { Browser } = await import("@capacitor/browser");
 
         const listener = await CapApp.addListener("appUrlOpen", async (event) => {
-          const url = new URL(event.url);
-          if (url.protocol === "yeouido:" && url.pathname === "//auth") {
-            const token = url.searchParams.get("token");
-
-            // SFSafariViewController 닫기
+          // yeouido://auth?token=... 형식의 딥링크 처리
+          if (event.url.startsWith("yeouido://auth")) {
+            // SFSafariViewController 먼저 닫기
             try { await Browser.close(); } catch { /* ignore */ }
+
+            // URL에서 토큰 추출
+            const tokenMatch = event.url.match(/[?&]token=([^&]+)/);
+            const token = tokenMatch ? decodeURIComponent(tokenMatch[1]) : null;
 
             if (token) {
               // 토큰을 서버에 보내 httpOnly 쿠키 설정

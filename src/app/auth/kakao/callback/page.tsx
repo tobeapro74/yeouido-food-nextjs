@@ -46,21 +46,15 @@ function KakaoCallbackContent() {
           return;
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const inWebView = (window as any).Capacitor?.isNativePlatform?.() === true;
-
-        if (isNative && !inWebView) {
-          // 외부 브라우저(SFSafariViewController)에서 열린 경우
+        if (isNative) {
+          // SFSafariViewController에서 열린 경우
           // 딥링크로 토큰을 전달하여 앱 WebView로 복귀
           const token = data.data.token;
           const deepLink = `yeouido://auth?token=${encodeURIComponent(token)}`;
           window.location.href = deepLink;
-          // 딥링크 실패 시 fallback: 쿠키는 이미 설정됨
-          setTimeout(() => {
-            window.location.replace("/");
-          }, 1500);
+          // 딥링크 실행 후 페이지 이동하지 않음 (이동하면 딥링크 취소됨)
         } else {
-          // WebView 안이거나 웹 브라우저: 쿠키가 이미 설정됨 → 바로 메인으로 이동
+          // 웹 브라우저: 쿠키가 이미 설정됨 → 바로 메인으로 이동
           window.location.replace("/");
         }
       } catch {
