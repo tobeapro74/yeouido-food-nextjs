@@ -13,6 +13,7 @@ const config: CapacitorConfig = {
     // 배포된 웹앱 URL을 로드
     url: 'https://yeouido-food.vercel.app',
     cleartext: false,
+    allowNavigation: ['*.kakao.com'],
   },
   plugins: {
     CapacitorHttp: {
