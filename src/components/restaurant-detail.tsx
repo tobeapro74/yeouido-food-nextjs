@@ -9,6 +9,7 @@ import { Separator } from "@/components/ui/separator";
 import { Restaurant, getGoogleMapsLink, getGoogleSearchLink, generateStaticPlaceId } from "@/data/yeouido-food";
 import { ReviewSection } from "@/components/review-section";
 import { GoogleReviews } from "@/components/google-reviews";
+import { AiMenuSummary } from "@/components/ai-menu-summary";
 import { CategoryEditModal } from "@/components/category-edit-modal";
 import { RestaurantEditModal } from "@/components/restaurant-edit-modal";
 import Image from "next/image";
@@ -513,6 +514,11 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
             </Button>
           </a>
         </div>
+
+        <Separator />
+
+        {/* AI 메뉴·리뷰 요약 섹션 */}
+        <AiMenuSummary restaurantName={restaurant.이름} />
 
         <Separator />
 
