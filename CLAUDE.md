@@ -40,6 +40,7 @@
 - 빌딩 랭킹: src/components/building-ranking-list.tsx
 - 인기 맛집: src/components/popular-restaurants.tsx / popular-restaurants-list.tsx
 - 운세맛집: src/components/fortune-modal.tsx / fortune-result.tsx / fortune-detail-modal.tsx
+- AI 리뷰 분석: src/components/ai-menu-summary.tsx / src/app/api/ai-menu-summary/[name]/route.ts
 - API 라우트: src/app/api/
 - DB 연결: src/lib/mongodb.ts
 - 캐시 유틸: src/lib/cache.ts
@@ -59,3 +60,4 @@
 - 날씨: Open-Meteo API (무료, API 키 불필요)
 - 맛집 사진/리뷰: Google Places API
 - 이미지 저장: Cloudinary
+- AI 리뷰 분석: Anthropic API / Claude Haiku (ANTHROPIC_API_KEY)

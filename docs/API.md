@@ -556,6 +556,35 @@ Google Places 이미지 조회 (캐싱 포함)
 
 ---
 
+## AI 리뷰 분석 API (2026.05.18 추가)
+
+### GET /api/ai-menu-summary/[name]
+Google 리뷰를 Claude Haiku로 분석해 대표 메뉴·리뷰 요약 (7일 캐시)
+
+**동작 조건**: `google_reviews_cache` 컬렉션에 해당 식당 리뷰가 먼저 캐시되어 있어야 함
+
+**Response**
+```json
+{
+  "topMenus": ["갈비탕", "육전", "막걸리 세트"],
+  "topReviews": ["국물이 진하고 깊은 맛", "양도 푸짐해서 만족", "혼밥하기 좋은 분위기"],
+  "reviewCount": 5,
+  "cached": true
+}
+```
+
+**에러 Response**
+```json
+{ "error": "리뷰 없음" }
+```
+→ HTTP 404: google_reviews_cache에 해당 식당 데이터 없음
+
+**캐싱**: MongoDB `ai_menu_summary` 컬렉션, 7일 TTL
+**모델**: claude-haiku-4-5-20251001
+**비용**: 식당당 최초 분석 시 약 $0.001 미만
+
+---
+
 ## Google 리뷰 API
 
 ### GET /api/google-reviews/[name]
@@ -909,6 +938,7 @@ fields=place_id,name,formatted_address,geometry,rating,user_ratings_total,
 | `google_reviews_cache` | 구글 리뷰 캐시 | 3시간 |
 | `restaurant_buildings` | 건물 정보 | 무제한 |
 | `restaurant_prices` | 가격 정보 | 무제한 |
+| `ai_menu_summary` | AI 대표 메뉴·리뷰 분석 결과 | 7일 |
 
 ### 비용 절감 예상
 
@@ -938,8 +968,9 @@ fields=place_id,name,formatted_address,geometry,rating,user_ratings_total,
   - Google Places API (음식점 검색, 평점, 건물 정보)
   - Google Geocoding API (역지오코딩)
   - Open-Meteo API (날씨, 무료)
+  - Anthropic API / Claude Haiku (AI 리뷰 분석, 대표 메뉴·리뷰 추출)
 
 ---
 
-**작성일**: 2025-01-24
+**작성일**: 2025-01-24 / **최종수정**: 2026-05-18
 **프로젝트**: 여의도한끼 (여의도 맛집 추천 앱)
