@@ -95,6 +95,7 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [openingHours, setOpeningHours] = useState<string[] | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [reviewsReady, setReviewsReady] = useState(false);
 
   // 커스텀 맛집 여부 확인
   const isCustomRestaurant = !!customInfo;
@@ -518,12 +519,12 @@ export function RestaurantDetail({ restaurant, onBack, user, onCategoryChange, o
         <Separator />
 
         {/* AI 메뉴·리뷰 요약 섹션 */}
-        <AiMenuSummary restaurantName={restaurant.이름} />
+        <AiMenuSummary restaurantName={restaurant.이름} reviewsReady={reviewsReady} />
 
         <Separator />
 
         {/* Google 리뷰 섹션 */}
-        <GoogleReviews restaurantName={restaurant.이름} />
+        <GoogleReviews restaurantName={restaurant.이름} onReviewsReady={() => setReviewsReady(true)} />
 
         <Separator />
 

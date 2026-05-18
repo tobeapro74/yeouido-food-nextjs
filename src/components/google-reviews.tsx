@@ -17,9 +17,10 @@ interface GoogleReview {
 
 interface GoogleReviewsProps {
   restaurantName: string;
+  onReviewsReady?: () => void; // 리뷰 로딩(캐시 포함) 완료 시 호출
 }
 
-export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
+export function GoogleReviews({ restaurantName, onReviewsReady }: GoogleReviewsProps) {
   // LRU 캐시에서 초기값 가져오기
   const cachedData = reviewsCache.get(restaurantName);
 
@@ -41,6 +42,7 @@ export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
       setRating(cached.rating);
       setUserRatingsTotal(cached.reviewCount);
       setIsLoading(false);
+      onReviewsReady?.();
       return;
     }
 
@@ -62,8 +64,10 @@ export function GoogleReviews({ restaurantName }: GoogleReviewsProps) {
         setReviews(data.reviews || []);
         setRating(data.rating);
         setUserRatingsTotal(data.userRatingsTotal);
+        onReviewsReady?.();
       } catch (error) {
         console.error("Error fetching Google reviews:", error);
+        onReviewsReady?.(); // 실패해도 AI 분석은 시도
       } finally {
         setIsLoading(false);
       }

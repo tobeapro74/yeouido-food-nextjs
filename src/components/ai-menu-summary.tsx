@@ -6,6 +6,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 interface AiMenuSummaryProps {
   restaurantName: string;
+  reviewsReady?: boolean; // Google 리뷰 캐시 완료 신호
 }
 
 interface SummaryData {
@@ -14,12 +15,14 @@ interface SummaryData {
   reviewCount: number;
 }
 
-export function AiMenuSummary({ restaurantName }: AiMenuSummaryProps) {
+export function AiMenuSummary({ restaurantName, reviewsReady = true }: AiMenuSummaryProps) {
   const [data, setData] = useState<SummaryData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
+    if (!reviewsReady) return; // Google 리뷰 캐시 완료 전엔 대기
+
     const fetchSummary = async () => {
       try {
         const res = await fetch(
@@ -43,7 +46,7 @@ export function AiMenuSummary({ restaurantName }: AiMenuSummaryProps) {
     };
 
     fetchSummary();
-  }, [restaurantName]);
+  }, [restaurantName, reviewsReady]);
 
   if (loading) {
     return (
