@@ -1,21 +1,17 @@
 import { NextResponse } from "next/server";
+import { getAllRestaurants } from "@/data/yeouido-food";
 import { getDb } from "@/lib/mongodb";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const checks: Record<string, string> = { server: "ok" };
-  let restaurantCount: number | undefined;
   let lastCronRun: string | undefined;
 
   try {
     const db = await getDb();
     checks["db"] = "ok";
 
-    // 맛집 수 조회 (google_reviews_cache 기준)
-    restaurantCount = await db.collection("google_reviews_cache").countDocuments();
-
-    // 마지막 크론 실행 시각
     const latest = await db
       .collection("google_reviews_cache")
       .findOne({}, { sort: { updatedAt: -1 }, projection: { updatedAt: 1 } });
@@ -26,6 +22,9 @@ export async function GET() {
     checks["db"] = "error";
   }
 
+  // 맛집 수는 정적 데이터 파일 기준
+  const restaurantCount = getAllRestaurants().length;
+
   const overall = Object.values(checks).every((v) => v === "ok") ? "ok" : "degraded";
 
   return NextResponse.json({
@@ -34,7 +33,7 @@ export async function GET() {
     version: "0.1.0",
     timestamp: new Date().toISOString(),
     checks,
-    ...(restaurantCount !== undefined && { restaurant_count: restaurantCount }),
+    restaurant_count: restaurantCount,
     ...(lastCronRun && { last_cron_run: lastCronRun }),
   });
 }
