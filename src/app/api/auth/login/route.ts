@@ -45,6 +45,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // DAU 집계를 위해 마지막 로그인 시각 업데이트
+    await usersCollection.updateOne(
+      { email },
+      { $set: { last_login_at: new Date() } }
+    );
+
     // JWT 토큰 생성
     const token = jwt.sign(
       {

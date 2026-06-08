@@ -122,6 +122,14 @@ export async function POST(request: NextRequest) {
       user = newUser;
     }
 
+    // DAU 집계를 위해 마지막 로그인 시각 업데이트
+    if (user.id) {
+      await usersCollection.updateOne(
+        { id: user.id },
+        { $set: { last_login_at: new Date() } }
+      );
+    }
+
     // ━━━━━━━━━━ 4단계: JWT 발급 + 쿠키 설정 ━━━━━━━━━━
     const payload: JWTPayload = {
       userId: user.id,
